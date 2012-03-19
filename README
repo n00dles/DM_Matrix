@@ -1,0 +1,33 @@
+//getPagesXmlValues();
+
+//print_r($schemaArray);
+
+//$r = array();
+
+//	$r = $sql->query("SELECT id FROM schemaArray as arr WHERE id > 14 order by id DESC");
+
+//print_r($r);
+
+
+//createSchemaTable('test',array('test'=>'int','blogger'=>'text'));
+
+//createRecord('gallery', array('name'=>'This is a test 1','title'=>'title1','image'=>'image 1'));
+//createRecord('gallery', array('name'=>'This is a test 2','title'=>'title2','image'=>'image 2'));
+//createRecord('gallery', array('name'=>'This is a test 3','title'=>'title3','image'=>'image 3'));
+//createRecord('gallery', array('name'=>'This is a test 4','title'=>'title4','image'=>'image 4'));
+
+
+//deleteSchemaField('blog',array('title','author','date'));
+//dropSchemaTable('blog');
+
+
+//print_r($schemaArray['gallery']);
+//$table=array();
+//$table=getSchemaTable('gallery');
+//echo "<pre>";
+//$r = array();
+
+//$r = $sql->query("SELECT id,image,name,title FROM table ORDER by title LIKE '%4%'");
+
+//print_r($r);
+// echo "</pre>";
