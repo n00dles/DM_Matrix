@@ -33,6 +33,8 @@ require "DM_schema/include/sql4array.php";
 
 register_script('DM_schema',$SITEURL.'plugins/DM_schema/js/DM_schema.js', '0.1',FALSE);
 queue_script('DM_schema', GSBACK);
+register_style('DM_schema_css',$SITEURL.'plugins/DM_schema/css/style.css', '0.1',FALSE);
+queue_style('DM_schema_css', GSBACK);
 
 add_action('file-uploaded','file_upload', array());
 add_action('nav-tab','createNavTab',array('DM_schema','DM_schema','Schema','action=schema_manager&schema'));
@@ -107,7 +109,7 @@ if (isset($_GET['schema'])) {
 		</tbody>
 		</table>
 <?php
-	
+	DM_createForm();
 	}
 elseif (isset($_GET['edit']))
 	{
@@ -294,13 +296,83 @@ function getSchemaTable($name){
 	return $table;
 }
 
-print_r($schemaArray['gallery']);
-$table=array();
-$table=getSchemaTable('gallery');
-echo "<pre>";
-$r = array();
 
-$r = $sql->query("SELECT id,image,name,title FROM table ORDER by title LIKE '%4%'");
+Function DM_createForm(){
+?>
+	<ul class="Inputfields">
+	<li class="InputfieldName Inputfield_name ui-widget" id="wrap_Inputfield_name">
+		<label class="ui-widget-header InputfieldStateToggle" for="Inputfield_name"><span class="ui-icon ui-icon-triangle-1-s"></span>Name</label>
+		<div class="ui-widget-content">
+			<p class="description">Any combination of ASCII letters [a-z], numbers [0-9], or underscores (no dashes or spaces).</p>
+			<p><input id="Inputfield_name" class="required" name="name" type="text" size="70" maxlength="128"></p>
+		</div>
+	</li>
 
-print_r($r);
-echo "</pre>";
+	<li class="InputfieldSelect Inputfield_type ui-widget" id="wrap_Inputfield_type">
+		<label class="ui-widget-header InputfieldStateToggle" for="Inputfield_type"><span class="ui-icon ui-icon-triangle-1-s"></span>Type</label>
+		<div class="ui-widget-content">
+			<p class="description">After selecting your field type and saving, you may be presented with additional configuration options specific to the field type you selected.</p>
+			<p><select id="Inputfield_type" class="required" name="type">
+				<option selected="selected" value=""></option>
+				<option value="FieldtypeCache">Cache</option>
+				<option value="FieldtypeCheckbox">Checkbox</option>
+				<option value="FieldtypeDatetime">Datetime</option>
+				<option value="FieldtypeEmail">Email</option>
+				<option value="FieldtypeFieldsetOpen">FieldsetOpen</option>
+				<option value="FieldtypeFieldsetTabOpen">FieldsetTabOpen</option>
+				<option value="FieldtypeFile">File</option>
+				<option value="FieldtypeFloat">Float</option>
+				<option value="FieldtypeImage">Image</option>
+				<option value="FieldtypeInteger">Integer</option>
+				<option value="FieldtypePage">Page</option>
+				<option value="FieldtypeText">Text</option>
+				<option value="FieldtypeTextarea">Textarea</option>
+			</select></p>
+		</div>
+	</li>
+
+	<li class="InputfieldText Inputfield_label ui-widget" id="wrap_Inputfield_label">
+		<label class="ui-widget-header InputfieldStateToggle" for="Inputfield_label"><span class="ui-icon ui-icon-triangle-1-s"></span>Label</label>
+		<div class="ui-widget-content">
+			<p class="description">This is the label that appears above the entry field. If left blank, the name will be used instead.</p>
+			<p><input id="Inputfield_label" name="label" type="text" size="70" maxlength="255"></p>
+		</div>
+	</li>
+
+	<li class="InputfieldTextarea Inputfield_description ui-widget" id="wrap_Inputfield_description" style=" ">
+		<label class="ui-widget-header InputfieldStateToggle" for="Inputfield_description"><span class="ui-icon ui-icon-triangle-1-s"></span>Description</label>
+		<div class="ui-widget-content">
+			<p class="description">Additional information describing this field and/or instructions on how to enter the content.</p>
+			<p><textarea id="Inputfield_description" name="description" rows="3"></textarea></p>
+		</div>
+	</li>
+
+	<li class="InputfieldHidden Inputfield_id ui-widget" id="wrap_Inputfield_id">
+		<label class="ui-widget-header InputfieldStateToggle" for="Inputfield_id"><span class="ui-icon ui-icon-triangle-1-s"></span>id</label>
+		<div class="ui-widget-content">
+			<input id="Inputfield_id" name="id" value="0" type="hidden">
+		</div>
+	</li>
+
+	<li class="InputfieldSubmit Inputfield_submit_save_field ui-widget" id="wrap_Inputfield_submit">
+		<label class="ui-widget-header InputfieldStateToggle" for="Inputfield_submit"><span class="ui-icon ui-icon-triangle-1-s"></span>submit_save_field</label>
+		<div class="ui-widget-content">
+			<button id="Inputfield_submit" class="ui-button ui-widget ui-state-default ui-corner-all" name="submit_save_field" value="Submit" type="submit"><span class="ui-button-text">Submit</span></button>
+		</div>
+	</li>
+
+</ul>
+<?php	
+}
+
+
+//print_r($schemaArray['gallery']);
+//$table=array();
+//$table=getSchemaTable('gallery');
+//echo "<pre>";
+//$r = array();
+
+//$r = $sql->query("SELECT id,image,name,title FROM table ORDER by title LIKE '%4%'");
+
+//print_r($r);
+//echo "</pre>";
