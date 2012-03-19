@@ -17,62 +17,62 @@
 	margin: 0 0 20px 0px;
 }
 
-    .Inputfields,
-    .Inputfields li,
-    .Inputfields input,
-    .Inputfields select,
-    .Inputfields textarea {
+    .fields,
+    .fields li,
+    .fields input,
+    .fields select,
+    .fields textarea {
         font-size: 12px; 
     }
 
-    .Inputfields .ui-widget-content {
+    .fields .ui-widget-content {
         padding: 1em; 
     }
 
-    .Inputfields .ui-widget-header {
+    .fields .ui-widget-header {
         padding: 0.25em 0 0.25em 1em; 
     }
 
-        .Inputfields .InputfieldStateToggle span.ui-icon {
+        .fields .fieldstateToggle span.ui-icon {
             float: right; 
             padding-right: 0.25em; 
         }
 
-    .Inputfields li > .ui-widget-content > p {
+    .fields li > .ui-widget-content > p {
         margin-top: 0; 
     }
 
-    .Inputfields > li {
+    .fields > li {
         display: block;
         margin: 1.5em 0;
         clear: both; 
     }
-        .Inputfields > li.InputfieldSubmit,
-        .Inputfields > li.InputfieldWrapper,
-        .Inputfields > li.InputfieldHidden {
+        .fields > li.fieldsubmit,
+        .fields > li.InputfieldWrapper,
+        .fields > li.InputfieldHidden {
         }
 
-    .Inputfields > li .notes {
+    .fields > li .notes {
         margin-bottom: 0; 
     }
 
-    .Inputfields .InputfieldHidden {
+    .fields .InputfieldHidden {
         display: none; 
     }
 
-    .Inputfields .InputfieldSubmit,
-    .Inputfields .InputfieldButton {
+    .fields .fieldsubmit,
+    .fields .InputfieldButton {
         clear: none; 
     }
-        .Inputfields .InputfieldSubmit .ui-widget-content,
-        .Inputfields .InputfieldButton .ui-widget-content {
+        .fields .fieldsubmit .ui-widget-content,
+        .fields .InputfieldButton .ui-widget-content {
             padding: 0; 
             background: none; 
             border: none; 
         }
 
-        .Inputfields .InputfieldSubmit .ui-widget-header,
-        .Inputfields .InputfieldButton .ui-widget-header {
+        .fields .fieldsubmit .ui-widget-header,
+        .fields .InputfieldButton .ui-widget-header {
             display: none; 
         }
 
@@ -87,50 +87,50 @@
             display: block;
         }
 
-    .Inputfields .InputfieldCheckboxes input,
-    .Inputfields .InputfieldRadios input {
+    .fields .InputfieldCheckboxes input,
+    .fields .InputfieldRadios input {
         margin-right: 0.25em; 
     }
-        .Inputfields .InputfieldCheckboxes li,
-        .Inputfields .InputfieldRadios li {
+        .fields .InputfieldCheckboxes li,
+        .fields .InputfieldRadios li {
             margin: 0; 
         }
 
-    .Inputfields .InputfieldCheckbox {
+    .fields .InputfieldCheckbox {
     }
-        .Inputfields .InputfieldCheckbox .notes {
+        .fields .InputfieldCheckbox .notes {
             margin-top: 1em; 
         }
 
 
-    .Inputfields label {
+    .fields label {
         display: block;
     }
 
-    .Inputfields textarea, 
+    .fields textarea, 
     .InputfieldMaxWidth {
         width: 99%; 
     }
 
-    .Inputfields .InputfieldStateToggle {
+    .fields .fieldstateToggle {
         cursor: pointer;
     }
 
-        .Inputfields > .InputfieldStateCollapsed {
+        .fields > .fieldstateCollapsed {
         }
 
-            .Inputfields > .InputfieldStateCollapsed .ui-widget-header {
+            .fields > .fieldstateCollapsed .ui-widget-header {
                 opacity: 0.6; 
             }
-            .Inputfields > .InputfieldStateCollapsed .ui-widget-header:hover {
+            .fields > .fieldstateCollapsed .ui-widget-header:hover {
                 opacity: 1.0; 
             }
 
-            .Inputfields > .InputfieldStateCollapsed .ui-widget-content {
+            .fields > .fieldstateCollapsed .ui-widget-content {
                 display: none;
             }
 
-            .Inputfields > .InputfieldStateCollapsed .InputfieldStateToggle {
+            .fields > .fieldstateCollapsed .fieldstateToggle {
             }
 
     .InputfieldPageNameURL {

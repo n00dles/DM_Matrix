@@ -13,7 +13,7 @@ $thisfile = basename(__FILE__, '.php');
 register_plugin(
   $thisfile,
   'Schema Manager',
-  '1.0',
+  '0.1',
   'Mike Swan',
   'http://digimute.com/',
   'Schema Manager',
@@ -40,32 +40,6 @@ add_action('file-uploaded','file_upload', array());
 add_action('nav-tab','createNavTab',array('DM_schema','DM_schema','Schema','action=schema_manager&schema'));
 DM_getSchema();
 
-
-$sql = new sql4array();
-
-$sql->createFromGlobals();
-
-//getPagesXmlValues();
-
-//print_r($schemaArray);
-
-//$r = array();
-
-//	$r = $sql->query("SELECT id FROM schemaArray as arr WHERE id > 14 order by id DESC");
-
-//print_r($r);
-
-
-//createSchemaTable('test',array('test'=>'int','blogger'=>'text'));
-
-//createRecord('gallery', array('name'=>'This is a test 1','title'=>'title1','image'=>'image 1'));
-//createRecord('gallery', array('name'=>'This is a test 2','title'=>'title2','image'=>'image 2'));
-//createRecord('gallery', array('name'=>'This is a test 3','title'=>'title3','image'=>'image 3'));
-//createRecord('gallery', array('name'=>'This is a test 4','title'=>'title4','image'=>'image 4'));
-
-
-//deleteSchemaField('blog',array('title','author','date'));
-//dropSchemaTable('blog');
 
 if (isset($_GET['edit']) && isset($_GET['addfield']) && $flag==false){
   	echo "adding Field to ".$_GET['edit']."/".$_POST['post-name']."=".$_POST['post-type'];
@@ -100,7 +74,7 @@ if (isset($_GET['schema'])) {
 		<tbody><tr><th>Schema Name</th><th >records</th><th>Fields</th><th style="width:75px;">Options</th></tr>
 		<?php 
 		foreach($schemaArray as $schema=>$key){
-			echo "<tr><td>".$schema."</td><td>".($key['id']-1)."</td><td>".count($key['fields'])."</td><td><a href='load.php?id=DM_schema&action=schema_manager&edit=".$schema."'><img src='../plugins/DM_schema/images/edit.gif' title='Edit Records' /></a></td></tr>";
+			echo "<tr><td>".$schema."</td><td>".($key['id']-1)."</td><td>".count($key['fields'])."</td><td><a href='load.php?id=DM_schema&action=schema_manager&edit=".$schema."'><img src='../plugins/DM_schema/images/edit.png' title='Edit Records' /></a><a href='load.php?id=DM_schema&action=schema_manager&add=".$schema."'><img src='../plugins/DM_schema/images/add.png' title='Add Record' /></a></td></tr>";
 		}
 		
 		?>
@@ -109,9 +83,15 @@ if (isset($_GET['schema'])) {
 		</tbody>
 		</table>
 <?php
-	DM_createForm();
+	
+	} elseif (isset($_GET['add']))	{
+		$schemaname=$_GET['add'];
+		echo "<h2>Add new ".$schemaname." record</h2>";
+		echo '<form method="post" action="load.php?id=DM_schema&action=schema_manager&add='.$schemaname.'&addrecord">';
+		DM_createForm($schemaname);
+		echo '</form>';
 	}
-elseif (isset($_GET['edit']))
+	elseif (isset($_GET['edit']))
 	{
 		$schemaname=$_GET['edit'];
 		echo "<h2>Edit Schema: ".$schemaname."</h2>";
@@ -297,65 +277,40 @@ function getSchemaTable($name){
 }
 
 
-Function DM_createForm(){
-?>
-	<ul class="Inputfields">
-	<li class="InputfieldName Inputfield_name ui-widget" id="wrap_Inputfield_name">
-		<label class="ui-widget-header InputfieldStateToggle" for="Inputfield_name"><span class="ui-icon ui-icon-triangle-1-s"></span>Name</label>
-		<div class="ui-widget-content">
-			<p class="description">Any combination of ASCII letters [a-z], numbers [0-9], or underscores (no dashes or spaces).</p>
-			<p><input id="Inputfield_name" class="required" name="name" type="text" size="70" maxlength="128"></p>
-		</div>
-	</li>
+function DM_createForm($name){
+global $schemaArray;	
+echo '<ul class="fields">';
+foreach ($schemaArray[$name]['fields'] as $field=>$value) {
 
-	<li class="InputfieldSelect Inputfield_type ui-widget" id="wrap_Inputfield_type">
-		<label class="ui-widget-header InputfieldStateToggle" for="Inputfield_type"><span class="ui-icon ui-icon-triangle-1-s"></span>Type</label>
-		<div class="ui-widget-content">
-			<p class="description">After selecting your field type and saving, you may be presented with additional configuration options specific to the field type you selected.</p>
-			<p><select id="Inputfield_type" class="required" name="type">
-				<option selected="selected" value=""></option>
-				<option value="FieldtypeCache">Cache</option>
-				<option value="FieldtypeCheckbox">Checkbox</option>
-				<option value="FieldtypeDatetime">Datetime</option>
-				<option value="FieldtypeEmail">Email</option>
-				<option value="FieldtypeFieldsetOpen">FieldsetOpen</option>
-				<option value="FieldtypeFieldsetTabOpen">FieldsetTabOpen</option>
-				<option value="FieldtypeFile">File</option>
-				<option value="FieldtypeFloat">Float</option>
-				<option value="FieldtypeImage">Image</option>
-				<option value="FieldtypeInteger">Integer</option>
-				<option value="FieldtypePage">Page</option>
-				<option value="FieldtypeText">Text</option>
-				<option value="FieldtypeTextarea">Textarea</option>
-			</select></p>
-		</div>
-	</li>
-
-	<li class="InputfieldText Inputfield_label ui-widget" id="wrap_Inputfield_label">
-		<label class="ui-widget-header InputfieldStateToggle" for="Inputfield_label"><span class="ui-icon ui-icon-triangle-1-s"></span>Label</label>
-		<div class="ui-widget-content">
-			<p class="description">This is the label that appears above the entry field. If left blank, the name will be used instead.</p>
-			<p><input id="Inputfield_label" name="label" type="text" size="70" maxlength="255"></p>
-		</div>
-	</li>
-
-	<li class="InputfieldTextarea Inputfield_description ui-widget" id="wrap_Inputfield_description" style=" ">
-		<label class="ui-widget-header InputfieldStateToggle" for="Inputfield_description"><span class="ui-icon ui-icon-triangle-1-s"></span>Description</label>
-		<div class="ui-widget-content">
-			<p class="description">Additional information describing this field and/or instructions on how to enter the content.</p>
-			<p><textarea id="Inputfield_description" name="description" rows="3"></textarea></p>
-		</div>
-	</li>
-
+	if ($field!="id"){
+	?>
+	
+		<li class="InputfieldName Inputfield_name ui-widget" id="wrap_Inputfield_name">
+			<label class="ui-widget-header fieldstateToggle" for="Inputfield_name"><span class="ui-icon ui-icon-triangle-1-s"></span><?php echo $field; ?></label>
+			<div class="ui-widget-content">
+				<p class="description">Type = <?php echo $value; ?></p>
+				<p><input id="Inputfield_name" class="required" name="name" type="text" size="70" maxlength="128"></p>
+			</div>
+		</li>
+	
+	<?php
+	} else {
+	?>
 	<li class="InputfieldHidden Inputfield_id ui-widget" id="wrap_Inputfield_id">
-		<label class="ui-widget-header InputfieldStateToggle" for="Inputfield_id"><span class="ui-icon ui-icon-triangle-1-s"></span>id</label>
+		<label class="ui-widget-header fieldstateToggle" for="Inputfield_id"><span class="ui-icon ui-icon-triangle-1-s"></span>id</label>
 		<div class="ui-widget-content">
 			<input id="Inputfield_id" name="id" value="0" type="hidden">
 		</div>
 	</li>
 
-	<li class="InputfieldSubmit Inputfield_submit_save_field ui-widget" id="wrap_Inputfield_submit">
-		<label class="ui-widget-header InputfieldStateToggle" for="Inputfield_submit"><span class="ui-icon ui-icon-triangle-1-s"></span>submit_save_field</label>
+		
+	<?php	
+	}
+}
+?>
+
+	<li class="fieldsubmit Inputfield_submit_save_field ui-widget" id="wrap_Inputfield_submit">
+		<label class="ui-widget-header fieldstateToggle" for="Inputfield_submit"><span class="ui-icon ui-icon-triangle-1-s"></span>submit_save_field</label>
 		<div class="ui-widget-content">
 			<button id="Inputfield_submit" class="ui-button ui-widget ui-state-default ui-corner-all" name="submit_save_field" value="Submit" type="submit"><span class="ui-button-text">Submit</span></button>
 		</div>
@@ -365,14 +320,3 @@ Function DM_createForm(){
 <?php	
 }
 
-
-//print_r($schemaArray['gallery']);
-//$table=array();
-//$table=getSchemaTable('gallery');
-//echo "<pre>";
-//$r = array();
-
-//$r = $sql->query("SELECT id,image,name,title FROM table ORDER by title LIKE '%4%'");
-
-//print_r($r);
-//echo "</pre>";
