@@ -12,29 +12,29 @@ $thisfile = basename(__FILE__, '.php');
 # register plugin
 register_plugin(
   $thisfile,
-  'Schema Manager',
+  'The Matrix',
   '0.1',
   'Mike Swan',
   'http://digimute.com/',
-  'Schema Manager',
-  'DM_schema',
-  'schema_manager'
+  'The Matrix',
+  'DM_Matrix',
+  'matrix_manager'
 );
     
 
-define('GSSCHEMAPATH',GSDATAOTHERPATH.'schema');
+define('GSSCHEMAPATH',GSDATAOTHERPATH.'matrix');
  
 $defaultDebug = true;
 $schemaArray = array();
 $item_title='Schema';
 
-require "DM_schema/include/sql4array.php";
+require "DM_Matrix/include/sql4array.php";
 
 
-register_script('DM_schema',$SITEURL.'plugins/DM_schema/js/DM_schema.js', '0.1',FALSE);
-queue_script('DM_schema', GSBACK);
-register_style('DM_schema_css',$SITEURL.'plugins/DM_schema/css/style.css', '0.1',FALSE);
-queue_style('DM_schema_css', GSBACK);
+register_script('DM_Matrix',$SITEURL.'plugins/DM_Matrix/js/DM_Matrix.js', '0.1',FALSE);
+queue_script('DM_Matrix', GSBACK);
+register_style('DM_Matrix_css',$SITEURL.'plugins/DM_Matrix/css/style.css', '0.1',FALSE);
+queue_style('DM_Matrix_css', GSBACK);
 
 
 register_script('codemirror', $SITEURL.'admin/template/js/codemirror/lib/codemirror-compressed.js', '0.2.0', FALSE);
@@ -60,15 +60,13 @@ queue_style('codemirror-dialog', GSBACK);
 
 queue_script('jquery-ui', GSBACK);
 
-register_script('DM_schema_timepicker',$SITEURL.'plugins/DM_schema/js/timepicker.js', '0.1',FALSE);
-queue_script('DM_schema_timepicker', GSBACK);
+register_script('DM_Matrix_timepicker',$SITEURL.'plugins/DM_Matrix/js/timepicker.js', '0.1',FALSE);
+queue_script('DM_Matrix_timepicker', GSBACK);
 
-register_style('jquery-ui-css',$SITEURL.'plugins/DM_schema/css/redmond/jquery-ui-1.8.16.custom.css','screen',FALSE);
+register_style('jquery-ui-css',$SITEURL.'plugins/DM_Matrix/css/redmond/jquery-ui-1.8.16.custom.css','screen',FALSE);
 queue_style('jquery-ui-css', GSBACK);
 
-
-add_action('file-uploaded','file_upload', array());
-add_action('nav-tab','createNavTab',array('DM_schema','DM_schema','Schema','action=schema_manager&schema'));
+add_action('nav-tab','createNavTab',array('DM_Matrix','DM_Matrix','The Matrix','action=matrix_manager&schema'));
 DM_getSchema();
 
 
@@ -79,7 +77,7 @@ if (isset($_GET['edit']) && isset($_GET['addfield']) && $flag==false){
   }
 
 //Admin Content
-function schema_manager() {
+function matrix_manager() {
 global $item_title, $fieldtypes,$schemaArray;
 
 //Main Navigation For Admin Panel
@@ -87,9 +85,9 @@ global $item_title, $fieldtypes,$schemaArray;
 <div style="width:100%;margin:0 -15px -15px -10px;padding:0px;">
 	<h3 class="floated"><?php echo $item_title; ?> Manager</h3>  
 	<div class="edit-nav clearfix" style="">
-		<a href="load.php?id=DM_schema&action=schema_manager&settings" <?php if (isset($_GET['settings'])) { echo 'class="current"'; } ?>>Settings</a>
-		<a href="load.php?id=DM_schema&action=schema_manager&fields" <?php if (isset($_GET['fields'])) { echo 'class="current"'; } ?>>Manage Records</a>
-		<a href="load.php?id=DM_schema&action=schema_manager&schema" <?php if (isset($_GET['schema'])) { echo 'class="current"'; } ?>>Show Schemas</a>
+		<a href="load.php?id=DM_Matrix&action=matrix_manager&settings" <?php if (isset($_GET['settings'])) { echo 'class="current"'; } ?>>Settings</a>
+		<a href="load.php?id=DM_Matrix&action=matrix_manager&fields" <?php if (isset($_GET['fields'])) { echo 'class="current"'; } ?>>Manage Records</a>
+		<a href="load.php?id=DM_Matrix&action=matrix_manager&schema" <?php if (isset($_GET['schema'])) { echo 'class="current"'; } ?>>Show Schemas</a>
 	</div> 
 </div>
 </div>
@@ -105,12 +103,12 @@ if (isset($_GET['schema'])) {
 		<tbody><tr><th>Schema Name</th><th >records</th><th>Fields</th><th style="width:75px;">Options</th></tr>
 		<?php 
 		foreach($schemaArray as $schema=>$key){
-			echo "<tr><td>".$schema."</td><td>".($key['id']-1)."</td><td>".count($key['fields'])."</td><td><a href='load.php?id=DM_schema&action=schema_manager&edit=".$schema."'><img src='../plugins/DM_schema/images/edit.png' title='Edit Schema' /></a><a href='load.php?id=DM_schema&action=schema_manager&add=".$schema."'><img src='../plugins/DM_schema/images/add.png' title='Add Record' /></a></td></tr>";
+			echo "<tr><td>".$schema."</td><td>".($key['id']-1)."</td><td>".count($key['fields'])."</td><td><a href='load.php?id=DM_Matrix&action=matrix_manager&edit=".$schema."'><img src='../plugins/DM_Matrix/images/edit.png' title='Edit Schema' /></a><a href='load.php?id=DM_Matrix&action=matrix_manager&add=".$schema."'><img src='../plugins/DM_Matrix/images/add.png' title='Add Record' /></a></td></tr>";
 		}
 		
 		?>
 		<tr id="DM_addnew_row" style="display: block;height:20px;"><td><input id="post-name" type="text" /></td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
-		<tr><td>&nbsp</td><td>&nbsp</td><td>&nbsp</td><td><a href="#" id="dm_addnew"><img src="../plugins/DM_schema/images/box.gif" title="Create Schema" /></a></td></tr>
+		<tr><td>&nbsp</td><td>&nbsp</td><td>&nbsp</td><td><a href="#" id="dm_addnew"><img src="../plugins/DM_Matrix/images/box.gif" title="Create Schema" /></a></td></tr>
 		</tbody>
 		</table>
 <?php
@@ -118,7 +116,7 @@ if (isset($_GET['schema'])) {
 	} elseif (isset($_GET['add']))	{
 		$schemaname=$_GET['add'];
 		echo "<h2>Add new ".$schemaname." record</h2>";
-		echo '<form method="post" action="load.php?id=DM_schema&action=schema_manager&add='.$schemaname.'&addrecord">';
+		echo '<form method="post" action="load.php?id=DM_Matrix&action=matrix_manager&add='.$schemaname.'&addrecord">';
 		DM_createForm($schemaname);
 		echo '</form>';
 	}
@@ -127,22 +125,54 @@ if (isset($_GET['schema'])) {
 		$schemaname=$_GET['edit'];
 		echo "<h2>Edit Schema: ".$schemaname."</h2>";
 		?>
+		<ul class="fields">
+		<li class="InputfieldName Inputfield_name ui-widget" id="wrap_Inputfield_name">
+			<label class="ui-widget-header fieldstateToggle" for="Inputfield_name">Add a new Field</label>
+			<div class="ui-widget-content">
+				<p class="description">Select a new Field Type</p>
+				<select id="post-type" name="post-type">
+				<option value="int">int</option>		
+				<option value="text">text</option>	
+				<option value="textlong">textlong</option>
+				<option value="checkbox">checkbox</option>
+				<option value="pages">pages</option>
+				<option value="templates">templates</option>
+				<option value="datepicker">datepicker</option>
+				<option value="datetimepicker">datetimepicker</option>
+				<option value="image">Image Picker</option>								
+				<option value="textarea">textarea</option>	
+				<option value="codeeditor">codeeditor</option>	
+				<option value="texteditor">texteditor</option>		
+				
+			</select>	
+			</div>
+		</li>
+		</ul>
 		<table id="editpages" class="edittable highlight paginate">
 		<tbody><tr><th>Name</th><th >Type</th><th style="width:75px;">Options</th></tr>
 		<?php 
 		foreach($schemaArray[$schemaname]['fields'] as $schema=>$key){
-			echo "<tr><td>".$schema."</td><td>".$key."</td><td><a href='load.php?id=DM_schema&action=schema_manager&edit=".$schema."'><img src='../plugins/DM_schema/images/edit.gif' title='Edit Records' /></a></td></tr>";
+			echo "<tr><td>".$schema."</td><td>".$key."</td><td><a href='load.php?id=DM_Matrix&action=matrix_manager&edit=".$schema."'><img src='../plugins/DM_Matrix/images/edit.gif' title='Edit Records' /></a></td></tr>";
 		}
 		
 		?>
 		<td>
-			<form method="post" action="load.php?id=DM_schema&action=schema_manager&edit=<?php echo $schemaname; ?>&addfield">
+			<form method="post" action="load.php?id=DM_Matrix&action=matrix_manager&edit=<?php echo $schemaname; ?>&addfield">
 				<input type="text" value="" id="post-name" name="post-name" class="required"></td>
 		<td>
 			<select id="post-type" name="post-type">
 				<option value="int">int</option>		
-				<option value="text">text</option>		
-				<option value="textarea">textarea</option>		
+				<option value="text">text</option>	
+				<option value="textlong">textlong</option>
+				<option value="checkbox">checkbox</option>
+				<option value="pages">pages</option>
+				<option value="templates">templates</option>
+				<option value="datepicker">datepicker</option>
+				<option value="datetimepicker">datetimepicker</option>
+				<option value="image">Image Picker</option>								
+				<option value="textarea">textarea</option>	
+				<option value="codeeditor">codeeditor</option>	
+				<option value="texteditor">texteditor</option>		
 				
 			</select>	
 		</td>
