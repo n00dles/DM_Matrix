@@ -10,7 +10,7 @@ What is The Matrix?
 It's a plugin for GetSimple CMS 3.1 that allow you to save information in a DB type manner 
 but data is saved in XML files.
 
-So the Schema is basically a table with various fields to hold you information. 
+So the Matrix is basically a flat file DB with various fields to hold you information. 
 
 As of now we support the following field types:
 
@@ -26,7 +26,7 @@ o - textarea, a plain textarea
 o - codeeditor, a codemirror textarea
 o - texteditor, a CKEditor enabled textarea. 
 
-So you setup your Schemas, add some fields and input data into those fields. 
+So you setup your Tables, add some fields and input data into those fields. 
 
 The front end allows you to run SQL type queries on the data to build your webpages. 
 
@@ -48,6 +48,19 @@ $r = $sql->query("SELECT id,title,author,publisheddate,content FROM blog ORDER B
 You then have your array of data to output and style as you wish... 
 
 
+
+AVAILABLE FUNCTIONS
+
+DM_getSchema - get the main Schema 
+DM_saveSchema - Save the schema out to an XML file schema.xml
+createSchemaFolder - create the base folder for the record files
+createRecord - Add a record/file to a table
+getNextRecord - returns the next record number in the table
+createSchemaTable - Create a new table
+dropSchemaTable - Delete a table
+addSchemaField - add a field to a table
+deleteSchemaField - Delete a field from a table
+getSchemaTable - return an array of a tables records. 
 
 
 
