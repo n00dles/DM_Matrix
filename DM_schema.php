@@ -74,7 +74,7 @@ if (isset($_GET['schema'])) {
 		<tbody><tr><th>Schema Name</th><th >records</th><th>Fields</th><th style="width:75px;">Options</th></tr>
 		<?php 
 		foreach($schemaArray as $schema=>$key){
-			echo "<tr><td>".$schema."</td><td>".($key['id']-1)."</td><td>".count($key['fields'])."</td><td><a href='load.php?id=DM_schema&action=schema_manager&edit=".$schema."'><img src='../plugins/DM_schema/images/edit.png' title='Edit Records' /></a><a href='load.php?id=DM_schema&action=schema_manager&add=".$schema."'><img src='../plugins/DM_schema/images/add.png' title='Add Record' /></a></td></tr>";
+			echo "<tr><td>".$schema."</td><td>".($key['id']-1)."</td><td>".count($key['fields'])."</td><td><a href='load.php?id=DM_schema&action=schema_manager&edit=".$schema."'><img src='../plugins/DM_schema/images/edit.png' title='Edit Schema' /></a><a href='load.php?id=DM_schema&action=schema_manager&add=".$schema."'><img src='../plugins/DM_schema/images/add.png' title='Add Record' /></a></td></tr>";
 		}
 		
 		?>
@@ -148,12 +148,16 @@ function DM_getSchema($flag=false){
 				$key=$component->name;
 				//$schemaArray[(string)$key] =$key;
 				$schemaArray[(string)$key]=array();				
-				$schemaArray[(string)$key]['id']=(int)$component->id;		
+				$schemaArray[(string)$key]['id']=(int)$component->id;
+				
 				$fields=$component->field;	
 				foreach ($fields as $field) {
 					$att = $field->attributes();
 					$type =(string)$att['type'];
+					$desc=(string)$att['desc'];
 					$schemaArray[(string)$key]['fields'][(string)$field]=(string)$type;
+					$schemaArray[(string)$key]['desc'][(string)$field]=(string)$desc;
+					
 					}
 				
   			}
@@ -288,8 +292,8 @@ foreach ($schemaArray[$name]['fields'] as $field=>$value) {
 		<li class="InputfieldName Inputfield_name ui-widget" id="wrap_Inputfield_name">
 			<label class="ui-widget-header fieldstateToggle" for="Inputfield_name"><span class="ui-icon ui-icon-triangle-1-s"></span><?php echo $field; ?></label>
 			<div class="ui-widget-content">
-				<p class="description">Type = <?php echo $value; ?></p>
-				<p><input id="Inputfield_name" class="required" name="name" type="text" size="70" maxlength="128"></p>
+				<p class="description"><?php echo $schemaArray[$name]['desc'][$field]; ?></p>
+				<?php displayFieldType($name, $value); ?>
 			</div>
 		</li>
 	
@@ -320,3 +324,53 @@ foreach ($schemaArray[$name]['fields'] as $field=>$value) {
 <?php	
 }
 
+
+function displayFieldType($name, $type){
+	global $schemaArray;
+	global $pagesArray;
+	global $TEMPLATE;
+	getPagesXmlValues();
+	//echo "<pre>";
+	//print_r($pagesArray);
+	//echo "</pre>";
+	switch ($type){
+		case "text":
+			echo '<p><input id="Inputfield_name" class="required" name="name" type="text" size="50" maxlength="128"></p>';
+			break; 		
+		case "textlong":
+			echo '<p><input id="Inputfield_name" class="required" name="name" type="text" size="115" maxlength="128"></p>';
+			break; 
+		case "pages":
+			echo '<p><select >';
+			foreach ($pagesArray as $page){
+				echo '<option value="'.$page['url'].'">'.$page['title'].'</option>';
+			}
+			echo '</select></p>';
+			break;
+		case "templates":
+			$theme_templates='';
+			$themes_path = GSTHEMESPATH . $TEMPLATE;
+			$themes_handle = opendir($themes_path) or die("Unable to open ". GSTHEMESPATH);		
+			while ($file = readdir($themes_handle))	{		
+				if( isFile($file, $themes_path, 'php') ) {		
+					if ($file != 'functions.php' && !strpos(strtolower($file), '.inc.php')) {		
+			      $templates[] = $file;		
+			    }		
+				}		
+			}			
+			sort($templates);	
+			foreach ($templates as $file){
+				$theme_templates .= '<option value="'.$file.'" >'.$file.'</option>';
+			}
+			echo '<p><select >';
+			echo $theme_templates;
+			echo '</select></p>';
+			break;
+		default:
+			echo "Unknown"; 
+	}
+}
+
+//echo "<pre>";
+//print_r($pagesArray);
+//echo "</pre>";
