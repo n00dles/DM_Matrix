@@ -5,6 +5,45 @@ This is beta code. It is not yet ready for production.
 Mike... 
 
 
+What is Schema Manager?
+
+It's a plugin for GetSimple CMS 3.1 that allow you to save information in a DB type manner 
+but data is saved in XML files.
+
+So the Schema is basically a table with various fields to hold you information. 
+
+As of now we support the following field types:
+
+o - text, normal text box
+o - textlong, full width Text Box
+o - Checkbox, Checkbox.
+o - pages, a dropdown of the current Pages. 
+o - templates, a dropdown of the current templates
+o - datepicker, a date picker field. 
+o - datetimepicker, a date and time picker. 
+o - image, an image selector field
+o - textarea, a plain textarea
+o - codeeditor, a codemirror textarea
+o - texteditor, a CKEditor enabled textarea. 
+
+So you setup your Schemas, add some fields and input data into those fields. 
+
+The front end allows you to run SQL type queries on the data to build your webpages. 
+
+So what can you use it for ?
+
+Anything !!
+
+How about a Blog, set up your schema "blog" 
+add some fields, "title, author, publisheddate, content" 
+Enter your data. 
+
+
+On the front end its as simple as running, 
+$r = array();
+$r = $sql->query("SELECT id,title,author,publisheddate,content FROM blog ORDER BY publisheddate DESC");
+
+
 
 
 
