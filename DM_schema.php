@@ -188,7 +188,10 @@ function DM_getSchema($flag=false){
 					$desc=(string)$att['desc'];
 					$schemaArray[(string)$key]['fields'][(string)$field]=(string)$type;
 					$schemaArray[(string)$key]['desc'][(string)$field]=(string)$desc;
-					
+					if ((string)$type=="dropdown"){
+						$schemaArray[(string)$key]['table'][(string)$field]=(string)$att['table'];;
+						$schemaArray[(string)$key]['row'][(string)$field]=(string)$att['row'];;
+					}
 					}
 				
   			}
@@ -324,7 +327,7 @@ foreach ($schemaArray[$name]['fields'] as $field=>$value) {
 			<label class="ui-widget-header fieldstateToggle" for="Inputfield_name"><span class="ui-icon ui-icon-triangle-1-s"></span><?php echo $field; ?></label>
 			<div class="ui-widget-content">
 				<p class="description"><?php echo $schemaArray[$name]['desc'][$field]; ?></p>
-				<?php displayFieldType($field, $value); ?>
+				<?php displayFieldType($field, $value,$name); ?>
 			</div>
 		</li>
 	
@@ -356,10 +359,12 @@ foreach ($schemaArray[$name]['fields'] as $field=>$value) {
 }
 
 
-function displayFieldType($name, $type){
+function displayFieldType($name, $type, $schema){
 	global $schemaArray;
 	global $pagesArray;
 	global $TEMPLATE;
+	$codeedit=false;
+	$datepick=false;
 	$value='';
 	getPagesXmlValues();
 	//echo "<pre>";
@@ -400,27 +405,43 @@ function displayFieldType($name, $type){
 			break;
 		case "datepicker";
 			echo '<p><input id="post-'.$name.'" class="datepicker required" name="post-'.$name.'" type="text" size="50" maxlength="128"></p>';
-			?>
-			<script type="text/javascript">
-			jQuery(document).ready(function() { 
-				$('#post-<?php echo $name; ?>').datepicker({ dateFormat: 'dd-mm-yy' });	
-			})
-			</script>
-			<?php	
+			$datepick=true;
 			break;
 		case "datetimepicker";
-			echo '<p><input id="post-'.$name.'" class="datepicker required" name="post-'.$name.'" type="text" size="50" maxlength="128"></p>';
-			?>
+			echo '<p><input id="post-'.$name.'" class="datepicker required" name="post-'.$name.'" type="text" size="50" maxlength="128"></p>';	
+			$datepick=true;
+			break;
+		case "dropdown":
+			$table=$schemaArray[$schema]['table'][$name];
+			$row=$schemaArray[$schema]['row'][$name];
+			echo $table."/".$row;
+			$maintable=getSchemaTable('gallery');
+			//$sql    = new sql4array();
+			//$r = array();
+			// = $sql->query("SELECT ".$row." FROM ".$table);
+			foreach ($maintable as $row){
+				echo $row;
+			}
+			break;
+		case "codeeditor":
+       		echo '<p><textarea class="codeeditor" id="post-'.$name.'" name="post-'.$name.'" style="width:513px;height:200px;border: 1px solid #AAAAAA;">'.$value.'</textarea></p>';
+			$codeedit=true;
+			break;
+		default:
+			echo "Unknown"; 
+	}
+
+	if ($datepick){
+		?>
 			<script type="text/javascript">
 			jQuery(document).ready(function() { 
 				$('#post-<?php echo $name; ?>').datetimepicker({ dateFormat: 'dd-mm-yy' });	
 			})
 			</script>
-			<?php	
-			break;
-		case "codeeditor":
-       		echo '<p><textarea class="codeeditor" id="post-'.$name.'" name="post-'.$name.'" style="width:513px;height:200px;border: 1px solid #AAAAAA;">'.$value.'</textarea></p>';
-			?>
+			<?php
+	}
+	if ($codeedit){
+		?>
 			<script type="text/javascript">
 			jQuery(document).ready(function() { 
 				  var foldFunc = CodeMirror.newFoldFunction(CodeMirror.braceRangeFinder);
@@ -473,12 +494,9 @@ function displayFieldType($name, $type){
 			     
 			</script>
 			<?php
-			break;
-		default:
-			echo "Unknown"; 
 	}
 }
 
-//echo "<pre>";
-//print_r($pagesArray);
-//echo "</pre>";
+echo "<pre>";
+print_r($schemaArray);
+echo "</pre>";
