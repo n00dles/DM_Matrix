@@ -88,7 +88,7 @@ global $item_title, $fieldtypes,$schemaArray;
 	<h3 class="floated"><?php echo $item_title; ?> Manager</h3>  
 	<div class="edit-nav clearfix" style="">
 		<a href="load.php?id=DM_schema&action=schema_manager&settings" <?php if (isset($_GET['settings'])) { echo 'class="current"'; } ?>>Settings</a>
-		<a href="load.php?id=DM_schema&action=schema_manager&fields" <?php if (isset($_GET['fields'])) { echo 'class="current"'; } ?>>Manage Fields</a>
+		<a href="load.php?id=DM_schema&action=schema_manager&fields" <?php if (isset($_GET['fields'])) { echo 'class="current"'; } ?>>Manage Records</a>
 		<a href="load.php?id=DM_schema&action=schema_manager&schema" <?php if (isset($_GET['schema'])) { echo 'class="current"'; } ?>>Show Schemas</a>
 	</div> 
 </div>
@@ -141,8 +141,8 @@ if (isset($_GET['schema'])) {
 		<td>
 			<select id="post-type" name="post-type">
 				<option value="int">int</option>		
-				<option value="int">text</option>		
-				<option value="int">textarea</option>		
+				<option value="text">text</option>		
+				<option value="textarea">textarea</option>		
 				
 			</select>	
 		</td>
@@ -367,7 +367,7 @@ function displayFieldType($name, $type, $schema){
 	global $schemaArray;
 	global $pagesArray;
 	global $TEMPLATE;
-	
+	global $SITEURL;
 	// flags for javascript code. 
 	$codeedit=false;
 	$datepick=false;
@@ -447,6 +447,21 @@ function displayFieldType($name, $type, $schema){
 			}
 			echo '</select></p>';
 			break;
+		case 'image':
+        	echo '<p><input class="text" type="text" id="post-'.$name.'" name="post-'.$name.'" value="" />';
+        	echo ' <span class="edit-nav"><a id="browse-'.$name.'" href="#">Browse</a></span>';
+       		echo '</p>'; 
+        
+		?>
+		<script type="text/javascript">
+		  $(function() { 
+		    $('#browse-<?php echo $name; ?>').click(function(e) {
+		      window.open('<?php echo $SITEURL; ?>admin/filebrowser.php?CKEditorFuncNum=1&returnid=post-<?php echo $name; ?>&type=images', 'browser', 'width=800,height=500,left=100,top=100,scrollbars=yes');
+		    });
+		  });
+		</script>
+		<?php
+		break;
 		// Textarea converted to a code editor.
 		case "codeeditor":
        		echo '<p><textarea class="codeeditor" id="post-'.$name.'" name="post-'.$name.'" style="width:513px;height:200px;border: 1px solid #AAAAAA;">'.$value.'</textarea></p>';
