@@ -36,6 +36,37 @@ queue_script('DM_schema', GSBACK);
 register_style('DM_schema_css',$SITEURL.'plugins/DM_schema/css/style.css', '0.1',FALSE);
 queue_style('DM_schema_css', GSBACK);
 
+
+register_script('codemirror', $SITEURL.'admin/template/js/codemirror/lib/codemirror-compressed.js', '0.2.0', FALSE);
+register_script('codemirror-search', $SITEURL.'admin/template/js/codemirror/lib/searchcursor.js', '0.2.0', FALSE);
+register_script('codemirror-search-cursor', $SITEURL.'admin/template/js/codemirror/lib/search.js', '0.2.0', FALSE);
+register_script('codemirror-dialog', $SITEURL.'admin/template/js/codemirror/lib/dialog.js', '0.2.0', FALSE);
+register_script('codemirror-folding', $SITEURL.'admin/template/js/codemirror/lib/foldcode.js', '0.2.0', FALSE);
+
+register_style('codemirror-css',$SITEURL.'admin/template/js/codemirror/lib/codemirror.css','screen',FALSE);
+register_style('codemirror-theme',$SITEURL.'admin/template/js/codemirror/theme/default.css','screen',FALSE);
+register_style('codemirror-dialog',$SITEURL.'admin/template/js/codemirror/lib/dialog.css','screen',FALSE);
+
+queue_script('codemirror', GSBACK);
+queue_script('codemirror-search', GSBACK);
+queue_script('codemirror-search-cursor', GSBACK);
+queue_script('codemirror-dialog', GSBACK);
+queue_script('codemirror-folding', GSBACK);
+
+
+queue_style('codemirror-css', GSBACK);
+queue_style('codemirror-theme', GSBACK);
+queue_style('codemirror-dialog', GSBACK);
+
+queue_script('jquery-ui', GSBACK);
+
+register_script('DM_schema_timepicker',$SITEURL.'plugins/DM_schema/js/timepicker.js', '0.1',FALSE);
+queue_script('DM_schema_timepicker', GSBACK);
+
+register_style('jquery-ui-css',$SITEURL.'plugins/DM_schema/css/redmond/jquery-ui-1.8.16.custom.css','screen',FALSE);
+queue_style('jquery-ui-css', GSBACK);
+
+
 add_action('file-uploaded','file_upload', array());
 add_action('nav-tab','createNavTab',array('DM_schema','DM_schema','Schema','action=schema_manager&schema'));
 DM_getSchema();
@@ -293,7 +324,7 @@ foreach ($schemaArray[$name]['fields'] as $field=>$value) {
 			<label class="ui-widget-header fieldstateToggle" for="Inputfield_name"><span class="ui-icon ui-icon-triangle-1-s"></span><?php echo $field; ?></label>
 			<div class="ui-widget-content">
 				<p class="description"><?php echo $schemaArray[$name]['desc'][$field]; ?></p>
-				<?php displayFieldType($name, $value); ?>
+				<?php displayFieldType($field, $value); ?>
 			</div>
 		</li>
 	
@@ -329,19 +360,20 @@ function displayFieldType($name, $type){
 	global $schemaArray;
 	global $pagesArray;
 	global $TEMPLATE;
+	$value='';
 	getPagesXmlValues();
 	//echo "<pre>";
 	//print_r($pagesArray);
 	//echo "</pre>";
 	switch ($type){
 		case "text":
-			echo '<p><input id="Inputfield_name" class="required" name="name" type="text" size="50" maxlength="128"></p>';
+			echo '<p><input id="post-'.$name.'" class="required" name="post-'.$name.'" type="text" size="50" maxlength="128"></p>';
 			break; 		
 		case "textlong":
-			echo '<p><input id="Inputfield_name" class="required" name="name" type="text" size="115" maxlength="128"></p>';
+			echo '<p><input id="post-'.$name.'" class="required" name="post-'.$name.'" type="text" size="115" maxlength="128"></p>';
 			break; 
 		case "pages":
-			echo '<p><select >';
+			echo '<p><select id="post-'.$name.'" name="post-'.$name.'">';
 			foreach ($pagesArray as $page){
 				echo '<option value="'.$page['url'].'">'.$page['title'].'</option>';
 			}
@@ -362,9 +394,85 @@ function displayFieldType($name, $type){
 			foreach ($templates as $file){
 				$theme_templates .= '<option value="'.$file.'" >'.$file.'</option>';
 			}
-			echo '<p><select >';
+			echo '<p><select  id="post-'.$name.'" name="post-'.$name.'">';
 			echo $theme_templates;
 			echo '</select></p>';
+			break;
+		case "datepicker";
+			echo '<p><input id="post-'.$name.'" class="datepicker required" name="post-'.$name.'" type="text" size="50" maxlength="128"></p>';
+			?>
+			<script type="text/javascript">
+			jQuery(document).ready(function() { 
+				$('#post-<?php echo $name; ?>').datepicker({ dateFormat: 'dd-mm-yy' });	
+			})
+			</script>
+			<?php	
+			break;
+		case "datetimepicker";
+			echo '<p><input id="post-'.$name.'" class="datepicker required" name="post-'.$name.'" type="text" size="50" maxlength="128"></p>';
+			?>
+			<script type="text/javascript">
+			jQuery(document).ready(function() { 
+				$('#post-<?php echo $name; ?>').datetimepicker({ dateFormat: 'dd-mm-yy' });	
+			})
+			</script>
+			<?php	
+			break;
+		case "codeeditor":
+       		echo '<p><textarea class="codeeditor" id="post-'.$name.'" name="post-'.$name.'" style="width:513px;height:200px;border: 1px solid #AAAAAA;">'.$value.'</textarea></p>';
+			?>
+			<script type="text/javascript">
+			jQuery(document).ready(function() { 
+				  var foldFunc = CodeMirror.newFoldFunction(CodeMirror.braceRangeFinder);
+				  function keyEvent(cm, e) {
+				    if (e.keyCode == 81 && e.ctrlKey) {
+				      if (e.type == "keydown") {
+				        e.stop();
+				        setTimeout(function() {foldFunc(cm, cm.getCursor().line);}, 50);
+				      }
+				      return true;
+				    }
+				  }
+				  function toggleFullscreenEditing()
+				    {
+				        var editorDiv = $('.CodeMirror-scroll');
+				        if (!editorDiv.hasClass('fullscreen')) {
+				            toggleFullscreenEditing.beforeFullscreen = { height: editorDiv.height(), width: editorDiv.width() }
+				            editorDiv.addClass('fullscreen');
+				            editorDiv.height('100%');
+				            editorDiv.width('100%');
+				            editor.refresh();
+				        }
+				        else {
+				            editorDiv.removeClass('fullscreen');
+				            editorDiv.height(toggleFullscreenEditing.beforeFullscreen.height);
+				            editorDiv.width(toggleFullscreenEditing.beforeFullscreen.width);
+				            editor.refresh();
+				        }
+				    }
+			      var editor = CodeMirror.fromTextArea(document.getElementById("post-<?php echo $name; ?>"), {
+			        lineNumbers: true,
+			        matchBrackets: true,
+			        indentUnit: 4,
+			        indentWithTabs: true,
+			        enterMode: "keep",
+			        tabMode: "shift",
+			        theme:'default',
+			        mode: "text/html",
+			    	onGutterClick: foldFunc,
+			    	extraKeys: {"Ctrl-Q": function(cm){foldFunc(cm, cm.getCursor().line);},
+			    				"F11": toggleFullscreenEditing, "Esc": toggleFullscreenEditing},
+			        onCursorActivity: function() {
+					   	editor.setLineClass(hlLine, null);
+					   	hlLine = editor.setLineClass(editor.getCursor().line, "activeline");
+					}
+			      	});
+			     var hlLine = editor.setLineClass(0, "activeline");
+			    
+			    })
+			     
+			</script>
+			<?php
 			break;
 		default:
 			echo "Unknown"; 
