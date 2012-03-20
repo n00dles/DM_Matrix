@@ -33,8 +33,10 @@ The front end allows you to run SQL type queries on the data to build your webpa
 So what can you use it for ?
 
 Anything !!
+Blogs, comment systems, banners, galleries,Lists, Price lists... you name it you can do it... 
 
-How about a Blog, set up your schema "blog" 
+
+To setup a simple Blog, set up your schema "blog" 
 add some fields, "title, author, publisheddate, content" 
 Enter your data. 
 
@@ -42,6 +44,9 @@ Enter your data.
 On the front end its as simple as running, 
 $r = array();
 $r = $sql->query("SELECT id,title,author,publisheddate,content FROM blog ORDER BY publisheddate DESC");
+
+You then have your array of data to output and style as you wish... 
+
 
 
 
