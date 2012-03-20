@@ -192,6 +192,10 @@ function DM_getSchema($flag=false){
 						$schemaArray[(string)$key]['table'][(string)$field]=(string)$att['table'];;
 						$schemaArray[(string)$key]['row'][(string)$field]=(string)$att['row'];;
 					}
+					if ((string)$type=="checkbox"){
+						$schemaArray[(string)$key]['label'][(string)$field]=(string)$att['label'];;
+					}
+					
 					}
 				
   			}
@@ -297,11 +301,11 @@ function getSchemaTable($name){
 	    if ($ext=="xml"){
 		$thisfile = file_get_contents($path.$filename);
         $data = simplexml_load_string($thisfile);
-        $count++;   
+        //$count++;   
         $id=$data->item;
 		
 		foreach ($id->children() as $opt=>$val) {
-            $pagesArray[(string)$key][(string)$opt]=(string)$val;
+            //$pagesArray[(string)$key][(string)$opt]=(string)$val;
 			$table[$fname][(string)$opt]=(string)$val;
         }
 		
@@ -324,7 +328,7 @@ foreach ($schemaArray[$name]['fields'] as $field=>$value) {
 	?>
 	
 		<li class="InputfieldName Inputfield_name ui-widget" id="wrap_Inputfield_name">
-			<label class="ui-widget-header fieldstateToggle" for="Inputfield_name"><span class="ui-icon ui-icon-triangle-1-s"></span><?php echo $field; ?></label>
+			<label class="ui-widget-header fieldstateToggle" for="Inputfield_name"><?php echo $field; ?></label>
 			<div class="ui-widget-content">
 				<p class="description"><?php echo $schemaArray[$name]['desc'][$field]; ?></p>
 				<?php displayFieldType($field, $value,$name); ?>
@@ -335,7 +339,7 @@ foreach ($schemaArray[$name]['fields'] as $field=>$value) {
 	} else {
 	?>
 	<li class="InputfieldHidden Inputfield_id ui-widget" id="wrap_Inputfield_id">
-		<label class="ui-widget-header fieldstateToggle" for="Inputfield_id"><span class="ui-icon ui-icon-triangle-1-s"></span>id</label>
+		<label class="ui-widget-header fieldstateToggle" for="Inputfield_id">id</label>
 		<div class="ui-widget-content">
 			<input id="Inputfield_id" name="id" value="0" type="hidden">
 		</div>
@@ -348,7 +352,7 @@ foreach ($schemaArray[$name]['fields'] as $field=>$value) {
 ?>
 
 	<li class="fieldsubmit Inputfield_submit_save_field ui-widget" id="wrap_Inputfield_submit">
-		<label class="ui-widget-header fieldstateToggle" for="Inputfield_submit"><span class="ui-icon ui-icon-triangle-1-s"></span>submit_save_field</label>
+		<label class="ui-widget-header fieldstateToggle" for="Inputfield_submit">submit_save_field</label>
 		<div class="ui-widget-content">
 			<button id="Inputfield_submit" class="ui-button ui-widget ui-state-default ui-corner-all" name="submit_save_field" value="Submit" type="submit"><span class="ui-button-text">Submit</span></button>
 		</div>
@@ -363,20 +367,38 @@ function displayFieldType($name, $type, $schema){
 	global $schemaArray;
 	global $pagesArray;
 	global $TEMPLATE;
+	
+	// flags for javascript code. 
 	$codeedit=false;
 	$datepick=false;
+	$textedit=false;
 	$value='';
+	
+	// get caching info in case we need it. 
 	getPagesXmlValues();
+	
+	
 	//echo "<pre>";
 	//print_r($pagesArray);
 	//echo "</pre>";
+	
+	
+	// Get the filed type
 	switch ($type){
+		// normal text field
 		case "text":
 			echo '<p><input id="post-'.$name.'" class="required" name="post-'.$name.'" type="text" size="50" maxlength="128"></p>';
-			break; 		
+			break; 
+		// long text field, full width		
 		case "textlong":
 			echo '<p><input id="post-'.$name.'" class="required" name="post-'.$name.'" type="text" size="115" maxlength="128"></p>';
-			break; 
+			break;
+		// Checkbox
+		case "checkbox":
+			$label=$schemaArray[$schema]['label'][$name];
+			echo '<p><input id="post-'.$name.'" class="required" name="post-'.$name.'" type="checkbox" > '.$label.'</p>';
+			break;
+		// Dropdown box of existing pages on the site. Values are skug/url 
 		case "pages":
 			echo '<p><select id="post-'.$name.'" name="post-'.$name.'">';
 			foreach ($pagesArray as $page){
@@ -384,6 +406,7 @@ function displayFieldType($name, $type, $schema){
 			}
 			echo '</select></p>';
 			break;
+		// a dropdown of current templates
 		case "templates":
 			$theme_templates='';
 			$themes_path = GSTHEMESPATH . $TEMPLATE;
@@ -403,29 +426,40 @@ function displayFieldType($name, $type, $schema){
 			echo $theme_templates;
 			echo '</select></p>';
 			break;
+		// Datepicker. Use settings page to set the front end date format, saved as Unix timestamp
 		case "datepicker";
 			echo '<p><input id="post-'.$name.'" class="datepicker required" name="post-'.$name.'" type="text" size="50" maxlength="128"></p>';
 			$datepick=true;
 			break;
+		// DateTimepicker. Use settings page to set the front end date format, saved as Unix timestamp
 		case "datetimepicker";
 			echo '<p><input id="post-'.$name.'" class="datepicker required" name="post-'.$name.'" type="text" size="50" maxlength="128"></p>';	
 			$datepick=true;
 			break;
+		// Dropdown from another Table/column 
 		case "dropdown":
 			$table=$schemaArray[$schema]['table'][$name];
-			$row=$schemaArray[$schema]['row'][$name];
-			echo $table."/".$row;
+			$column=$schemaArray[$schema]['row'][$name];
 			$maintable=getSchemaTable('gallery');
-			//$sql    = new sql4array();
-			//$r = array();
-			// = $sql->query("SELECT ".$row." FROM ".$table);
+			echo '<p><select  id="post-'.$name.'" name="post-'.$name.'">';
 			foreach ($maintable as $row){
-				echo $row;
+				echo '<option value="'.$row[$column].'">'.$row[$column].'</option>';
 			}
+			echo '</select></p>';
 			break;
+		// Textarea converted to a code editor.
 		case "codeeditor":
        		echo '<p><textarea class="codeeditor" id="post-'.$name.'" name="post-'.$name.'" style="width:513px;height:200px;border: 1px solid #AAAAAA;">'.$value.'</textarea></p>';
 			$codeedit=true;
+			break;
+		// texteditor converted to CKEditor
+		case "texteditor":
+       		echo '<p><textarea class="codeeditor" id="post-'.$name.'" name="post-'.$name.'" style="width:513px;height:200px;border: 1px solid #AAAAAA;">'.$value.'</textarea></p>';
+			$textedit=true;
+			break;
+		// Textarea Plain
+		case "textarea":
+       		echo '<p><textarea class="codeeditor" id="post-'.$name.'" name="post-'.$name.'" style="width:513px;height:200px;border: 1px solid #AAAAAA;">'.$value.'</textarea></p>';
 			break;
 		default:
 			echo "Unknown"; 
@@ -497,6 +531,6 @@ function displayFieldType($name, $type, $schema){
 	}
 }
 
-echo "<pre>";
-print_r($schemaArray);
-echo "</pre>";
+//echo "<pre>";
+//print_r($schemaArray);
+//echo "</pre>";
