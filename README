@@ -19,6 +19,7 @@ o - textlong, full width Text Box
 o - Checkbox, Checkbox.
 o - pages, a dropdown of the current Pages. 
 o - templates, a dropdown of the current templates
+o - dropdown, a dropdown from another table. 
 o - datepicker, a date picker field. 
 o - datetimepicker, a date and time picker. 
 o - image, an image selector field
