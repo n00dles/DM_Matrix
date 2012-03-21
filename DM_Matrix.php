@@ -26,7 +26,7 @@ define('GSSCHEMAPATH',GSDATAOTHERPATH.'matrix');
  
 $defaultDebug = true;
 $schemaArray = array();
-$item_title='Schema';
+$item_title='Matrix';
 
 require "DM_Matrix/include/sql4array.php";
 
@@ -87,7 +87,7 @@ global $item_title, $fieldtypes,$schemaArray;
 	<div class="edit-nav clearfix" style="">
 		<a href="load.php?id=DM_Matrix&action=matrix_manager&settings" <?php if (isset($_GET['settings'])) { echo 'class="current"'; } ?>>Settings</a>
 		<a href="load.php?id=DM_Matrix&action=matrix_manager&fields" <?php if (isset($_GET['fields'])) { echo 'class="current"'; } ?>>Manage Records</a>
-		<a href="load.php?id=DM_Matrix&action=matrix_manager&schema" <?php if (isset($_GET['schema'])) { echo 'class="current"'; } ?>>Show Schemas</a>
+		<a href="load.php?id=DM_Matrix&action=matrix_manager&schema" <?php if (isset($_GET['schema'])) { echo 'class="current"'; } ?>>Manage Tables</a>
 	</div> 
 </div>
 </div>
@@ -98,9 +98,9 @@ global $item_title, $fieldtypes,$schemaArray;
 //Alert Admin If Items Manager Settings XML File Is Directory Does Not Exist
 if (isset($_GET['schema'])) {
 ?>
-		<h2>Show Schemas</h2>
+		<h2>Show Tables</h2>
 		<table id="editpages" class="edittable highlight paginate">
-		<tbody><tr><th>Schema Name</th><th >records</th><th>Fields</th><th style="width:75px;">Options</th></tr>
+		<tbody><tr><th>Table Name</th><th ># records</th><th># Fields</th><th style="width:75px;">Options</th></tr>
 		<?php 
 		foreach($schemaArray as $schema=>$key){
 			echo "<tr><td>".$schema."</td><td>".($key['id']-1)."</td><td>".count($key['fields'])."</td><td><a href='load.php?id=DM_Matrix&action=matrix_manager&edit=".$schema."'><img src='../plugins/DM_Matrix/images/edit.png' title='Edit Schema' /></a><a href='load.php?id=DM_Matrix&action=matrix_manager&add=".$schema."'><img src='../plugins/DM_Matrix/images/add.png' title='Add Record' /></a></td></tr>";
@@ -111,6 +111,16 @@ if (isset($_GET['schema'])) {
 		<tr><td>&nbsp</td><td>&nbsp</td><td>&nbsp</td><td><a href="#" id="dm_addnew"><img src="../plugins/DM_Matrix/images/box.gif" title="Create Schema" /></a></td></tr>
 		</tbody>
 		</table>
+				<ul class="fields">
+		<li class="InputfieldName Inputfield_name ui-widget" id="wrap_Inputfield_name">
+			<label class="ui-widget-header fieldstateToggle" for="Inputfield_name">Add a new Table</label>
+			<div class="ui-widget-content">
+				<p class="description">Enter a name for your new Table</p>
+				<input type="text" >		
+				<button id="Inputfield_submit" class="ui-button ui-widget  ui-state-default" name="submit_save_field" value="Submit" type="submit"><span class="ui-button-text">Submit</span></button>
+			</div>
+		</li>
+		</ul>
 <?php
 	
 	} elseif (isset($_GET['add']))	{
@@ -125,29 +135,6 @@ if (isset($_GET['schema'])) {
 		$schemaname=$_GET['edit'];
 		echo "<h2>Edit Schema: ".$schemaname."</h2>";
 		?>
-		<ul class="fields">
-		<li class="InputfieldName Inputfield_name ui-widget" id="wrap_Inputfield_name">
-			<label class="ui-widget-header fieldstateToggle" for="Inputfield_name">Add a new Field</label>
-			<div class="ui-widget-content">
-				<p class="description">Select a new Field Type</p>
-				<select id="post-type" name="post-type">
-				<option value="int">int</option>		
-				<option value="text">text</option>	
-				<option value="textlong">textlong</option>
-				<option value="checkbox">checkbox</option>
-				<option value="pages">pages</option>
-				<option value="templates">templates</option>
-				<option value="datepicker">datepicker</option>
-				<option value="datetimepicker">datetimepicker</option>
-				<option value="image">Image Picker</option>								
-				<option value="textarea">textarea</option>	
-				<option value="codeeditor">codeeditor</option>	
-				<option value="texteditor">texteditor</option>		
-				
-			</select>	
-			</div>
-		</li>
-		</ul>
 		<table id="editpages" class="edittable highlight paginate">
 		<tbody><tr><th>Name</th><th >Type</th><th style="width:75px;">Options</th></tr>
 		<?php 
@@ -182,6 +169,29 @@ if (isset($_GET['schema'])) {
 		</form>
 		</tbody>
 		</table>
+		<ul class="fields">
+		<li class="InputfieldName Inputfield_name ui-widget" id="wrap_Inputfield_name">
+			<label class="ui-widget-header fieldstateToggle" for="Inputfield_name">Add a new Field</label>
+			<div class="ui-widget-content">
+				<p class="description">Select a new Field Type</p>
+				<select id="post-type" name="post-type">
+				<option value="int">int</option>		
+				<option value="text">text</option>	
+				<option value="textlong">textlong</option>
+				<option value="checkbox">checkbox</option>
+				<option value="pages">pages</option>
+				<option value="templates">templates</option>
+				<option value="datepicker">datepicker</option>
+				<option value="datetimepicker">datetimepicker</option>
+				<option value="image">Image Picker</option>								
+				<option value="textarea">textarea</option>	
+				<option value="codeeditor">codeeditor</option>	
+				<option value="texteditor">texteditor</option>		
+				
+			</select>	
+			</div>
+		</li>
+		</ul>
 	<?php
 	} 
 elseif (isset($_GET['add']))
