@@ -159,7 +159,7 @@ if (isset($_GET['schema'])) {
 		</li>
 		</ul>
 		</form>
-		</div>
+	
 <?php
 	
 	} elseif (isset($_GET['add']))	{
