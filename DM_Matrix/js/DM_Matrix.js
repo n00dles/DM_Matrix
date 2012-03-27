@@ -5,12 +5,12 @@ $('#nav_DM_Matrix').insertAfter($('#nav_pages'));
 
 //$('#maincontent').css('width','960px');
 
-$("a.form_submit").live("click", function(){
+$("button.form_submit").live("click", function(){
 		errors=false;
 		$('.required').each(function(index) { 
-			if ($(this).removeClass('error'));
+			if ($(this).removeClass('formerror'));
 			if ($(this).val()=="") {
-				$(this).addClass('error');
+				$(this).addClass('formerror');
 				errors=true;
 			}
 		})

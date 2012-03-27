@@ -22,7 +22,8 @@ $i18n = array (
 	"DM_OPTIONS"=>  "Options",
 	"DM_ADDTABLE"=>  "Add a new Table",
 	"DM_ADDTABLE_DESC"=>  "Enter a name for your new Table",
-	
+	"DM_ADDRECORD"=>  "Add Record",
+	"DM_EDITTABLE"=>  "Edit table",
 // Errors and Status's
 	"DM_ERROR_CREATETABLESUCCESS"=>  "Create Table: Table Created Successfully. ",
 	"DM_ERROR_CREATETABLEFAIL"=>  "Create Table: Table Already exists. "

@@ -136,4 +136,14 @@
     .InputfieldPageNameURL {
         font-family: Monaco, Courier, Monaco, monospace; 
     }
-
+.formerror{
+	border-radius: 2px;
+	background: #FFFBCC;
+	background: -moz-linear-gradient(top, #FFFBCC 0%, #FFFBC1 100%);
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#FFFBCC), color-stop(100%,#FFFBC1));
+	line-height: 22px;
+	padding: 0;
+	margin-bottom: 20px;
+	color: #900;
+	border-color: #C00;
+}

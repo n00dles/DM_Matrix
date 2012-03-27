@@ -87,7 +87,7 @@ if (isset($_GET['add']) && isset($_POST['post-addtable'])){
 	$ret=createSchemaTable($_POST['post-addtable'],array());
 }
 
-if (isset($_GET['edit']) && isset($_GET['addfield']) && $flag==false){
+if (isset($_GET['edit']) && isset($_GET['addfield'])){
   	echo "adding Field to ".$_GET['edit']."/".$_POST['post-name']."=".$_POST['post-type'];
 	  addSchemaField($_GET['edit'],array($_POST['post-name']=>$_POST['post-type']),true);
 	  //DM_saveSchema();
@@ -127,7 +127,17 @@ if (isset($_GET['schema'])) {
 			</tr>
 		<?php 
 		foreach($schemaArray as $schema=>$key){
-			echo "<tr><td>".$schema."</td><td>".($key['id'])."</td><td>".count($key['fields'])."</td><td><a href='load.php?id=DM_Matrix&action=matrix_manager&edit=".$schema."'><img src='../plugins/DM_Matrix/images/edit.png' title='Edit Schema' /></a><a href='load.php?id=DM_Matrix&action=matrix_manager&add=".$schema."'><img src='../plugins/DM_Matrix/images/add.png' title='Add Record' /></a></td></tr>";
+			echo "<tr><td>".$schema."</td>";
+			echo "<td>".($key['id'])."</td>";
+			echo "<td>".count($key['fields'])."</td>";
+			echo "<td>";
+			echo "<a href='load.php?id=DM_Matrix&action=matrix_manager&edit=".$schema."'>";
+			echo "<img src='../plugins/DM_Matrix/images/edit.png' title='".i18n_r($thisfile.'/DM_EDITTABLE')."' /></a>";
+			if (count($key['fields'])>1){
+				echo "<a href='load.php?id=DM_Matrix&action=matrix_manager&add=".$schema."'>";
+				echo "<img src='../plugins/DM_Matrix/images/add.png' title='".i18n_r($thisfile.'/DM_ADDRECORD')."' /></a>";
+			}
+			echo "</td></tr>";
 		}
 		
 		?>
@@ -140,8 +150,8 @@ if (isset($_GET['schema'])) {
 			<label class="ui-widget-header fieldstateToggle" for="Inputfield_name"><?php echo i18n_r($thisfile.'/DM_ADDTABLE') ?></label>
 			<div class="ui-widget-content">
 				<p class="description"><?php echo i18n_r($thisfile.'/DM_ADDTABLE_DESC') ?></p>
-				<input type="text" id="post-addtable" name="post-addtable" />		
-				<button id="Inputfield_submit" class="ui-button ui-widget  ui-state-default" name="addtable" id="addtable" value="Submit" type="submit"><span class="ui-button-text">Submit</span></button>
+				<input type="text" class="required" id="post-addtable" name="post-addtable" />		
+				<button id="Inputfield_submit" class="ui-button ui-widget  ui-state-default form_submit" name="addtable" id="addtable" value="Submit" type="button"><span class="ui-button-text">Submit</span></button>
 			</div>
 		</li>
 		</ul>
