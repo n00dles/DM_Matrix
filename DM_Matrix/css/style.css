@@ -60,30 +60,18 @@
         display: none; 
     }
 
-<<<<<<< HEAD
     .fields .Inputfieldsubmit,
     .fields .InputfieldButton {
         clear: none; 
     }
         .fields .Inputfieldsubmit .ui-widget-content,
-=======
-    .fields .fieldsubmit,
-    .fields .InputfieldButton {
-        clear: none; 
-    }
-        .fields .fieldsubmit .ui-widget-content,
->>>>>>> 851ea350e8f35f58d39afa7532db3e2bbf06795f
         .fields .InputfieldButton .ui-widget-content {
             padding: 0; 
             background: none; 
             border: none; 
         }
 
-<<<<<<< HEAD
         .fields .Inputfieldsubmit .ui-widget-header,
-=======
-        .fields .fieldsubmit .ui-widget-header,
->>>>>>> 851ea350e8f35f58d39afa7532db3e2bbf06795f
         .fields .InputfieldButton .ui-widget-header {
             display: none; 
         }

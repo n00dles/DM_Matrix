@@ -23,7 +23,6 @@ register_plugin(
     
 
 define('GSSCHEMAPATH',GSDATAOTHERPATH.'matrix');
-<<<<<<< HEAD
 
 // check and make sure the base folders are there. 
 if (!is_dir(GSSCHEMAPATH)){
@@ -33,9 +32,6 @@ if (!is_dir(GSSCHEMAPATH)){
 	debuglog("DM_Matrix: Base Folder, ".GSSCHEMAPATH." exists");
 }
 
-=======
- 
->>>>>>> 851ea350e8f35f58d39afa7532db3e2bbf06795f
 $defaultDebug = true;
 $schemaArray = array();
 $item_title='Matrix';
@@ -82,14 +78,12 @@ add_action('nav-tab','createNavTab',array('DM_Matrix','DM_Matrix','The Matrix','
 DM_getSchema();
 
 
-<<<<<<< HEAD
 
-if (isset($_GET['add']) && isset($_GET['addtable']) && $flag==false){
-
+if (isset($_GET['add']) && isset($_POST['post-addtable'])){
+	debugLog('adding a new table..'.$_POST['post-addtable'].'.woo hooo');
+	$ret=createSchemaTable($_POST['post-addtable'],array());
 }
 
-=======
->>>>>>> 851ea350e8f35f58d39afa7532db3e2bbf06795f
 if (isset($_GET['edit']) && isset($_GET['addfield']) && $flag==false){
   	echo "adding Field to ".$_GET['edit']."/".$_POST['post-name']."=".$_POST['post-type'];
 	  addSchemaField($_GET['edit'],array($_POST['post-name']=>$_POST['post-type']),true);
@@ -102,11 +96,7 @@ global $item_title, $fieldtypes,$schemaArray;
 
 //Main Navigation For Admin Panel
 ?>
-<<<<<<< HEAD
 <div style="margin:0 -15px -15px -10px;padding:0px;">
-=======
-<div style="width:100%;margin:0 -15px -15px -10px;padding:0px;">
->>>>>>> 851ea350e8f35f58d39afa7532db3e2bbf06795f
 	<h3 class="floated"><?php echo $item_title; ?> Manager</h3>  
 	<div class="edit-nav clearfix" style="">
 		<a href="load.php?id=DM_Matrix&action=matrix_manager&settings" <?php if (isset($_GET['settings'])) { echo 'class="current"'; } ?>>Settings</a>
@@ -122,41 +112,32 @@ global $item_title, $fieldtypes,$schemaArray;
 //Alert Admin If Items Manager Settings XML File Is Directory Does Not Exist
 if (isset($_GET['schema'])) {
 ?>
-<<<<<<< HEAD
 		
-=======
->>>>>>> 851ea350e8f35f58d39afa7532db3e2bbf06795f
 		<h2>Show Tables</h2>
 		<table id="editpages" class="edittable highlight paginate">
 		<tbody><tr><th>Table Name</th><th ># records</th><th># Fields</th><th style="width:75px;">Options</th></tr>
 		<?php 
 		foreach($schemaArray as $schema=>$key){
-			echo "<tr><td>".$schema."</td><td>".($key['id']-1)."</td><td>".count($key['fields'])."</td><td><a href='load.php?id=DM_Matrix&action=matrix_manager&edit=".$schema."'><img src='../plugins/DM_Matrix/images/edit.png' title='Edit Schema' /></a><a href='load.php?id=DM_Matrix&action=matrix_manager&add=".$schema."'><img src='../plugins/DM_Matrix/images/add.png' title='Add Record' /></a></td></tr>";
+			echo "<tr><td>".$schema."</td><td>".($key['id'])."</td><td>".count($key['fields'])."</td><td><a href='load.php?id=DM_Matrix&action=matrix_manager&edit=".$schema."'><img src='../plugins/DM_Matrix/images/edit.png' title='Edit Schema' /></a><a href='load.php?id=DM_Matrix&action=matrix_manager&add=".$schema."'><img src='../plugins/DM_Matrix/images/add.png' title='Add Record' /></a></td></tr>";
 		}
 		
 		?>
-		<tr id="DM_addnew_row" style="display: block;height:20px;"><td><input id="post-name" type="text" /></td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
-		<tr><td>&nbsp</td><td>&nbsp</td><td>&nbsp</td><td><a href="#" id="dm_addnew"><img src="../plugins/DM_Matrix/images/box.gif" title="Create Schema" /></a></td></tr>
 		</tbody>
 		</table>
-<<<<<<< HEAD
-				<ul class="fields">;
-=======
-				<ul class="fields">
->>>>>>> 851ea350e8f35f58d39afa7532db3e2bbf06795f
+		<form method="post" action="load.php?id=DM_Matrix&schema&action=matrix_manager&add">
+		<ul class="fields">
+		
 		<li class="InputfieldName Inputfield_name ui-widget" id="wrap_Inputfield_name">
 			<label class="ui-widget-header fieldstateToggle" for="Inputfield_name">Add a new Table</label>
 			<div class="ui-widget-content">
 				<p class="description">Enter a name for your new Table</p>
-				<input type="text" >		
-				<button id="Inputfield_submit" class="ui-button ui-widget  ui-state-default" name="submit_save_field" value="Submit" type="submit"><span class="ui-button-text">Submit</span></button>
+				<input type="text" id="post-addtable" name="post-addtable" />		
+				<button id="Inputfield_submit" class="ui-button ui-widget  ui-state-default" name="addtable" id="addtable" value="Submit" type="submit"><span class="ui-button-text">Submit</span></button>
 			</div>
 		</li>
 		</ul>
-<<<<<<< HEAD
+		</form>
 		</div>
-=======
->>>>>>> 851ea350e8f35f58d39afa7532db3e2bbf06795f
 <?php
 	
 	} elseif (isset($_GET['add']))	{
@@ -175,7 +156,6 @@ if (isset($_GET['schema'])) {
 		<tbody><tr><th>Name</th><th >Type</th><th style="width:75px;">Options</th></tr>
 		<?php 
 		foreach($schemaArray[$schemaname]['fields'] as $schema=>$key){
-<<<<<<< HEAD
 			echo "<tr><td>".$schema."</td><td>".$key."</td><td><a href='load.php?id=DM_Matrix&action=matrix_manager&edit=".$schema."'><img src='../plugins/DM_Matrix/images/edit.png' title='Edit Records' /></a></td></tr>";
 		}
 		
@@ -230,60 +210,6 @@ if (isset($_GET['schema'])) {
 			</div>
 		</li>
 		</form>
-=======
-			echo "<tr><td>".$schema."</td><td>".$key."</td><td><a href='load.php?id=DM_Matrix&action=matrix_manager&edit=".$schema."'><img src='../plugins/DM_Matrix/images/edit.gif' title='Edit Records' /></a></td></tr>";
-		}
-		
-		?>
-		<td>
-			<form method="post" action="load.php?id=DM_Matrix&action=matrix_manager&edit=<?php echo $schemaname; ?>&addfield">
-				<input type="text" value="" id="post-name" name="post-name" class="required"></td>
-		<td>
-			<select id="post-type" name="post-type">
-				<option value="int">int</option>		
-				<option value="text">text</option>	
-				<option value="textlong">textlong</option>
-				<option value="checkbox">checkbox</option>
-				<option value="pages">pages</option>
-				<option value="templates">templates</option>
-				<option value="datepicker">datepicker</option>
-				<option value="datetimepicker">datetimepicker</option>
-				<option value="image">Image Picker</option>								
-				<option value="textarea">textarea</option>	
-				<option value="codeeditor">codeeditor</option>	
-				<option value="texteditor">texteditor</option>		
-				
-			</select>	
-		</td>
-		<td>
-			<input type="submit" value="Add">
-		</td>
-		</form>
-		</tbody>
-		</table>
-		<ul class="fields">
-		<li class="InputfieldName Inputfield_name ui-widget" id="wrap_Inputfield_name">
-			<label class="ui-widget-header fieldstateToggle" for="Inputfield_name">Add a new Field</label>
-			<div class="ui-widget-content">
-				<p class="description">Select a new Field Type</p>
-				<select id="post-type" name="post-type">
-				<option value="int">int</option>		
-				<option value="text">text</option>	
-				<option value="textlong">textlong</option>
-				<option value="checkbox">checkbox</option>
-				<option value="pages">pages</option>
-				<option value="templates">templates</option>
-				<option value="datepicker">datepicker</option>
-				<option value="datetimepicker">datetimepicker</option>
-				<option value="image">Image Picker</option>								
-				<option value="textarea">textarea</option>	
-				<option value="codeeditor">codeeditor</option>	
-				<option value="texteditor">texteditor</option>		
-				
-			</select>	
-			</div>
-		</li>
->>>>>>> 851ea350e8f35f58d39afa7532db3e2bbf06795f
 		</ul>
 	<?php
 	} 
@@ -384,6 +310,9 @@ function getNextRecord($name){
 
 function createSchemaTable($name, $fields=array()){
 	global $schemaArray;
+	if (array_key_exists($name , $schemaArray)){
+		return false;
+	}
 	$schemaArray[(string)$name] =array();
 	$schemaArray[(string)$name]['id']=0;
 	if (!in_array('id', $schemaArray)){
@@ -394,6 +323,7 @@ function createSchemaTable($name, $fields=array()){
 	}	
 	createSchemaFolder($name);		
 	$ret=DM_saveSchema();
+	return true;
 }
 
 function dropSchemaTable($name){
