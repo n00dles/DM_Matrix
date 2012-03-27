@@ -301,6 +301,14 @@ function DM_saveSchema(){
 	return true;
 }
 
+/**
+ * Create a Schema folder
+ * 
+ * Creates a fodler for each of the Tables in the Schema. 
+ *
+ * @param string $name , Name of the table to create
+ * @return boolean , whether table was created or not. 
+ */
 function createSchemaFolder($name){
 	$ret = mkdir (GSSCHEMAPATH.'/'.$name);
 	return $ret;
@@ -324,12 +332,30 @@ function createRecord($name,$data=array()){
 	
 }
 
+/**
+ * Get the next record ID
+ *
+ * returns the next record ID in the sequence
+ *
+ * @param string $name , Name of the table to create
+ * @return string , Record ID 
+ */
 function getNextRecord($name){
 	global $schemaArray;
 	DMdebuglog($name.":returned:".$schemaArray[$name]['id']);
 	return $schemaArray[$name]['id'];
 }
 
+
+/**
+ * Create a new Table
+ *
+ * Creates a new table in the Schema, by creating a folder for the files and adding data to the schema
+ *
+ * @param string $name , Name of the table to create
+ * @param array $fields , array of fields and types to create, default is to create an id (int) fields
+ * @return boolean , whether table was created or not. 
+ */
 function createSchemaTable($name, $fields=array()){
 	global $schemaArray, $thisfile;
 	if (array_key_exists($name , $schemaArray)){
@@ -350,13 +376,31 @@ function createSchemaTable($name, $fields=array()){
 	return true;
 }
 
+/**
+ * Drop a Schema table
+ *
+ * Delete a Schema Table from the system 
+ * 
+ * Todo: Need to check the folder is empty before delting. 
+ *
+ * @param string $name , Name of the table to create
+ */
 function dropSchemaTable($name){
 	global $schemaArray;
 	unset($schemaArray[(string)$name]);
-	$ret=DM_saveSchema();
-	
+	$ret=DM_saveSchema();	
 }
 
+/**
+ * Add a field to a table
+ *
+ * Creates a new Field in the table. 
+ *
+ * @param string $name , Name of the table 
+ * @param array $fields , array of fields and types to create
+ * @param boolean, whether to save the Schema after adding the field, default to true
+ * @return boolean , whether field was created or not. 
+ */
 function addSchemaField($name,$fields=array(),$save=true){
 	global $schemaArray;
 	foreach ($fields as $field=>$value) {
@@ -367,13 +411,29 @@ function addSchemaField($name,$fields=array(),$save=true){
 	} else {
 		$ret=true;
 	}
+	return $ret;
 }
 
-function deleteSchemaField($name,$fields=array()){
+/**
+ * Delete a field from a table
+ *
+ * Delete a Field(s) from a table.  
+ *
+ * @param string $name , Name of the table 
+ * @param array $fields , array of fields to delete from the table
+ * @return boolean , whether table was created or not. 
+ */
+function deleteSchemaField($name,$fields=array(),$save=true){
 	global $schemaArray;
 	foreach ($fields as $field) {
 		unset($schemaArray[(string)$name]['fields'][(string)$field]);
 	}
+	if ($save==true) {
+		$ret=DM_saveSchema();
+	} else {
+		$ret=true;
+	}
+	return $ret;
 }
 
 
