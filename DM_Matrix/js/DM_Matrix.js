@@ -22,9 +22,17 @@ $("button.form_submit").live("click", function(){
 
 
 $('#post-type').change(function() {
-	alert("$('#post-type').selected()");
+	//alert("$('#post-type').selected()");
 })
 
+
+$('.datepicker').each(function(){
+    $(this).datepicker({ dateFormat: 'dd-mm-yy' });
+});
+
+$('.datetimepicker').each(function(){
+	$(this).datetimepicker({ dateFormat: 'dd-mm-yy' });	
+})
 
 $('#dm_addnew').live("click", function(){
 	$('#DM_addnew_row').stop().slideUp();

@@ -5,6 +5,9 @@
 * @author   mike@digimute.com
 */
 
+// Turn dubgging on 
+$DM_Matrix_debug=true; 
+
 
 # get correct id for plugin
 $thisfile = basename(__FILE__, '.php');
@@ -30,9 +33,9 @@ define('GSSCHEMAPATH',GSDATAOTHERPATH.'matrix');
 // check and make sure the base folders are there. 
 if (!is_dir(GSSCHEMAPATH)){
 	mkdir(GSSCHEMAPATH);
-	debuglog("DM_Matrix: Created Base Folder, ".GSSCHEMAPATH);
+	DMdebuglog("DM_Matrix: Created Base Folder, ".GSSCHEMAPATH);
 } else {
-	debuglog("DM_Matrix: Base Folder, ".GSSCHEMAPATH." exists");
+	DMdebuglog("DM_Matrix: Base Folder, ".GSSCHEMAPATH." exists");
 }
 
 $defaultDebug = true;
@@ -83,7 +86,7 @@ DM_getSchema();
 
 
 if (isset($_GET['add']) && isset($_POST['post-addtable'])){
-	debugLog('Trying to add a new table: '.$_POST['post-addtable']);
+	DMdebuglog('Trying to add a new table: '.$_POST['post-addtable']);
 	$ret=createSchemaTable($_POST['post-addtable'],array());
 }
 
@@ -215,7 +218,7 @@ if (isset($_GET['schema'])) {
 				</div>
 			</li>
 			<li class="InputfieldName Inputfield_name ui-widget" id="wrap_Inputfield_name">
-			<label class="ui-widget-header fieldstateToggle" for="Inputfield_name">Add a new Field</label>
+			<label class="ui-widget-header fieldstateToggle" for="Inputfield_name">Add a Description</label>
 			<div class="ui-widget-content">
 				<p class="description">Additional information describing this field and/or instructions on how to enter the content.</p>
 				<input type="text" value="" id="post-desc" name="post-desc" class="required" size="25">
@@ -244,9 +247,9 @@ function DM_getSchema($flag=false){
   global $schemaArray;	
   
   $file=GSSCHEMAPATH."/schema.xml";
-  debugLog($file);
+  DMdebuglog($file);
   if (file_exists($file)){
-  debugLog('file loaded...');
+  DMdebuglog('file loaded...');
   // load the xml file and setup the array. 
 	$thisfile = file_get_contents($file);
 		$data = simplexml_load_string($thisfile);
@@ -306,7 +309,7 @@ function createSchemaFolder($name){
 function createRecord($name,$data=array()){
 	global $schemaArray;
 	$id=getNextRecord($name);
-	debugLog('record:'.$id);
+	DMdebuglog('record:'.$id);
 	$file=GSSCHEMAPATH.'/'.$name."/".$id.".xml";
 	$xml = @new SimpleXMLExtended('<channel></channel>');
 	$pages = $xml->addChild('item');
@@ -315,7 +318,7 @@ function createRecord($name,$data=array()){
 		$pages->addChild($field,$txt);	
 	}
 	$xml->asXML($file);
-	debugLog('file:'.$file);
+	DMdebuglog('file:'.$file);
 	$schemaArray[$name]['id']=$id+1;
 	$ret=DM_saveSchema();
 	
@@ -323,14 +326,14 @@ function createRecord($name,$data=array()){
 
 function getNextRecord($name){
 	global $schemaArray;
-	debugLog($name.":returned:".$schemaArray[$name]['id']);
+	DMdebuglog($name.":returned:".$schemaArray[$name]['id']);
 	return $schemaArray[$name]['id'];
 }
 
 function createSchemaTable($name, $fields=array()){
 	global $schemaArray, $thisfile;
 	if (array_key_exists($name , $schemaArray)){
-		debugLog(i18n_r($thisfile.'/DM_ERROR_CREATETABLEFAIL'));
+		DMdebuglog(i18n_r($thisfile.'/DM_ERROR_CREATETABLEFAIL'));
 		return false;
 	}
 	$schemaArray[(string)$name] =array();
@@ -343,7 +346,7 @@ function createSchemaTable($name, $fields=array()){
 	}	
 	createSchemaFolder($name);		
 	$ret=DM_saveSchema();
-	debugLog(i18n_r($thisfile.'/DM_ERROR_CREATETABLESUCCESS'));
+	DMdebuglog(i18n_r($thisfile.'/DM_ERROR_CREATETABLESUCCESS'));
 	return true;
 }
 
@@ -455,6 +458,7 @@ function displayFieldType($name, $type, $schema){
 	// flags for javascript code. 
 	$codeedit=false;
 	$datepick=false;
+	$datetimepick=false;
 	$textedit=false;
 	$value='';
 	
@@ -513,11 +517,11 @@ function displayFieldType($name, $type, $schema){
 		// Datepicker. Use settings page to set the front end date format, saved as Unix timestamp
 		case "datepicker";
 			echo '<p><input id="post-'.$name.'" class="datepicker required" name="post-'.$name.'" type="text" size="50" maxlength="128"></p>';
-			$datepick=true;
+			$datetimepick=true;
 			break;
 		// DateTimepicker. Use settings page to set the front end date format, saved as Unix timestamp
 		case "datetimepicker";
-			echo '<p><input id="post-'.$name.'" class="datepicker required" name="post-'.$name.'" type="text" size="50" maxlength="128"></p>';	
+			echo '<p><input id="post-'.$name.'" class="datetimepicker required" name="post-'.$name.'" type="text" size="50" maxlength="128"></p>';	
 			$datepick=true;
 			break;
 		// Dropdown from another Table/column 
@@ -564,15 +568,6 @@ function displayFieldType($name, $type, $schema){
 			echo "Unknown"; 
 	}
 
-	if ($datepick){
-		?>
-			<script type="text/javascript">
-			jQuery(document).ready(function() { 
-				$('#post-<?php echo $name; ?>').datetimepicker({ dateFormat: 'dd-mm-yy' });	
-			})
-			</script>
-			<?php
-	}
 	if ($codeedit){
 		?>
 			<script type="text/javascript">
@@ -630,6 +625,10 @@ function displayFieldType($name, $type, $schema){
 	}
 }
 
-//echo "<pre>";
-//print_r($schemaArray);
-//echo "</pre>";
+
+function DMdebuglog($log){
+	global $DM_Matrix_debug;
+	if ($DM_Matrix_debug){
+		debuglog($log);
+	}
+}
