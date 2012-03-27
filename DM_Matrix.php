@@ -9,6 +9,9 @@
 # get correct id for plugin
 $thisfile = basename(__FILE__, '.php');
 
+# add in this plugin's language file
+i18n_merge($thisfile) || i18n_merge($thisfile, 'en_US');
+
 # register plugin
 register_plugin(
   $thisfile,
@@ -80,7 +83,7 @@ DM_getSchema();
 
 
 if (isset($_GET['add']) && isset($_POST['post-addtable'])){
-	debugLog('adding a new table..'.$_POST['post-addtable'].'.woo hooo');
+	debugLog('Trying to add a new table: '.$_POST['post-addtable']);
 	$ret=createSchemaTable($_POST['post-addtable'],array());
 }
 
@@ -92,12 +95,12 @@ if (isset($_GET['edit']) && isset($_GET['addfield']) && $flag==false){
 
 //Admin Content
 function matrix_manager() {
-global $item_title, $fieldtypes,$schemaArray;
+global $item_title,$thisfile, $fieldtypes,$schemaArray;
 
 //Main Navigation For Admin Panel
 ?>
 <div style="margin:0 -15px -15px -10px;padding:0px;">
-	<h3 class="floated"><?php echo $item_title; ?> Manager</h3>  
+	<h3 class="floated"><?php echo i18n_r($thisfile.'/DM_PLUGINTITLE') ?></h3>  
 	<div class="edit-nav clearfix" style="">
 		<a href="load.php?id=DM_Matrix&action=matrix_manager&settings" <?php if (isset($_GET['settings'])) { echo 'class="current"'; } ?>>Settings</a>
 		<a href="load.php?id=DM_Matrix&action=matrix_manager&fields" <?php if (isset($_GET['fields'])) { echo 'class="current"'; } ?>>Manage Records</a>
@@ -113,9 +116,15 @@ global $item_title, $fieldtypes,$schemaArray;
 if (isset($_GET['schema'])) {
 ?>
 		
-		<h2>Show Tables</h2>
+		<h2><?php echo i18n_r($thisfile.'/DM_SHOWTABLE') ?></h2>
 		<table id="editpages" class="edittable highlight paginate">
-		<tbody><tr><th>Table Name</th><th ># records</th><th># Fields</th><th style="width:75px;">Options</th></tr>
+		<tbody>
+			<tr>
+				<th><?php echo i18n_r($thisfile.'/DM_TABLENAME') ?></th>
+				<th ><?php echo i18n_r($thisfile.'/DM_NUMRECORDS') ?></th>
+				<th><?php echo i18n_r($thisfile.'/DM_NUMFIELDS') ?></th>
+				<th style="width:75px;"><?php echo i18n_r($thisfile.'/DM_OPTIONS') ?></th>
+			</tr>
 		<?php 
 		foreach($schemaArray as $schema=>$key){
 			echo "<tr><td>".$schema."</td><td>".($key['id'])."</td><td>".count($key['fields'])."</td><td><a href='load.php?id=DM_Matrix&action=matrix_manager&edit=".$schema."'><img src='../plugins/DM_Matrix/images/edit.png' title='Edit Schema' /></a><a href='load.php?id=DM_Matrix&action=matrix_manager&add=".$schema."'><img src='../plugins/DM_Matrix/images/add.png' title='Add Record' /></a></td></tr>";
@@ -128,9 +137,9 @@ if (isset($_GET['schema'])) {
 		<ul class="fields">
 		
 		<li class="InputfieldName Inputfield_name ui-widget" id="wrap_Inputfield_name">
-			<label class="ui-widget-header fieldstateToggle" for="Inputfield_name">Add a new Table</label>
+			<label class="ui-widget-header fieldstateToggle" for="Inputfield_name"><?php echo i18n_r($thisfile.'/DM_ADDTABLE') ?></label>
 			<div class="ui-widget-content">
-				<p class="description">Enter a name for your new Table</p>
+				<p class="description"><?php echo i18n_r($thisfile.'/DM_ADDTABLE_DESC') ?></p>
 				<input type="text" id="post-addtable" name="post-addtable" />		
 				<button id="Inputfield_submit" class="ui-button ui-widget  ui-state-default" name="addtable" id="addtable" value="Submit" type="submit"><span class="ui-button-text">Submit</span></button>
 			</div>
@@ -309,8 +318,9 @@ function getNextRecord($name){
 }
 
 function createSchemaTable($name, $fields=array()){
-	global $schemaArray;
+	global $schemaArray, $thisfile;
 	if (array_key_exists($name , $schemaArray)){
+		debugLog(i18n_r($thisfile.'/DM_ERROR_CREATETABLEFAIL'));
 		return false;
 	}
 	$schemaArray[(string)$name] =array();
@@ -323,6 +333,7 @@ function createSchemaTable($name, $fields=array()){
 	}	
 	createSchemaFolder($name);		
 	$ret=DM_saveSchema();
+	debugLog(i18n_r($thisfile.'/DM_ERROR_CREATETABLESUCCESS'));
 	return true;
 }
 
