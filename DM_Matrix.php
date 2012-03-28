@@ -82,6 +82,12 @@ register_style('jquery-ui-css',$SITEURL.'plugins/DM_Matrix/css/redmond/jquery-ui
 queue_script('jquery-ui', GSBACK);
 
 add_action('nav-tab','createNavTab',array('DM_Matrix','DM_Matrix','The Matrix','action=matrix_manager&schema'));
+
+add_action($thisfile.'-sidebar','createSideMenu',array($thisfile, "Manage Tables",'schema')); 
+add_action($thisfile.'-sidebar','createSideMenu',array($thisfile, "Manage Records",'fields')); 
+add_action($thisfile.'-sidebar','createSideMenu',array($thisfile, "Settings",'settings')); 
+add_action($thisfile.'-sidebar','createSideMenu',array($thisfile, "About",'about')); 
+
 DM_getSchema();
 
 
@@ -103,14 +109,17 @@ global $item_title,$thisfile, $fieldtypes,$schemaArray;
 
 //Main Navigation For Admin Panel
 ?>
-<div style="margin:0 -15px -15px -10px;padding:0px;">
-	<h3 class="floated"><?php echo i18n_r($thisfile.'/DM_PLUGINTITLE') ?></h3>  
-	<div class="edit-nav clearfix" style="">
+
+	<div style="margin:0 -15px -15px -10px;padding:0px;">
+	<h3 ><?php echo i18n_r($thisfile.'/DM_PLUGINTITLE') ?></h3>  
+<!--	<div class="edit-nav clearfix" style="">
 		<a href="load.php?id=DM_Matrix&action=matrix_manager&settings" <?php if (isset($_GET['settings'])) { echo 'class="current"'; } ?>>Settings</a>
 		<a href="load.php?id=DM_Matrix&action=matrix_manager&fields" <?php if (isset($_GET['fields'])) { echo 'class="current"'; } ?>>Manage Records</a>
 		<a href="load.php?id=DM_Matrix&action=matrix_manager&schema" <?php if (isset($_GET['schema'])) { echo 'class="current"'; } ?>>Manage Tables</a>
 	</div> 
+-->
 </div>
+
 </div>
 <div class="main" style="margin-top:-10px;">
 
