@@ -1,5 +1,5 @@
 <?php 
-/** GetSimple CMS Schema Manager 
+/* GetSimple CMS Schema Manager 
 * Web site: http://www.digimute.com/
 * @version  1.0
 * @author   mike@digimute.com
