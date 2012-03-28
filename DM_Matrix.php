@@ -1,5 +1,5 @@
 <?php 
-/* GetSimple CMS Schema Manager 
+/** GetSimple CMS Schema Manager 
 * Web site: http://www.digimute.com/
 * @version  1.0
 * @author   mike@digimute.com
@@ -72,13 +72,14 @@ queue_style('codemirror-css', GSBACK);
 queue_style('codemirror-theme', GSBACK);
 queue_style('codemirror-dialog', GSBACK);
 
-queue_script('jquery-ui', GSBACK);
+
 
 register_script('DM_Matrix_timepicker',$SITEURL.'plugins/DM_Matrix/js/timepicker.js', '0.1',FALSE);
 queue_script('DM_Matrix_timepicker', GSBACK);
 
 register_style('jquery-ui-css',$SITEURL.'plugins/DM_Matrix/css/redmond/jquery-ui-1.8.16.custom.css','screen',FALSE);
-queue_style('jquery-ui-css', GSBACK);
+//queue_style('jquery-ui-css', GSBACK);
+queue_script('jquery-ui', GSBACK);
 
 add_action('nav-tab','createNavTab',array('DM_Matrix','DM_Matrix','The Matrix','action=matrix_manager&schema'));
 DM_getSchema();
@@ -206,6 +207,7 @@ if (isset($_GET['schema'])) {
 						<option value="textlong">textlong</option>
 						<option value="checkbox">checkbox</option>
 						<option value="pages">pages</option>
+						<option value="dropdown">Dropdown</option>
 						<option value="templates">templates</option>
 						<option value="datepicker">datepicker</option>
 						<option value="datetimepicker">datetimepicker</option>
@@ -218,19 +220,37 @@ if (isset($_GET['schema'])) {
 				</div>
 			</li>
 			<li class="InputfieldName Inputfield_name ui-widget" id="wrap_Inputfield_name">
+			<label class="ui-widget-header fieldstateToggle" for="Inputfield_name">Add a label</label>
+			<div class="ui-widget-content">
+				<p class="description">Add a label for this Field.</p>
+				<input type="text" value="" id="post-label" name="post-label" class="required" size="115">
+				<br/>		
+			</div>
+			</li>
+			<li class="InputfieldName Inputfield_name ui-widget" id="wrap_Inputfield_name">
 			<label class="ui-widget-header fieldstateToggle" for="Inputfield_name">Add a Description</label>
 			<div class="ui-widget-content">
 				<p class="description">Additional information describing this field and/or instructions on how to enter the content.</p>
-				<input type="text" value="" id="post-desc" name="post-desc" class="required" size="25">
+				<input type="text" value="" id="post-desc" name="post-desc" class="required" size="115">
 				<br/>		
 			</div>
-		</li>
-		<li class="InputfieldSubmit field_submit ui-widget" id="wrap_Inputfield_submit">
-			<label class="ui-widget-header fieldStateToggle" for="field_submit">submit</label>
+			</li>
+			<li class="InputfieldName Inputfield_name ui-widget" id="wrap_Inputfield_name">
+			<label class="ui-widget-header fieldstateToggle" for="Inputfield_name">Additional Options</label>
 			<div class="ui-widget-content">
-				<button id="field_submit" class="ui-button ui-widget ui-corner-all ui-state-default" name="submit" value="Save Template" type="submit"><span class="ui-button-text">Save Template</span></button>
+				<p class="description">Additional options for this Field</p>
+				<input type="checkbox" value="" id="post-cacheindex" name="post-cacheindex">&nbsp;Allow this field to be indexed<br/> 
+				<input type="checkbox" value="" id="post-tableview" name="post-tableview">&nbsp;Show in Table View
+				
+				<br/>		
 			</div>
-		</li>
+			</li>
+			<li class="InputfieldSubmit field_submit ui-widget" id="wrap_Inputfield_submit">
+				<label class="ui-widget-header fieldStateToggle" for="field_submit">Save this Field</label>
+				<div class="ui-widget-content">
+					<button id="field_submit" class="ui-button ui-widget ui-corner-all ui-state-default" name="submit" value="Save Field" type="submit"><span class="ui-button-text">Save Field</span></button>
+				</div>
+			</li>
 		</form>
 		</ul>
 	<?php

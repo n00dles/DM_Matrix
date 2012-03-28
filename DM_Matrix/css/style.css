@@ -8,6 +8,7 @@
 /*RCD .ui-widget-content a { color: #222222; }*/
 .ui-widget-header { border: 1px solid #d2e4ea; background-color: #d2e4ea; color: #2f4248; font-weight: bold; }
 .ui-widget-header a { color: #2f4248; }
+.ui-button{padding:5px;}
 /****************************************************************************************
  * Theme specific Inputfield module overrides
  *
