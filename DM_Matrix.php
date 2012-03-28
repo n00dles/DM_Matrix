@@ -33,9 +33,9 @@ define('GSSCHEMAPATH',GSDATAOTHERPATH.'matrix');
 // check and make sure the base folders are there. 
 if (!is_dir(GSSCHEMAPATH)){
 	mkdir(GSSCHEMAPATH);
-	DMdebuglog("DM_Matrix: Created Base Folder, ".GSSCHEMAPATH);
+	DMdebuglog(i18n_r($thisfile.'/DM_ERROR_CREATEBASEFOLDER'));
 } else {
-	DMdebuglog("DM_Matrix: Base Folder, ".GSSCHEMAPATH." exists");
+	DMdebuglog(i18n_r($thisfile.'/DM_ERROR_CREATEBASEFOLDERFAIL'));
 }
 
 $defaultDebug = true;
@@ -276,9 +276,8 @@ function DM_getSchema($flag=false){
   global $schemaArray;	
   
   $file=GSSCHEMAPATH."/schema.xml";
-  DMdebuglog($file);
   if (file_exists($file)){
-  DMdebuglog('file loaded...');
+  DMdebuglog('Schema file loaded...');
   // load the xml file and setup the array. 
 	$thisfile = file_get_contents($file);
 		$data = simplexml_load_string($thisfile);

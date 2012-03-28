@@ -25,6 +25,8 @@ $i18n = array (
 	"DM_ADDRECORD"=>  "Add Record",
 	"DM_EDITTABLE"=>  "Edit table",
 // Errors and Status's
+	"DM_ERROR_CREATEBASEFOLDER"=>  "DM_Matrix: Created Base Folder ",
+	"DM_ERROR_CREATEBASEFOLDERFAIL"=>  "DM_Matrix: Base Folder Already Exists ",
 	"DM_ERROR_CREATETABLESUCCESS"=>  "Create Table: Table Created Successfully. ",
 	"DM_ERROR_CREATETABLEFAIL"=>  "Create Table: Table Already exists. "
 	
