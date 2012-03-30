@@ -29,7 +29,17 @@ o - textarea, a plain textarea
 o - codeeditor, a codemirror textarea
 o - texteditor, a CKEditor enabled textarea. 
 
+Each field has the following options: 
+
+o - label, short label displayed on the field entry scrren
+o - description, a full description for the end user as to what the field does. 
+o - tableview, whether to display the field on the record view screen. 
+o - cachindex, whether to return the field using sql queries of return it by accessing the file directly, 
+	this will be used primarily for large type fileds (textareas etc..) which may hold large amount of data 
+	which should not be loaded into memory. 
+
 So you setup your Tables, add some fields and input data into those fields. 
+
 
 The front end allows you to run SQL type queries on the data to build your webpages. 
 
