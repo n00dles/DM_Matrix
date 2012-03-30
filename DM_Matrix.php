@@ -100,12 +100,12 @@ if (isset($_GET['add']) && isset($_POST['post-addtable'])){
 
 if (isset($_GET['edit']) && isset($_GET['addfield'])){
   	//echo "adding Field to ".$_GET['edit']."/".$_POST['post-name']."=".$_POST['post-type'];
-  	if (isset($_GET['post-cacheindex'])){
+  	if (isset($_POST['post-cacheindex'])){
   		$cacheindex=1;
   	} else {
   		$cacheindex=0;
   	}
-	if (isset($_GET['post-tableview'])){
+	if (isset($_POST['post-tableview'])){
   		$tableview=1;
   	} else {
   		$tableview=0;
