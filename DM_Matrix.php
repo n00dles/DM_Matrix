@@ -84,13 +84,14 @@ queue_script('jquery-ui', GSBACK);
 add_action('nav-tab','createNavTab',array('DM_Matrix','DM_Matrix','The Matrix','action=matrix_manager&schema'));
 
 add_action($thisfile.'-sidebar','createSideMenu',array($thisfile, "Manage Tables",'schema')); 
+if (isset($_GET['edit'])){
+	add_action($thisfile.'-sidebar','createSideMenu',array($thisfile, "Edit Tables",'edit')); 
+}
 add_action($thisfile.'-sidebar','createSideMenu',array($thisfile, "Manage Records",'fields')); 
 add_action($thisfile.'-sidebar','createSideMenu',array($thisfile, "Settings",'settings')); 
 add_action($thisfile.'-sidebar','createSideMenu',array($thisfile, "About",'about')); 
 
 DM_getSchema();
-
-
 
 if (isset($_GET['add']) && isset($_POST['post-addtable'])){
 	DMdebuglog('Trying to add a new table: '.$_POST['post-addtable']);
@@ -98,10 +99,30 @@ if (isset($_GET['add']) && isset($_POST['post-addtable'])){
 }
 
 if (isset($_GET['edit']) && isset($_GET['addfield'])){
-  	echo "adding Field to ".$_GET['edit']."/".$_POST['post-name']."=".$_POST['post-type'];
-	  addSchemaField($_GET['edit'],array($_POST['post-name']=>$_POST['post-type']),true);
+  	//echo "adding Field to ".$_GET['edit']."/".$_POST['post-name']."=".$_POST['post-type'];
+  	if (isset($_GET['post-cacheindex'])){
+  		$cacheindex=1;
+  	} else {
+  		$cacheindex=0;
+  	}
+	if (isset($_GET['post-tableview'])){
+  		$tableview=1;
+  	} else {
+  		$tableview=0;
+  	}
+	
+	$field=array(
+	'name'=>$_POST['post-name'],
+	'type'=>$_POST['post-type'],
+	'label'=>$_POST['post-label'],
+	'description'=>$_POST['post-desc'],
+	'cacheindex'=>$cacheindex,
+	'tableview'=>$tableview
+	);
+	
+	addSchemaField($_GET['edit'],$field,true);
 	  //DM_saveSchema();
-  }
+}
 
 //Admin Content
 function matrix_manager() {
@@ -248,8 +269,8 @@ if (isset($_GET['schema'])) {
 			<label class="ui-widget-header fieldstateToggle" for="Inputfield_name">Additional Options</label>
 			<div class="ui-widget-content">
 				<p class="description">Additional options for this Field</p>
-				<input type="checkbox" value="" id="post-cacheindex" name="post-cacheindex">&nbsp;Allow this field to be indexed<br/> 
-				<input type="checkbox" value="" id="post-tableview" name="post-tableview">&nbsp;Show in Table View
+				<input type="checkbox" id="post-cacheindex" name="post-cacheindex">&nbsp;Allow this field to be indexed<br/> 
+				<input type="checkbox" id="post-tableview" name="post-tableview">&nbsp;Show in Table View
 				
 				<br/>		
 			</div>
@@ -294,9 +315,17 @@ function DM_getSchema($flag=false){
 				foreach ($fields as $field) {
 					$att = $field->attributes();
 					$type =(string)$att['type'];
-					$desc=(string)$att['desc'];
+					$desc=(string)$att['description'];
+					$label=(string)$att['label'];
+					$cacheindex=(string)$att['cacheindex'];
+					$tableview=(string)$att['tabelview'];
+					
 					$schemaArray[(string)$key]['fields'][(string)$field]=(string)$type;
 					$schemaArray[(string)$key]['desc'][(string)$field]=(string)$desc;
+					$schemaArray[(string)$key]['label'][(string)$field]=(string)$label;
+					$schemaArray[(string)$key]['cacheindex'][(string)$field]=(string)$cacheindex;
+					$schemaArray[(string)$key]['tableview'][(string)$field]=(string)$tableview;
+					
 					if ((string)$type=="dropdown"){
 						$schemaArray[(string)$key]['table'][(string)$field]=(string)$att['table'];;
 						$schemaArray[(string)$key]['row'][(string)$field]=(string)$att['row'];;
@@ -321,8 +350,16 @@ function DM_saveSchema(){
 		$pages->addChild('name',$table);
 		$pages->addChild('id',$key['id']);
 		foreach($key['fields'] as $field=>$type){
-			$pages->addChild('field',$field)->addAttribute('type',$type);
+			//$options=$schemaArray[$table]['options'];
+
+			$field=$pages->addChild('field',$field);
+			$field->addAttribute('type',$type);
+			$field->addAttribute('tableview',@$schemaArray[$table]['tableview'][(string)$field]);
+			$field->addAttribute('cacheindex',@$schemaArray[$table]['cacheindex'][(string)$field]);
+			$field->addAttribute('description',@$schemaArray[$table]['desc'][(string)$field]);
+			$field->addAttribute('label',@$schemaArray[$table]['label'][(string)$field]);
 		}
+		
 	}
 	$xml->asXML($file);
 	DM_getSchema(true);
@@ -397,7 +434,7 @@ function createSchemaTable($name, $fields=array()){
 	}
 	foreach ($fields as $field=>$value) {
 		$schemaArray[(string)$name]['fields'][(string)$field]=(string)$value;
-	}	
+	}
 	createSchemaFolder($name);		
 	$ret=DM_saveSchema();
 	DMdebuglog(i18n_r($thisfile.'/DM_ERROR_CREATETABLESUCCESS'));
@@ -431,14 +468,22 @@ function dropSchemaTable($name){
  */
 function addSchemaField($name,$fields=array(),$save=true){
 	global $schemaArray;
-	foreach ($fields as $field=>$value) {
-		$schemaArray[(string)$name]['fields'][(string)$field]=(string)$value;
-	}			
+	print_r($fields);
+	//foreach ($fields as $field=>$value) {
+	//	$schemaArray[(string)$name]['fields'][(string)$field]=(string)$value;
+	//}	
+	$schemaArray[(string)$name]['fields'][(string)$fields['name']]=(string)$fields['type'];	
+	$schemaArray[(string)$name]['label'][(string)$fields['name']]=(string)$fields['label'];
+	$schemaArray[(string)$name]['desc'][(string)$fields['name']]=(string)$fields['description'];
+	$schemaArray[(string)$name]['cacheindex'][(string)$fields['name']]=(string)$fields['cacheindex'];
+	$schemaArray[(string)$name]['tableview'][(string)$fields['name']]=(string)$fields['tableview'];
 	if ($save==true) {
 		$ret=DM_saveSchema();
+		$ret=true;
 	} else {
 		$ret=true;
 	}
+
 	return $ret;
 }
 
@@ -720,3 +765,8 @@ function DMdebuglog($log){
 		debuglog($log);
 	}
 }
+
+
+//echo "<pre>";
+//print_r($schemaArray);
+//echo "</pre>";
