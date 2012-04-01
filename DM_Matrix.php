@@ -137,8 +137,6 @@ function addRecordFromForm($tbl){
 		{
 			if (isset($_POST["post-".$field]))
 			{
-				//$column = manipulateValues($column); // Manipulate certain values before inserting them into db.                                 	
-				//$fields[$field] = "'" . $_POST["post-".$field] . "'";
 				$tempArray[(string)$field]=$_POST["post-".$field];
 			}
 		}
@@ -160,12 +158,6 @@ global $item_title,$thisfile_DM_Matrix, $fieldtypes,$schemaArray;
 
 	<div style="margin:0 -15px -15px -10px;padding:0px;">
 	<h3 ><?php echo i18n_r($thisfile_DM_Matrix.'/DM_PLUGINTITLE') ?></h3>  
-<!--	<div class="edit-nav clearfix" style="">
-		<a href="load.php?id=DM_Matrix&action=matrix_manager&settings" <?php if (isset($_GET['settings'])) { echo 'class="current"'; } ?>>Settings</a>
-		<a href="load.php?id=DM_Matrix&action=matrix_manager&fields" <?php if (isset($_GET['fields'])) { echo 'class="current"'; } ?>>Manage Records</a>
-		<a href="load.php?id=DM_Matrix&action=matrix_manager&schema" <?php if (isset($_GET['schema'])) { echo 'class="current"'; } ?>>Manage Tables</a>
-	</div> 
--->
 </div>
 
 </div>
