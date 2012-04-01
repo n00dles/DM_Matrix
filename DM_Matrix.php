@@ -131,17 +131,22 @@ if (isset($_GET['edit']) && isset($_GET['addfield'])){
 
 function addRecordFromForm($tbl){
 		debugLog("addign form");
-		global $fieldtypes,$schemaArray;	
+		global $fieldtypes,$schemaArray;
+		$tempArray=array();	
 		foreach ($schemaArray[$tbl]['fields'] as $field=>$type)
 		{
 			if (isset($_POST["post-".$field]))
 			{
 				//$column = manipulateValues($column); // Manipulate certain values before inserting them into db.                                 	
-				$fields[$field] = "'" . $_POST["post-".$field] . "'";
+				//$fields[$field] = "'" . $_POST["post-".$field] . "'";
+				$tempArray[(string)$field]=$_POST["post-".$field];
 			}
 		}
-		$sql = "INSERT INTO `" . $tbl . "` (`" . implode("`, `", array_keys($fields)) . "`) VALUES (" . implode(", ", $fields) . ")";
-		echo $sql;
+
+		createRecord($tbl, $tempArray);
+		//echo "<pre>";
+		//print_r($tempArray);
+		//echo "</pre>";
 		//return mysql_query($sql);
 		
 }
