@@ -241,7 +241,7 @@ if (isset($_GET['schema'])) {
 		<tbody><tr><th>Name</th><th >Type</th><th style="width:75px;">Options</th></tr>
 		<?php 
 		foreach($schemaArray[$schemaname]['fields'] as $schema=>$key){
-			echo "<tr><td>".$schema."</td><td>".$key."</td><td><a href='load.php?id=DM_Matrix&action=matrix_manager&edit=".$schema."'><img src='../plugins/DM_Matrix/images/edit.png' title='Edit Records' /></a></td></tr>";
+			echo "<tr><td>".$schema."</td><td>".$key."</td><td><a href='load.php?id=DM_Matrix&action=matrix_manager&edit=".$schema."'><img src='../plugins/DM_Matrix/images/edit.png' title='Edit Field' /></a></td></tr>";
 		}
 		
 		?>
@@ -263,7 +263,8 @@ if (isset($_GET['schema'])) {
 				<label class="ui-widget-header fieldstateToggle" for="Inputfield_name">Type</label>
 				<div class="ui-widget-content">
 					<p class="description">After selecting your field type, you may be presented with additional configuration options specific to the field type you selected.</p>
-					<select id="post-type" name="post-type">
+					<select id="post-type" name="post-type" class="required">
+						<option calue=""></option>
 						<option value="int">int</option>		
 						<option value="text">text</option>	
 						<option value="textlong">textlong</option>
@@ -310,7 +311,7 @@ if (isset($_GET['schema'])) {
 			<li class="InputfieldSubmit field_submit ui-widget" id="wrap_Inputfield_submit">
 				<label class="ui-widget-header fieldStateToggle" for="field_submit">Save this Field</label>
 				<div class="ui-widget-content">
-					<button id="field_submit" class="ui-button ui-widget ui-corner-all ui-state-default" name="submit" value="Save Field" type="submit"><span class="ui-button-text">Save Field</span></button>
+					<button id="field_submit" class="ui-button ui-widget ui-corner-all ui-state-default form_submit" name="submit" value="Save Field" type="submit"><span class="ui-button-text">Save Field</span></button>
 				</div>
 			</li>
 		</form>
