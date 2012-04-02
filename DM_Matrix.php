@@ -26,7 +26,8 @@ register_plugin(
   'DM_Matrix',
   'matrix_manager'
 );
-    
+
+debugLog(''.$TIMEZONE);   
 
 define('GSSCHEMAPATH',GSDATAOTHERPATH.'matrix');
 
@@ -43,6 +44,8 @@ $schemaArray = array();
 $item_title='Matrix';
 
 require "DM_Matrix/include/sql4array.php";
+$sql = new sql4array();
+$mytable=array();
 
 
 register_script('DM_Matrix',$SITEURL.'plugins/DM_Matrix/js/DM_Matrix.js', '0.1',FALSE);
@@ -87,7 +90,7 @@ add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Ma
 if (isset($_GET['edit'])){
 	add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Matrix, "Edit Tables",'edit')); 
 }
-add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Matrix, "Manage Records",'fields')); 
+add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Matrix, "Manage Records",'view')); 
 add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Matrix, "Settings",'settings')); 
 add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Matrix, "About",'about')); 
 
@@ -161,7 +164,7 @@ function DM_manipulate($field, $type){
 
 //Admin Content
 function matrix_manager() {
-global $item_title,$thisfile_DM_Matrix, $fieldtypes,$schemaArray;
+global $item_title,$thisfile_DM_Matrix, $fieldtypes,$schemaArray, $sql, $mytable;
 
 //Main Navigation For Admin Panel
 ?>
@@ -190,7 +193,7 @@ if (isset($_GET['schema'])) {
 			</tr>
 		<?php 
 		foreach($schemaArray as $schema=>$key){
-			echo "<tr><td>".$schema."</td>";
+			echo "<tr><td><a href='load.php?id=DM_Matrix&action=matrix_manager&view=".$schema."' >".$schema."</a></td>";
 			echo "<td>".($key['id'])."</td>";
 			echo "<td>".count($key['fields'])."</td>";
 			echo "<td>";
@@ -317,7 +320,46 @@ if (isset($_GET['schema'])) {
 elseif (isset($_GET['add']))
 	{
 		//
-	} 	
+	} 
+elseif (isset($_GET['view']))
+	{
+		$table=$_GET['view'];
+		$fields=array();
+		$tableheader='';
+		$count=0;
+		foreach($schemaArray[$table]['fields'] as $schema=>$key){
+			if ($schemaArray[$table]['tableview'][$schema]==1){
+				$fields[$count]['name']=$schema;
+				$tableheader.="<th>".$schema."</th>";
+			}
+			$count++;
+		}
+?>
+		<table id="editpages" class="edittable highlight paginate">
+		<tbody><tr><?php echo $tableheader; ?></tr>
+		<?php 
+		getPagesXmlValues();
+		
+		
+		$mytable=getSchemaTable($table);
+		
+		//$r = array();
+		//$r = $sql->query("SELECT ".$fields." FROM table");
+		foreach($mytable as $key=>$value){
+			echo "<tr>";
+			foreach ($fields as $field){
+				echo "<td>".$mytable[$key][$field['name']]."</td>"; 
+			}
+			//<td>".$key."</td><td>".$mytable[$key]['author']."</td></td>
+			echo "</tr>";
+		}
+		
+		?>
+		
+		</tbody>
+		</table>
+<?
+	} 		
 }
 
 /** Load The main schema XML file and fill the array $schema
@@ -347,7 +389,7 @@ function DM_getSchema($flag=false){
 					$desc=(string)$att['description'];
 					$label=(string)$att['label'];
 					$cacheindex=(string)$att['cacheindex'];
-					$tableview=(string)$att['tabelview'];
+					$tableview=(string)$att['tableview'];
 					
 					$schemaArray[(string)$key]['fields'][(string)$field]=(string)$type;
 					$schemaArray[(string)$key]['desc'][(string)$field]=(string)$desc;
@@ -800,3 +842,4 @@ function DMdebuglog($log){
 //echo "<pre>";
 //print_r($schemaArray);
 //echo "</pre>";
+
