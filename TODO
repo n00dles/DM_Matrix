@@ -1,5 +1,7 @@
 List of things to do, in no particular order. 
 
+o - add CKeditor option to texteditor Field. 
+
 o - add edit record feature. 
 o - convert unix timestamps back to date/time format 
 o - add table sortint to record view. 
