@@ -78,7 +78,7 @@ register_script('DM_Matrix_timepicker',$SITEURL.'plugins/DM_Matrix/js/timepicker
 queue_script('DM_Matrix_timepicker', GSBACK);
 
 register_style('jquery-ui-css',$SITEURL.'plugins/DM_Matrix/css/redmond/jquery-ui-1.8.16.custom.css','screen',FALSE);
-//queue_style('jquery-ui-css', GSBACK);
+queue_style('jquery-ui-css', GSBACK);
 queue_script('jquery-ui', GSBACK);
 
 add_action('nav-tab','createNavTab',array('DM_Matrix','DM_Matrix','The Matrix','action=matrix_manager&schema'));
@@ -137,15 +137,25 @@ function addRecordFromForm($tbl){
 		{
 			if (isset($_POST["post-".$field]))
 			{
-				$tempArray[(string)$field]=$_POST["post-".$field];
+				$data=DM_manipulate($_POST["post-".$field], $type); 
+				$tempArray[(string)$field]=$data;
 			}
 		}
 
-		createRecord($tbl, $tempArray);
-		//echo "<pre>";
-		//print_r($tempArray);
-		//echo "</pre>";
-		//return mysql_query($sql);
+		createRecord($tbl, $tempArray);		
+}
+
+function DM_manipulate($field, $type){
+	switch ($type){
+		case "datetimepicker":
+			return (int)strtotime($field);
+			break;	
+		case "datepicker":
+			return (int)strtotime($field);
+			break;		
+			default: 
+			return $field;
+	}
 		
 }
 
