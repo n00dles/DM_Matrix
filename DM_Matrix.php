@@ -107,7 +107,6 @@ if (isset($_GET['add']) && isset($_GET['addrecord'])){
 	}
 
 if (isset($_GET['edit']) && isset($_GET['addfield'])){
-  	//echo "adding Field to ".$_GET['edit']."/".$_POST['post-name']."=".$_POST['post-type'];
   	if (isset($_POST['post-cacheindex'])){
   		$cacheindex=1;
   	} else {
@@ -331,6 +330,8 @@ elseif (isset($_GET['view']))
 		foreach($schemaArray[$table]['fields'] as $schema=>$key){
 			if ($schemaArray[$table]['tableview'][$schema]==1){
 				$fields[$count]['name']=$schema;
+				$fields[$count]['type']=$key;
+				
 				$tableheader.="<th>".$schema."</th>";
 			}
 			$count++;
@@ -340,18 +341,19 @@ elseif (isset($_GET['view']))
 		<tbody><tr><?php echo $tableheader; ?></tr>
 		<?php 
 		getPagesXmlValues();
-		
-		
 		$mytable=getSchemaTable($table);
-		
-		//$r = array();
-		//$r = $sql->query("SELECT ".$fields." FROM table");
 		foreach($mytable as $key=>$value){
 			echo "<tr>";
 			foreach ($fields as $field){
-				echo "<td>".$mytable[$key][$field['name']]."</td>"; 
+				if ($field['type']=='datepicker'){
+					$data=date('d-m-Y',$mytable[$key][$field['name']]);
+				} elseif ($field['type']=='datetimepicker') {
+					$data=date('d-m-Y i:M',$mytable[$key][$field['name']]);
+				} else {
+					$data=$mytable[$key][$field['name']];
+				}
+				echo "<td>".$data."</td>"; 
 			}
-			//<td>".$key."</td><td>".$mytable[$key]['author']."</td></td>
 			echo "</tr>";
 		}
 		
@@ -540,10 +542,6 @@ function dropSchemaTable($name){
  */
 function addSchemaField($name,$fields=array(),$save=true){
 	global $schemaArray;
-	print_r($fields);
-	//foreach ($fields as $field=>$value) {
-	//	$schemaArray[(string)$name]['fields'][(string)$field]=(string)$value;
-	//}	
 	$schemaArray[(string)$name]['fields'][(string)$fields['name']]=(string)$fields['type'];	
 	$schemaArray[(string)$name]['label'][(string)$fields['name']]=(string)$fields['label'];
 	$schemaArray[(string)$name]['desc'][(string)$fields['name']]=(string)$fields['description'];
@@ -582,7 +580,8 @@ function deleteSchemaField($name,$fields=array(),$save=true){
 }
 
 
-function getSchemaTable($name){
+function getSchemaTable($name,$query=''){
+	global $returnArray;
 	$table=array();
 	$path = GSSCHEMAPATH.'/'.$name."/";
 	  $dir_handle = @opendir($path) or die("Unable to open $path");
@@ -591,30 +590,30 @@ function getSchemaTable($name){
 	    $ext = substr($filename, strrpos($filename, '.') + 1);
 		$fname=substr($filename,0, strrpos($filename, '.'));
 	    if ($ext=="xml"){
-		$thisfile_DM_Matrix = file_get_contents($path.$filename);
-        $data = simplexml_load_string($thisfile_DM_Matrix);
-        //$count++;   
-        $id=$data->item;
-		
-		foreach ($id->children() as $opt=>$val) {
-            //$pagesArray[(string)$key][(string)$opt]=(string)$val;
-			$table[$fname][(string)$opt]=(string)$val;
-        }
-		
-    	//$table[$fname]['id']=$fname;
-		//$table[$fname]['name']=(string)$id;
-		
+			$thisfile_DM_Matrix = file_get_contents($path.$filename);
+	        $data = simplexml_load_string($thisfile_DM_Matrix);
+	        //$count++;   
+	        $id=$data->item;
+			
+			foreach ($id->children() as $opt=>$val) {
+	            //$pagesArray[(string)$key][(string)$opt]=(string)$val;
+				$table[$fname][(string)$opt]=(string)$val;
+	        }		
 	    }
 	  }
-	
+	if ($query!=''){
+		$returnArray=$table;
+		$sql=new sql4array();
+		$table = $sql->query($query);
+	}
 	return $table;
 }
 
 
 function DM_createForm($name){
-global $schemaArray;	
-echo '<ul class="fields">';
-foreach ($schemaArray[$name]['fields'] as $field=>$value) {
+	global $schemaArray;	
+	echo '<ul class="fields">';
+	foreach ($schemaArray[$name]['fields'] as $field=>$value) {
 
 	if ($field!="id"){
 	?>
@@ -639,8 +638,8 @@ foreach ($schemaArray[$name]['fields'] as $field=>$value) {
 
 		
 	<?php	
+		}
 	}
-}
 ?>
 
 	<li class="fieldsubmit Inputfield_submit_save_field ui-widget" id="wrap_Inputfield_submit">
@@ -669,12 +668,6 @@ function displayFieldType($name, $type, $schema){
 	
 	// get caching info in case we need it. 
 	getPagesXmlValues();
-	
-	
-	//echo "<pre>";
-	//print_r($pagesArray);
-	//echo "</pre>";
-	
 	
 	// Get the filed type
 	switch ($type){

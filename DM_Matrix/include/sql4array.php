@@ -57,7 +57,7 @@ class sql4array
 	{
 		$this
 			->destroy()
-			->createFromGlobals(false)
+			->createFromGlobals(true)
 			->cacheQuery(true)
 		;
 	}
@@ -460,7 +460,7 @@ class sql4array
 
 				if (eval($this->parse_where))
 				{
-					if ($this->parse_select_as[0] == '*')
+					if ($this->parse_select_as == '*')
 					{
 						foreach (array_keys($row) as $key) $temp[$key] = $row[$key];
 
