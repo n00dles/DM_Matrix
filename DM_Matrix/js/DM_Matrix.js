@@ -1,6 +1,3 @@
-function test(item){
-	alert(item);
-}
 
 
 jQuery(document).ready(function() { 

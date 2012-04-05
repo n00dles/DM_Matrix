@@ -98,7 +98,7 @@ DM_getSchema();
 
 if (isset($_GET['add']) && isset($_POST['post-addtable'])){
 	DMdebuglog('Trying to add a new table: '.$_POST['post-addtable']);
-	$ret=createSchemaTable($_POST['post-addtable'],array());
+	$ret=createSchemaTable($_POST['post-addtable'],$_POST['post-maxrecords'],array());
 }
 
 if (isset($_GET['add']) && isset($_GET['addrecord'])){
@@ -215,7 +215,11 @@ if (isset($_GET['schema'])) {
 			<label class="ui-widget-header fieldstateToggle" for="Inputfield_name"><?php echo i18n_r($thisfile_DM_Matrix.'/DM_ADDTABLE') ?></label>
 			<div class="ui-widget-content">
 				<p class="description"><?php echo i18n_r($thisfile_DM_Matrix.'/DM_ADDTABLE_DESC') ?></p>
-				<input type="text" class="required" id="post-addtable" name="post-addtable" />		
+				<input type="text" class="required" id="post-addtable" name="post-addtable" />	
+				<br/><br/>
+				<p class="description">Max Number of records, leave blank for unlimited</p>
+				<input type="text" id="post-maxrecords" name="post-maxrecords" />	
+				<br/><br/>
 				<button id="Inputfield_submit" class="ui-button ui-widget  ui-state-default form_submit" name="addtable" id="addtable" value="Submit" type="button"><span class="ui-button-text">Submit</span></button>
 			</div>
 		</li>
@@ -384,7 +388,7 @@ function DM_getSchema($flag=false){
 				//$schemaArray[(string)$key] =$key;
 				$schemaArray[(string)$key]=array();				
 				$schemaArray[(string)$key]['id']=(int)$component->id;
-				
+				$schemaArray[(string)$key]['maxrecords']=(int)$component->maxrecords;
 				$fields=$component->field;	
 				foreach ($fields as $field) {
 					$att = $field->attributes();
@@ -423,6 +427,7 @@ function DM_saveSchema(){
 		$pages = $xml->addChild('item');
 		$pages->addChild('name',$table);
 		$pages->addChild('id',$key['id']);
+		$pages->addChild('maxrecords',$key['maxrecords']);
 		foreach($key['fields'] as $field=>$type){
 			//$options=$schemaArray[$table]['options'];
 
@@ -495,7 +500,7 @@ function getNextRecord($name){
  * @param array $fields , array of fields and types to create, default is to create an id (int) fields
  * @return boolean , whether table was created or not. 
  */
-function createSchemaTable($name, $fields=array()){
+function createSchemaTable($name, $maxrecords=0, $fields=array()){
 	global $schemaArray, $thisfile_DM_Matrix;
 	if (array_key_exists($name , $schemaArray)){
 		DMdebuglog(i18n_r($thisfile_DM_Matrix.'/DM_ERROR_CREATETABLEFAIL'));
@@ -503,6 +508,7 @@ function createSchemaTable($name, $fields=array()){
 	}
 	$schemaArray[(string)$name] =array();
 	$schemaArray[(string)$name]['id']=0;
+	$schemaArray[(string)$name]['maxrecords']=$maxrecords;
 	if (!in_array('id', $schemaArray)){
 		$schemaArray[(string)$name]['fields']['id']='int';
 	}
