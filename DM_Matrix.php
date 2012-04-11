@@ -300,20 +300,19 @@ if (isset($_GET['schema'])) {
 				<div class="ui-widget-content">
 					<p class="description">After selecting your field type, you may be presented with additional configuration options specific to the field type you selected.</p>
 					<select id="post-type" name="post-type" class="required">
-						<option calue=""></option>
-						<option value="int">int</option>		
-						<option value="text">text</option>	
-						<option value="textlong">textlong</option>
-						<option value="checkbox">checkbox</option>
-						<option value="pages">pages</option>
-						<option value="dropdown">Dropdown</option>
-						<option value="templates">templates</option>
-						<option value="datepicker">datepicker</option>
-						<option value="datetimepicker">datetimepicker</option>
-						<option value="image">Image Picker</option>								
-						<option value="textarea">textarea</option>	
-						<option value="codeeditor">codeeditor</option>	
-						<option value="texteditor">texteditor</option>		
+						<option value=""></option>
+						
+						<?php 
+						$types=array('int','text','textlong','checkbox','pages','dropdown','templates','datepicker','datetimepicker','image','textarea','codeeditor','texteditor'); 
+						foreach ($types as $type){
+							if ($formType==$type){
+								$sel=" selected ";
+							} else {
+								$sel="";
+							}
+							echo "<option value='".$type."' ".$sel.">".$type."</option>"; 
+						}
+						?>	
 					</select>
 					<div id="fieldoptions"></div>	
 				</div>
@@ -338,8 +337,8 @@ if (isset($_GET['schema'])) {
 			<label class="ui-widget-header fieldstateToggle" for="Inputfield_name">Additional Options</label>
 			<div class="ui-widget-content">
 				<p class="description">Additional options for this Field</p>
-				<input type="checkbox" id="post-cacheindex" name="post-cacheindex">&nbsp;Allow this field to be indexed<br/> 
-				<input type="checkbox" id="post-tableview" name="post-tableview">&nbsp;Show in Table View
+				<input type="checkbox" id="post-cacheindex" name="post-cacheindex" <?php if ($formCacheIndex=='1') echo " checked "; ?> >&nbsp;Allow this field to be indexed<br/> 
+				<input type="checkbox" id="post-tableview" name="post-tableview" <?php if ($formTableView=='1') echo " checked "; ?>>&nbsp;Show in Table View
 				
 				<br/>		
 			</div>
