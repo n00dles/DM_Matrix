@@ -193,7 +193,7 @@ if (isset($_GET['schema'])) {
 		<?php 
 		foreach($schemaArray as $schema=>$key){
 			echo "<tr><td><a href='load.php?id=DM_Matrix&action=matrix_manager&view=".$schema."' >".$schema."</a></td>";
-			echo "<td>".($key['id'])."</td>";
+			echo "<td>".($key['id'])." / ".$key['maxrecords']."</td>";
 			echo "<td>".count($key['fields'])."</td>";
 			echo "<td>";
 			echo "<a href='load.php?id=DM_Matrix&action=matrix_manager&edit=".$schema."'>";
@@ -244,7 +244,13 @@ if (isset($_GET['schema'])) {
 		<tbody><tr><th>Name</th><th >Type</th><th style="width:75px;">Options</th></tr>
 		<?php 
 		foreach($schemaArray[$schemaname]['fields'] as $schema=>$key){
-			echo "<tr><td>".$schema."</td><td>".$key."</td><td><a href='load.php?id=DM_Matrix&action=matrix_manager&edit=".$schema."'><img src='../plugins/DM_Matrix/images/edit.png' title='Edit Field' /></a></td></tr>";
+			echo "<tr><td>".$schema."</td><td>".$key."</td>";
+			if ($schema!="id"){
+				echo "<td><a href='load.php?id=DM_Matrix&action=matrix_manager&edit=".$schemaname."&field=".$schema."'><img src='../plugins/DM_Matrix/images/edit.png' title='Edit Field' /></a></td>";
+			} else {
+				echo "<td></td>";
+			}
+			echo "</tr>";
 		}
 		
 		?>
@@ -253,7 +259,14 @@ if (isset($_GET['schema'])) {
 		</table>
 		
 		<form method="post" action="load.php?id=DM_Matrix&action=matrix_manager&edit=<?php echo $schemaname; ?>&addfield">
-		<h3>Add New Field</h3>
+		<?php if (isset($_GET['field'])){
+			echo '<h3>Editing Field : '.$_GET['field'].'</h3>'; 
+			$editing=true;
+			
+		} else {
+			echo '<h3>Add New Field</h3>';
+		}
+		?>
 		<ul class="fields">
 			<li class="InputfieldName Inputfield_name ui-widget" id="wrap_Inputfield_name">
 				<label class="ui-widget-header fieldstateToggle" for="Inputfield_name">Name</label>

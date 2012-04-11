@@ -17,7 +17,7 @@ $i18n = array (
 // add Table screen	
 	"DM_SHOWTABLE"=>  "Show Tables",
 	"DM_TABLENAME"=>  "Table Name",
-	"DM_NUMRECORDS"=>  "# Records",
+	"DM_NUMRECORDS"=>  "# Rcds / Max",
 	"DM_NUMFIELDS"=>  "# Fields",
 	"DM_OPTIONS"=>  "Options",
 	"DM_ADDTABLE"=>  "Add a new Table",
