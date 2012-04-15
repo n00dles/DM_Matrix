@@ -84,7 +84,6 @@ add_action('nav-tab','createNavTab',array('DM_Matrix','DM_Matrix','The Matrix','
 DM_getSchema();
 
 
-
 if (isset($_GET['add']) && isset($_POST['post-addtable'])){
 	DMdebuglog('Trying to add a new table: '.$_POST['post-addtable']);
 	$ret=createSchemaTable($_POST['post-addtable'],array());
