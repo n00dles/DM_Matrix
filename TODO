@@ -1,0 +1,15 @@
+List of things to do, in no particular order. 
+
+o - add CKeditor option to texteditor Field. 
+
+o - add edit record feature. 
+o - convert unix timestamps back to date/time format 
+o - add table sortint to record view. 
+o - add new field form, fix validation
+o - add javascript when field type changes for extra options. 
+o - add error/success messages for all actions
+o - add delete options on everything
+o - add edit table ability
+o - setup a settings table and make sure it hidden. 
+o - add settings fields. 
+o - add about page

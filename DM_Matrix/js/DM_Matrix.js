@@ -1,4 +1,5 @@
 
+
 jQuery(document).ready(function() { 
 
 $('#nav_DM_Matrix').insertAfter($('#nav_pages'));
@@ -21,8 +22,8 @@ $("button.form_submit").live("click", function(){
 	});	
 
 
-$('#post-type').change(function() {
-	//alert("$('#post-type').selected()");
+$('.imagepicker').live("change",function() {
+	//alert("changed..");
 })
 
 

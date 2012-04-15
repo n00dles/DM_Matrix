@@ -1,5 +1,5 @@
 <?php 
-/* GetSimple CMS Schema Manager 
+/** GetSimple CMS Schema Manager 
 * Web site: http://www.digimute.com/
 * @version  1.0
 * @author   mike@digimute.com
@@ -10,14 +10,14 @@ $DM_Matrix_debug=true;
 
 
 # get correct id for plugin
-$thisfile = basename(__FILE__, '.php');
+$thisfile_DM_Matrix = basename(__FILE__, '.php');
 
 # add in this plugin's language file
-i18n_merge($thisfile) || i18n_merge($thisfile, 'en_US');
+i18n_merge($thisfile_DM_Matrix) || i18n_merge($thisfile_DM_Matrix, 'en_US');
 
 # register plugin
 register_plugin(
-  $thisfile,
+  $thisfile_DM_Matrix,
   'The Matrix',
   '0.1',
   'Mike Swan',
@@ -26,23 +26,27 @@ register_plugin(
   'DM_Matrix',
   'matrix_manager'
 );
-    
+
+debugLog(''.$TIMEZONE);   
 
 define('GSSCHEMAPATH',GSDATAOTHERPATH.'matrix');
 
 // check and make sure the base folders are there. 
 if (!is_dir(GSSCHEMAPATH)){
 	mkdir(GSSCHEMAPATH);
-	DMdebuglog("DM_Matrix: Created Base Folder, ".GSSCHEMAPATH);
+	DMdebuglog(i18n_r($thisfile_DM_Matrix.'/DM_ERROR_CREATEBASEFOLDER'));
 } else {
-	DMdebuglog("DM_Matrix: Base Folder, ".GSSCHEMAPATH." exists");
+	DMdebuglog(i18n_r($thisfile_DM_Matrix.'/DM_ERROR_CREATEBASEFOLDERFAIL'));
 }
 
 $defaultDebug = true;
 $schemaArray = array();
 $item_title='Matrix';
+$editing=false; 
 
 require "DM_Matrix/include/sql4array.php";
+$sql = new sql4array();
+$mytable=array();
 
 
 register_script('DM_Matrix',$SITEURL.'plugins/DM_Matrix/js/DM_Matrix.js', '0.1',FALSE);
@@ -72,43 +76,108 @@ queue_style('codemirror-css', GSBACK);
 queue_style('codemirror-theme', GSBACK);
 queue_style('codemirror-dialog', GSBACK);
 
-queue_script('jquery-ui', GSBACK);
+
 
 register_script('DM_Matrix_timepicker',$SITEURL.'plugins/DM_Matrix/js/timepicker.js', '0.1',FALSE);
 queue_script('DM_Matrix_timepicker', GSBACK);
 
 register_style('jquery-ui-css',$SITEURL.'plugins/DM_Matrix/css/redmond/jquery-ui-1.8.16.custom.css','screen',FALSE);
 queue_style('jquery-ui-css', GSBACK);
+queue_script('jquery-ui', GSBACK);
 
 add_action('nav-tab','createNavTab',array('DM_Matrix','DM_Matrix','The Matrix','action=matrix_manager&schema'));
+
+add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Matrix, "Manage Tables",'schema')); 
+if (isset($_GET['edit'])){
+	add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Matrix, "Edit Tables",'edit')); 
+}
+add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Matrix, "Manage Records",'view')); 
+add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Matrix, "Settings",'settings')); 
+add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Matrix, "About",'about')); 
+
+<<<<<<< HEAD
+=======
 DM_getSchema();
 
-
+>>>>>>> 9524275785a2c8722747259f96359731a42086d4
 if (isset($_GET['add']) && isset($_POST['post-addtable'])){
 	DMdebuglog('Trying to add a new table: '.$_POST['post-addtable']);
-	$ret=createSchemaTable($_POST['post-addtable'],array());
+	$ret=createSchemaTable($_POST['post-addtable'],$_POST['post-maxrecords'],array());
 }
 
+if (isset($_GET['add']) && isset($_GET['addrecord'])){
+	$table=$_GET['add'];
+	addRecordFromForm($table);
+	}
+	
+
+
 if (isset($_GET['edit']) && isset($_GET['addfield'])){
-  	echo "adding Field to ".$_GET['edit']."/".$_POST['post-name']."=".$_POST['post-type'];
-	  addSchemaField($_GET['edit'],array($_POST['post-name']=>$_POST['post-type']),true);
+  	if (isset($_POST['post-cacheindex'])){
+  		$cacheindex=1;
+  	} else {
+  		$cacheindex=0;
+  	}
+	if (isset($_POST['post-tableview'])){
+  		$tableview=1;
+  	} else {
+  		$tableview=0;
+  	}
+	
+	$field=array(
+	'name'=>$_POST['post-name'],
+	'type'=>$_POST['post-type'],
+	'label'=>$_POST['post-label'],
+	'description'=>$_POST['post-desc'],
+	'cacheindex'=>$cacheindex,
+	'tableview'=>$tableview
+	);
+	
+	addSchemaField($_GET['edit'],$field,true);
 	  //DM_saveSchema();
-  }
+}
+
+function addRecordFromForm($tbl){
+		debugLog("addign form");
+		global $fieldtypes,$schemaArray;
+		$tempArray=array();	
+		foreach ($schemaArray[$tbl]['fields'] as $field=>$type)
+		{
+			if (isset($_POST["post-".$field]))
+			{
+				$data=DM_manipulate($_POST["post-".$field], $type); 
+				$tempArray[(string)$field]=$data;
+			}
+		}
+
+		createRecord($tbl, $tempArray);		
+}
+
+function DM_manipulate($field, $type){
+	switch ($type){
+		case "datetimepicker":
+			return (int)strtotime($field);
+			break;	
+		case "datepicker":
+			return (int)strtotime($field);
+			break;		
+			default: 
+			return $field;
+	}
+		
+}
 
 //Admin Content
 function matrix_manager() {
-global $item_title,$thisfile, $fieldtypes,$schemaArray;
+global $item_title,$thisfile_DM_Matrix, $fieldtypes,$schemaArray, $sql, $mytable;
 
 //Main Navigation For Admin Panel
 ?>
-<div style="margin:0 -15px -15px -10px;padding:0px;">
-	<h3 class="floated"><?php echo i18n_r($thisfile.'/DM_PLUGINTITLE') ?></h3>  
-	<div class="edit-nav clearfix" style="">
-		<a href="load.php?id=DM_Matrix&action=matrix_manager&settings" <?php if (isset($_GET['settings'])) { echo 'class="current"'; } ?>>Settings</a>
-		<a href="load.php?id=DM_Matrix&action=matrix_manager&fields" <?php if (isset($_GET['fields'])) { echo 'class="current"'; } ?>>Manage Records</a>
-		<a href="load.php?id=DM_Matrix&action=matrix_manager&schema" <?php if (isset($_GET['schema'])) { echo 'class="current"'; } ?>>Manage Tables</a>
-	</div> 
+
+	<div style="margin:0 -15px -15px -10px;padding:0px;">
+	<h3 ><?php echo i18n_r($thisfile_DM_Matrix.'/DM_PLUGINTITLE') ?></h3>  
 </div>
+
 </div>
 <div class="main" style="margin-top:-10px;">
 
@@ -118,26 +187,26 @@ global $item_title,$thisfile, $fieldtypes,$schemaArray;
 if (isset($_GET['schema'])) {
 ?>
 		
-		<h2><?php echo i18n_r($thisfile.'/DM_SHOWTABLE') ?></h2>
+		<h2><?php echo i18n_r($thisfile_DM_Matrix.'/DM_SHOWTABLE') ?></h2>
 		<table id="editpages" class="edittable highlight paginate">
 		<tbody>
 			<tr>
-				<th><?php echo i18n_r($thisfile.'/DM_TABLENAME') ?></th>
-				<th ><?php echo i18n_r($thisfile.'/DM_NUMRECORDS') ?></th>
-				<th><?php echo i18n_r($thisfile.'/DM_NUMFIELDS') ?></th>
-				<th style="width:75px;"><?php echo i18n_r($thisfile.'/DM_OPTIONS') ?></th>
+				<th><?php echo i18n_r($thisfile_DM_Matrix.'/DM_TABLENAME') ?></th>
+				<th ><?php echo i18n_r($thisfile_DM_Matrix.'/DM_NUMRECORDS') ?></th>
+				<th><?php echo i18n_r($thisfile_DM_Matrix.'/DM_NUMFIELDS') ?></th>
+				<th style="width:75px;"><?php echo i18n_r($thisfile_DM_Matrix.'/DM_OPTIONS') ?></th>
 			</tr>
 		<?php 
 		foreach($schemaArray as $schema=>$key){
-			echo "<tr><td>".$schema."</td>";
-			echo "<td>".($key['id'])."</td>";
+			echo "<tr><td><a href='load.php?id=DM_Matrix&action=matrix_manager&view=".$schema."' >".$schema."</a></td>";
+			echo "<td>".($key['id'])." / ".$key['maxrecords']."</td>";
 			echo "<td>".count($key['fields'])."</td>";
 			echo "<td>";
 			echo "<a href='load.php?id=DM_Matrix&action=matrix_manager&edit=".$schema."'>";
-			echo "<img src='../plugins/DM_Matrix/images/edit.png' title='".i18n_r($thisfile.'/DM_EDITTABLE')."' /></a>";
+			echo "<img src='../plugins/DM_Matrix/images/edit.png' title='".i18n_r($thisfile_DM_Matrix.'/DM_EDITTABLE')."' /></a>";
 			if (count($key['fields'])>1){
 				echo "<a href='load.php?id=DM_Matrix&action=matrix_manager&add=".$schema."'>";
-				echo "<img src='../plugins/DM_Matrix/images/add.png' title='".i18n_r($thisfile.'/DM_ADDRECORD')."' /></a>";
+				echo "<img src='../plugins/DM_Matrix/images/add.png' title='".i18n_r($thisfile_DM_Matrix.'/DM_ADDRECORD')."' /></a>";
 			}
 			echo "</td></tr>";
 		}
@@ -149,10 +218,14 @@ if (isset($_GET['schema'])) {
 		<ul class="fields">
 		
 		<li class="InputfieldName Inputfield_name ui-widget" id="wrap_Inputfield_name">
-			<label class="ui-widget-header fieldstateToggle" for="Inputfield_name"><?php echo i18n_r($thisfile.'/DM_ADDTABLE') ?></label>
+			<label class="ui-widget-header fieldstateToggle" for="Inputfield_name"><?php echo i18n_r($thisfile_DM_Matrix.'/DM_ADDTABLE') ?></label>
 			<div class="ui-widget-content">
-				<p class="description"><?php echo i18n_r($thisfile.'/DM_ADDTABLE_DESC') ?></p>
-				<input type="text" class="required" id="post-addtable" name="post-addtable" />		
+				<p class="description"><?php echo i18n_r($thisfile_DM_Matrix.'/DM_ADDTABLE_DESC') ?></p>
+				<input type="text" class="required" id="post-addtable" name="post-addtable" />	
+				<br/><br/>
+				<p class="description">Max Number of records, leave blank for unlimited</p>
+				<input type="text" id="post-maxrecords" name="post-maxrecords" />	
+				<br/><br/>
 				<button id="Inputfield_submit" class="ui-button ui-widget  ui-state-default form_submit" name="addtable" id="addtable" value="Submit" type="button"><span class="ui-button-text">Submit</span></button>
 			</div>
 		</li>
@@ -170,6 +243,8 @@ if (isset($_GET['schema'])) {
 	}
 	elseif (isset($_GET['edit']))
 	{
+
+			
 		$schemaname=$_GET['edit'];
 		echo "<h2>Edit Schema: ".$schemaname."</h2>";
 		?>
@@ -177,7 +252,13 @@ if (isset($_GET['schema'])) {
 		<tbody><tr><th>Name</th><th >Type</th><th style="width:75px;">Options</th></tr>
 		<?php 
 		foreach($schemaArray[$schemaname]['fields'] as $schema=>$key){
-			echo "<tr><td>".$schema."</td><td>".$key."</td><td><a href='load.php?id=DM_Matrix&action=matrix_manager&edit=".$schema."'><img src='../plugins/DM_Matrix/images/edit.png' title='Edit Records' /></a></td></tr>";
+			echo "<tr><td>".$schema."</td><td>".$key."</td>";
+			if ($schema!="id"){
+				echo "<td><a href='load.php?id=DM_Matrix&action=matrix_manager&edit=".$schemaname."&field=".$schema."'><img src='../plugins/DM_Matrix/images/edit.png' title='Edit Field' /></a></td>";
+			} else {
+				echo "<td></td>";
+			}
+			echo "</tr>";
 		}
 		
 		?>
@@ -186,50 +267,91 @@ if (isset($_GET['schema'])) {
 		</table>
 		
 		<form method="post" action="load.php?id=DM_Matrix&action=matrix_manager&edit=<?php echo $schemaname; ?>&addfield">
-		<h3>Add New Field</h3>
+		<?php if (isset($_GET['field'])){
+			$formName = $_GET['field'];
+			$formType = $schemaArray[$_GET['edit']]['fields'][$_GET['field']];
+			$formDesc= $schemaArray[$_GET['edit']]['desc'][$_GET['field']];
+			$formLabel = $schemaArray[$_GET['edit']]['label'][$_GET['field']];
+			$formHeading = $schemaArray[$_GET['edit']]['desc'][$_GET['field']];
+			$formCacheIndex = $schemaArray[$_GET['edit']]['cacheindex'][$_GET['field']];
+			$formTableView = $schemaArray[$_GET['edit']]['tableview'][$_GET['field']];
+			$editing=true;
+			echo '<h3>Editing Field : '.$_GET['field'].'</h3>'; 
+			$editing=true;
+			
+		} else {
+			echo '<h3>Add New Field</h3>';
+			$formName = "";
+			$formType = "";
+			$formDesc= "";
+			$formLabel = "";
+			$formHeading = "";
+			$formCacheIndex = "";
+			$formTableView = "";
+		}
+		?>
 		<ul class="fields">
 			<li class="InputfieldName Inputfield_name ui-widget" id="wrap_Inputfield_name">
 				<label class="ui-widget-header fieldstateToggle" for="Inputfield_name">Name</label>
 				<div class="ui-widget-content">
 					<p class="description">Any combination of ASCII letters [a-z], numbers [0-9], or underscores (no dashes or spaces).</p>
-					<input type="text" value="" id="post-name" name="post-name" class="required" size="25">
+					<input type="text" id="post-name" name="post-name" class="required" size="25" <?php echo " value='".$formName."'"; ?> >
 				</div>
 			</li>
 			<li class="InputfieldName Inputfield_name ui-widget" id="wrap_Inputfield_name">
 				<label class="ui-widget-header fieldstateToggle" for="Inputfield_name">Type</label>
 				<div class="ui-widget-content">
 					<p class="description">After selecting your field type, you may be presented with additional configuration options specific to the field type you selected.</p>
-					<select id="post-type" name="post-type">
-						<option value="int">int</option>		
-						<option value="text">text</option>	
-						<option value="textlong">textlong</option>
-						<option value="checkbox">checkbox</option>
-						<option value="pages">pages</option>
-						<option value="templates">templates</option>
-						<option value="datepicker">datepicker</option>
-						<option value="datetimepicker">datetimepicker</option>
-						<option value="image">Image Picker</option>								
-						<option value="textarea">textarea</option>	
-						<option value="codeeditor">codeeditor</option>	
-						<option value="texteditor">texteditor</option>		
+					<select id="post-type" name="post-type" class="required">
+						<option value=""></option>
+						
+						<?php 
+						$types=array('int','text','textlong','checkbox','pages','dropdown','templates','datepicker','datetimepicker','image','textarea','codeeditor','texteditor'); 
+						foreach ($types as $type){
+							if ($formType==$type){
+								$sel=" selected ";
+							} else {
+								$sel="";
+							}
+							echo "<option value='".$type."' ".$sel.">".$type."</option>"; 
+						}
+						?>	
 					</select>
 					<div id="fieldoptions"></div>	
 				</div>
 			</li>
 			<li class="InputfieldName Inputfield_name ui-widget" id="wrap_Inputfield_name">
+			<label class="ui-widget-header fieldstateToggle" for="Inputfield_name">Add a label</label>
+			<div class="ui-widget-content">
+				<p class="description">Add a label for this Field.</p>
+				<input type="text" <?php echo " value='".$formLabel."'"; ?> id="post-label" name="post-label" class="required" size="115">
+				<br/>		
+			</div>
+			</li>
+			<li class="InputfieldName Inputfield_name ui-widget" id="wrap_Inputfield_name">
 			<label class="ui-widget-header fieldstateToggle" for="Inputfield_name">Add a Description</label>
 			<div class="ui-widget-content">
 				<p class="description">Additional information describing this field and/or instructions on how to enter the content.</p>
-				<input type="text" value="" id="post-desc" name="post-desc" class="required" size="25">
+				<input type="text" <?php echo " value='".$formDesc."'"; ?> id="post-desc" name="post-desc" class="required" size="115">
 				<br/>		
 			</div>
-		</li>
-		<li class="InputfieldSubmit field_submit ui-widget" id="wrap_Inputfield_submit">
-			<label class="ui-widget-header fieldStateToggle" for="field_submit">submit</label>
+			</li>
+			<li class="InputfieldName Inputfield_name ui-widget" id="wrap_Inputfield_name">
+			<label class="ui-widget-header fieldstateToggle" for="Inputfield_name">Additional Options</label>
 			<div class="ui-widget-content">
-				<button id="field_submit" class="ui-button ui-widget ui-corner-all ui-state-default" name="submit" value="Save Template" type="submit"><span class="ui-button-text">Save Template</span></button>
+				<p class="description">Additional options for this Field</p>
+				<input type="checkbox" id="post-cacheindex" name="post-cacheindex" <?php if ($formCacheIndex=='1') echo " checked "; ?> >&nbsp;Allow this field to be indexed<br/> 
+				<input type="checkbox" id="post-tableview" name="post-tableview" <?php if ($formTableView=='1') echo " checked "; ?>>&nbsp;Show in Table View
+				
+				<br/>		
 			</div>
-		</li>
+			</li>
+			<li class="InputfieldSubmit field_submit ui-widget" id="wrap_Inputfield_submit">
+				<label class="ui-widget-header fieldStateToggle" for="field_submit">Save this Field</label>
+				<div class="ui-widget-content">
+					<button id="field_submit" class="ui-button ui-widget ui-corner-all ui-state-default form_submit" name="submit" value="Save Field" type="submit"><span class="ui-button-text">Save Field</span></button>
+				</div>
+			</li>
 		</form>
 		</ul>
 	<?php
@@ -237,7 +359,49 @@ if (isset($_GET['schema'])) {
 elseif (isset($_GET['add']))
 	{
 		//
-	} 	
+	} 
+elseif (isset($_GET['view']))
+	{
+		$table=$_GET['view'];
+		$fields=array();
+		$tableheader='';
+		$count=0;
+		foreach($schemaArray[$table]['fields'] as $schema=>$key){
+			if ($schemaArray[$table]['tableview'][$schema]==1){
+				$fields[$count]['name']=$schema;
+				$fields[$count]['type']=$key;
+				
+				$tableheader.="<th>".$schema."</th>";
+			}
+			$count++;
+		}
+?>
+		<table id="editpages" class="edittable highlight paginate">
+		<tbody><tr><?php echo $tableheader; ?></tr>
+		<?php 
+		getPagesXmlValues();
+		$mytable=getSchemaTable($table);
+		foreach($mytable as $key=>$value){
+			echo "<tr>";
+			foreach ($fields as $field){
+				if ($field['type']=='datepicker'){
+					$data=date('d-m-Y',$mytable[$key][$field['name']]);
+				} elseif ($field['type']=='datetimepicker') {
+					$data=date('d-m-Y i:M',$mytable[$key][$field['name']]);
+				} else {
+					$data=$mytable[$key][$field['name']];
+				}
+				echo "<td>".$data."</td>"; 
+			}
+			echo "</tr>";
+		}
+		
+		?>
+		
+		</tbody>
+		</table>
+<?
+	} 		
 }
 
 /** Load The main schema XML file and fill the array $schema
@@ -246,12 +410,11 @@ function DM_getSchema($flag=false){
   global $schemaArray;	
   
   $file=GSSCHEMAPATH."/schema.xml";
-  DMdebuglog($file);
   if (file_exists($file)){
-  DMdebuglog('file loaded...');
+  DMdebuglog('Schema file loaded...');
   // load the xml file and setup the array. 
-	$thisfile = file_get_contents($file);
-		$data = simplexml_load_string($thisfile);
+	$thisfile_DM_Matrix = file_get_contents($file);
+		$data = simplexml_load_string($thisfile_DM_Matrix);
 		$components = @$data->item;
 		if (count($components) != 0) {
 			foreach ($components as $component) {
@@ -260,14 +423,22 @@ function DM_getSchema($flag=false){
 				//$schemaArray[(string)$key] =$key;
 				$schemaArray[(string)$key]=array();				
 				$schemaArray[(string)$key]['id']=(int)$component->id;
-				
+				$schemaArray[(string)$key]['maxrecords']=(int)$component->maxrecords;
 				$fields=$component->field;	
 				foreach ($fields as $field) {
 					$att = $field->attributes();
 					$type =(string)$att['type'];
-					$desc=(string)$att['desc'];
+					$desc=(string)$att['description'];
+					$label=(string)$att['label'];
+					$cacheindex=(string)$att['cacheindex'];
+					$tableview=(string)$att['tableview'];
+					
 					$schemaArray[(string)$key]['fields'][(string)$field]=(string)$type;
 					$schemaArray[(string)$key]['desc'][(string)$field]=(string)$desc;
+					$schemaArray[(string)$key]['label'][(string)$field]=(string)$label;
+					$schemaArray[(string)$key]['cacheindex'][(string)$field]=(string)$cacheindex;
+					$schemaArray[(string)$key]['tableview'][(string)$field]=(string)$tableview;
+					
 					if ((string)$type=="dropdown"){
 						$schemaArray[(string)$key]['table'][(string)$field]=(string)$att['table'];;
 						$schemaArray[(string)$key]['row'][(string)$field]=(string)$att['row'];;
@@ -291,9 +462,18 @@ function DM_saveSchema(){
 		$pages = $xml->addChild('item');
 		$pages->addChild('name',$table);
 		$pages->addChild('id',$key['id']);
+		$pages->addChild('maxrecords',$key['maxrecords']);
 		foreach($key['fields'] as $field=>$type){
-			$pages->addChild('field',$field)->addAttribute('type',$type);
+			//$options=$schemaArray[$table]['options'];
+
+			$field=$pages->addChild('field',$field);
+			$field->addAttribute('type',$type);
+			$field->addAttribute('tableview',@$schemaArray[$table]['tableview'][(string)$field]);
+			$field->addAttribute('cacheindex',@$schemaArray[$table]['cacheindex'][(string)$field]);
+			$field->addAttribute('description',@$schemaArray[$table]['desc'][(string)$field]);
+			$field->addAttribute('label',@$schemaArray[$table]['label'][(string)$field]);
 		}
+		
 	}
 	$xml->asXML($file);
 	DM_getSchema(true);
@@ -355,23 +535,24 @@ function getNextRecord($name){
  * @param array $fields , array of fields and types to create, default is to create an id (int) fields
  * @return boolean , whether table was created or not. 
  */
-function createSchemaTable($name, $fields=array()){
-	global $schemaArray, $thisfile;
+function createSchemaTable($name, $maxrecords=0, $fields=array()){
+	global $schemaArray, $thisfile_DM_Matrix;
 	if (array_key_exists($name , $schemaArray)){
-		DMdebuglog(i18n_r($thisfile.'/DM_ERROR_CREATETABLEFAIL'));
+		DMdebuglog(i18n_r($thisfile_DM_Matrix.'/DM_ERROR_CREATETABLEFAIL'));
 		return false;
 	}
 	$schemaArray[(string)$name] =array();
 	$schemaArray[(string)$name]['id']=0;
+	$schemaArray[(string)$name]['maxrecords']=$maxrecords;
 	if (!in_array('id', $schemaArray)){
 		$schemaArray[(string)$name]['fields']['id']='int';
 	}
 	foreach ($fields as $field=>$value) {
 		$schemaArray[(string)$name]['fields'][(string)$field]=(string)$value;
-	}	
+	}
 	createSchemaFolder($name);		
 	$ret=DM_saveSchema();
-	DMdebuglog(i18n_r($thisfile.'/DM_ERROR_CREATETABLESUCCESS'));
+	DMdebuglog(i18n_r($thisfile_DM_Matrix.'/DM_ERROR_CREATETABLESUCCESS'));
 	return true;
 }
 
@@ -402,14 +583,18 @@ function dropSchemaTable($name){
  */
 function addSchemaField($name,$fields=array(),$save=true){
 	global $schemaArray;
-	foreach ($fields as $field=>$value) {
-		$schemaArray[(string)$name]['fields'][(string)$field]=(string)$value;
-	}			
+	$schemaArray[(string)$name]['fields'][(string)$fields['name']]=(string)$fields['type'];	
+	$schemaArray[(string)$name]['label'][(string)$fields['name']]=(string)$fields['label'];
+	$schemaArray[(string)$name]['desc'][(string)$fields['name']]=(string)$fields['description'];
+	$schemaArray[(string)$name]['cacheindex'][(string)$fields['name']]=(string)$fields['cacheindex'];
+	$schemaArray[(string)$name]['tableview'][(string)$fields['name']]=(string)$fields['tableview'];
 	if ($save==true) {
 		$ret=DM_saveSchema();
+		$ret=true;
 	} else {
 		$ret=true;
 	}
+
 	return $ret;
 }
 
@@ -436,7 +621,8 @@ function deleteSchemaField($name,$fields=array(),$save=true){
 }
 
 
-function getSchemaTable($name){
+function getSchemaTable($name,$query=''){
+	global $returnArray;
 	$table=array();
 	$path = GSSCHEMAPATH.'/'.$name."/";
 	  $dir_handle = @opendir($path) or die("Unable to open $path");
@@ -445,30 +631,30 @@ function getSchemaTable($name){
 	    $ext = substr($filename, strrpos($filename, '.') + 1);
 		$fname=substr($filename,0, strrpos($filename, '.'));
 	    if ($ext=="xml"){
-		$thisfile = file_get_contents($path.$filename);
-        $data = simplexml_load_string($thisfile);
-        //$count++;   
-        $id=$data->item;
-		
-		foreach ($id->children() as $opt=>$val) {
-            //$pagesArray[(string)$key][(string)$opt]=(string)$val;
-			$table[$fname][(string)$opt]=(string)$val;
-        }
-		
-    	//$table[$fname]['id']=$fname;
-		//$table[$fname]['name']=(string)$id;
-		
+			$thisfile_DM_Matrix = file_get_contents($path.$filename);
+	        $data = simplexml_load_string($thisfile_DM_Matrix);
+	        //$count++;   
+	        $id=$data->item;
+			
+			foreach ($id->children() as $opt=>$val) {
+	            //$pagesArray[(string)$key][(string)$opt]=(string)$val;
+				$table[$fname][(string)$opt]=(string)$val;
+	        }		
 	    }
 	  }
-	
+	if ($query!=''){
+		$returnArray=$table;
+		$sql=new sql4array();
+		$table = $sql->query($query);
+	}
 	return $table;
 }
 
 
 function DM_createForm($name){
-global $schemaArray;	
-echo '<ul class="fields">';
-foreach ($schemaArray[$name]['fields'] as $field=>$value) {
+	global $schemaArray;	
+	echo '<ul class="fields">';
+	foreach ($schemaArray[$name]['fields'] as $field=>$value) {
 
 	if ($field!="id"){
 	?>
@@ -493,14 +679,14 @@ foreach ($schemaArray[$name]['fields'] as $field=>$value) {
 
 		
 	<?php	
+		}
 	}
-}
 ?>
 
 	<li class="fieldsubmit Inputfield_submit_save_field ui-widget" id="wrap_Inputfield_submit">
-		<label class="ui-widget-header fieldstateToggle" for="Inputfield_submit">submit_save_field</label>
+		<label class="ui-widget-header fieldstateToggle" for="Inputfield_submit">Save Record</label>
 		<div class="ui-widget-content">
-			<button id="Inputfield_submit" class="ui-button ui-widget ui-state-default ui-corner-all" name="submit_save_field" value="Submit" type="submit"><span class="ui-button-text">Submit</span></button>
+			<button id="Inputfield_submit" class="ui-button ui-widget ui-state-default ui-corner-all" name="submit_save_field" value="Submit" type="submit"><span class="ui-button-text">Save This Record</span></button>
 		</div>
 	</li>
 
@@ -523,12 +709,6 @@ function displayFieldType($name, $type, $schema){
 	
 	// get caching info in case we need it. 
 	getPagesXmlValues();
-	
-	
-	//echo "<pre>";
-	//print_r($pagesArray);
-	//echo "</pre>";
-	
 	
 	// Get the filed type
 	switch ($type){
@@ -595,15 +775,16 @@ function displayFieldType($name, $type, $schema){
 			echo '</select></p>';
 			break;
 		case 'image':
-        	echo '<p><input class="text" type="text" id="post-'.$name.'" name="post-'.$name.'" value="" />';
+        	echo '<p><input class="text imagepicker" type="text" id="post-'.$name.'" name="post-'.$name.'" value="" />';
         	echo ' <span class="edit-nav"><a id="browse-'.$name.'" href="#">Browse</a></span>';
+			echo '<div id="image-'.$name.'"></div>';
        		echo '</p>'; 
         
 		?>
 		<script type="text/javascript">
 		  $(function() { 
 		    $('#browse-<?php echo $name; ?>').click(function(e) {
-		      window.open('<?php echo $SITEURL; ?>admin/filebrowser.php?CKEditorFuncNum=1&returnid=post-<?php echo $name; ?>&type=images', 'browser', 'width=800,height=500,left=100,top=100,scrollbars=yes');
+		      window.open('<?php echo $SITEURL; ?>admin/filebrowser.php?CKEditorFuncNum=1&func=test&returnid=post-<?php echo $name; ?>&type=images', 'browser', 'width=800,height=500,left=100,top=100,scrollbars=yes');
 		    });
 		  });
 		</script>
@@ -691,3 +872,9 @@ function DMdebuglog($log){
 		debuglog($log);
 	}
 }
+
+
+//echo "<pre>";
+//print_r($schemaArray);
+//echo "</pre>";
+
