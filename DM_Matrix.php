@@ -76,7 +76,12 @@ queue_style('codemirror-css', GSBACK);
 queue_style('codemirror-theme', GSBACK);
 queue_style('codemirror-dialog', GSBACK);
 
-
+register_script('DM_tablesorter',$SITEURL.'plugins/DM_Matrix/js/jquery.tablesorter.js', '0.1',FALSE);
+queue_script('DM_tablesorter', GSBACK);
+register_script('DM_tablepager',$SITEURL.'plugins/DM_Matrix/js/jquery.tablesorter.pager.js', '0.1',FALSE);
+queue_script('DM_tablepager', GSBACK);
+register_style('DM_tablesorter',$SITEURL.'plugins/DM_Matrix/css/blue/style.css','screen',FALSE);
+queue_style('DM_tablesorter', GSBACK);
 
 register_script('DM_Matrix_timepicker',$SITEURL.'plugins/DM_Matrix/js/timepicker.js', '0.1',FALSE);
 queue_script('DM_Matrix_timepicker', GSBACK);
@@ -185,14 +190,16 @@ if (isset($_GET['schema'])) {
 ?>
 		
 		<h2><?php echo i18n_r($thisfile_DM_Matrix.'/DM_SHOWTABLE') ?></h2>
-		<table id="editpages" class="edittable highlight paginate">
-		<tbody>
+		<table id="editpages" class="tablesorter">
+		<thead>
 			<tr>
 				<th><?php echo i18n_r($thisfile_DM_Matrix.'/DM_TABLENAME') ?></th>
 				<th ><?php echo i18n_r($thisfile_DM_Matrix.'/DM_NUMRECORDS') ?></th>
 				<th><?php echo i18n_r($thisfile_DM_Matrix.'/DM_NUMFIELDS') ?></th>
 				<th style="width:75px;"><?php echo i18n_r($thisfile_DM_Matrix.'/DM_OPTIONS') ?></th>
 			</tr>
+		</thead>
+		<tbody>
 		<?php 
 		foreach($schemaArray as $schema=>$key){
 			echo "<tr><td><a href='load.php?id=DM_Matrix&action=matrix_manager&view=".$schema."' >".$schema."</a></td>";
@@ -245,8 +252,10 @@ if (isset($_GET['schema'])) {
 		$schemaname=$_GET['edit'];
 		echo "<h2>Edit Schema: ".$schemaname."</h2>";
 		?>
-		<table id="editpages" class="edittable highlight paginate">
-		<tbody><tr><th>Name</th><th >Type</th><th style="width:75px;">Options</th></tr>
+		<table id="editpages" class="tablesorter">
+		<thead><tr><th>Name</th><th >Type</th><th style="width:75px;">Options</th></tr>
+		</thead>
+		<tbody>
 		<?php 
 		foreach($schemaArray[$schemaname]['fields'] as $schema=>$key){
 			echo "<tr><td>".$schema."</td><td>".$key."</td>";
@@ -373,8 +382,9 @@ elseif (isset($_GET['view']))
 			$count++;
 		}
 ?>
-		<table id="editpages" class="edittable highlight paginate">
-		<tbody><tr><?php echo $tableheader; ?></tr>
+		<table id="editpages" class="tablesorter">
+		<thead><tr><?php echo $tableheader; ?></tr></thead>
+		<tbody>
 		<?php 
 		getPagesXmlValues();
 		$mytable=getSchemaTable($table);
