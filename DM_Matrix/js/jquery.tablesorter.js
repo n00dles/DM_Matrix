@@ -130,7 +130,7 @@
                 dateFormat: "us",
                 decimal: '/\.|\,/g',
                 onRenderHeader: null,
-                selectorHeaders: 'thead th',
+                selectorHeaders: 'thead th.sort',
                 debug: false
             };
 

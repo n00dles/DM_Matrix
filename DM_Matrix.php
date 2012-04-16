@@ -195,9 +195,9 @@ if (isset($_GET['schema'])) {
 		<table id="editpages" class="tablesorter">
 		<thead>
 			<tr>
-				<th><?php echo i18n_r($thisfile_DM_Matrix.'/DM_TABLENAME') ?></th>
-				<th ><?php echo i18n_r($thisfile_DM_Matrix.'/DM_NUMRECORDS') ?></th>
-				<th><?php echo i18n_r($thisfile_DM_Matrix.'/DM_NUMFIELDS') ?></th>
+				<th class='sort'><?php echo i18n_r($thisfile_DM_Matrix.'/DM_TABLENAME') ?></th>
+				<th class='sort' ><?php echo i18n_r($thisfile_DM_Matrix.'/DM_NUMRECORDS') ?></th>
+				<th class='sort'><?php echo i18n_r($thisfile_DM_Matrix.'/DM_NUMFIELDS') ?></th>
 				<th style="width:75px;"><?php echo i18n_r($thisfile_DM_Matrix.'/DM_OPTIONS') ?></th>
 			</tr>
 		</thead>
@@ -394,13 +394,13 @@ elseif (isset($_GET['view']))
 				$fields[$count]['name']=$schema;
 				$fields[$count]['type']=$key;
 				
-				$tableheader.="<th>".$schema."</th>";
+				$tableheader.="<th class='sort'>".$schema."</th>";
 			}
 			$count++;
 		}
 ?>
 		<table id="editpages" class="tablesorter">
-		<thead><tr><?php echo $tableheader; ?></tr></thead>
+		<thead><tr><?php echo $tableheader; ?><th>Opts</th></tr></thead>
 		<tbody>
 		<?php 
 		getPagesXmlValues();
@@ -408,6 +408,7 @@ elseif (isset($_GET['view']))
 		foreach($mytable as $key=>$value){
 			echo "<tr>";
 			foreach ($fields as $field){
+				if ($field['name']=='id') $id=$mytable[$key][$field['name']];
 				if ($field['type']=='datepicker'){
 					$data=date('d-m-Y',$mytable[$key][$field['name']]);
 				} elseif ($field['type']=='datetimepicker') {
@@ -417,6 +418,8 @@ elseif (isset($_GET['view']))
 				}
 				echo "<td>".$data."</td>"; 
 			}
+			echo "<td><a href='load.php?id=DM_Matrix&action=matrix_manager&add=".$table."&field=".$id."'><img src='../plugins/DM_Matrix/images/edit.png' title='Edit Field' /></a></td>";
+			
 			echo "</tr>";
 		}
 		
@@ -688,6 +691,50 @@ function getSchemaTable($name,$query=''){
 	}
 	return $table;
 }
+
+function DM_editForm($name){
+	global $schemaArray;	
+	echo '<ul class="fields">';
+	foreach ($schemaArray[$name]['fields'] as $field=>$value) {
+
+	if ($field!="id"){
+	?>
+	
+		<li class="InputfieldName Inputfield_name ui-widget" id="wrap_Inputfield_name">
+			<label class="ui-widget-header fieldstateToggle" for="Inputfield_name"><?php echo $field; ?></label>
+			<div class="ui-widget-content">
+				<p class="description"><?php echo $schemaArray[$name]['desc'][$field]; ?></p>
+				<?php displayFieldType($field, $value,$name); ?>
+			</div>
+		</li>
+	
+	<?php
+	} else {
+	?>
+	<li class="InputfieldHidden Inputfield_id ui-widget" id="wrap_Inputfield_id">
+		<label class="ui-widget-header fieldstateToggle" for="Inputfield_id">id</label>
+		<div class="ui-widget-content">
+			<input id="Inputfield_id" name="id" value="0" type="hidden">
+		</div>
+	</li>
+
+		
+	<?php	
+		}
+	}
+?>
+
+	<li class="fieldsubmit Inputfield_submit_save_field ui-widget" id="wrap_Inputfield_submit">
+		<label class="ui-widget-header fieldstateToggle" for="Inputfield_submit">Save Record</label>
+		<div class="ui-widget-content">
+			<button id="Inputfield_submit" class="ui-button ui-widget ui-state-default ui-corner-all" name="submit_save_field" value="Submit" type="submit"><span class="ui-button-text">Save This Record</span></button>
+		</div>
+	</li>
+
+</ul>
+<?php	
+}
+
 
 
 function DM_createForm($name){
