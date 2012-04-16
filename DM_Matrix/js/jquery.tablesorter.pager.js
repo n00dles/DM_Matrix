@@ -122,7 +122,7 @@
 			};
 			
 			this.defaults = {
-				size: 5,
+				size: 10,
 				offset: 0,
 				page: 0,
 				totalRows: 0,
@@ -135,7 +135,7 @@
 				cssPageDisplay: '.pagedisplay',
 				cssPageSize: '.pagesize',
 				seperator: "/",
-				positionFixed: true,
+				positionFixed: false,
 				appender: this.appender
 			};
 			

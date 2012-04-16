@@ -3,7 +3,7 @@
 jQuery(document).ready(function() { 
 
 $("#editpages").tablesorter({widgets: ['zebra']}) 
-//.tablesorterPager({container: $("#editpages")}); 
+.tablesorterPager({container: $("#pager")}); 
 
 $('#nav_DM_Matrix').insertAfter($('#nav_pages'));
 

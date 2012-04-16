@@ -38,3 +38,5 @@ table.tablesorter thead tr .headerSortDown {
 table.tablesorter thead tr .headerSortDown, table.tablesorter thead tr .headerSortUp {
 background-color: #8dbdd8 !important;;
 }
+
+.pager{padding-top:5px;padding-bottom:5px;}

@@ -82,6 +82,8 @@ register_script('DM_tablepager',$SITEURL.'plugins/DM_Matrix/js/jquery.tablesorte
 queue_script('DM_tablepager', GSBACK);
 register_style('DM_tablesorter',$SITEURL.'plugins/DM_Matrix/css/blue/style.css','screen',FALSE);
 queue_style('DM_tablesorter', GSBACK);
+register_style('DM_tablepager',$SITEURL.'plugins/DM_Matrix/js/jquery.tablesorter.pager.css','screen',FALSE);
+queue_style('DM_tablepager', GSBACK);
 
 register_script('DM_Matrix_timepicker',$SITEURL.'plugins/DM_Matrix/js/timepicker.js', '0.1',FALSE);
 queue_script('DM_Matrix_timepicker', GSBACK);
@@ -100,11 +102,8 @@ add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Ma
 add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Matrix, "Settings",'settings')); 
 add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Matrix, "About",'about')); 
 
-<<<<<<< HEAD
-=======
 DM_getSchema();
 
->>>>>>> 9524275785a2c8722747259f96359731a42086d4
 if (isset($_GET['add']) && isset($_POST['post-addtable'])){
 	DMdebuglog('Trying to add a new table: '.$_POST['post-addtable']);
 	$ret=createSchemaTable($_POST['post-addtable'],$_POST['post-maxrecords'],array());
@@ -221,6 +220,21 @@ if (isset($_GET['schema'])) {
 		?>
 		</tbody>
 		</table>
+		<div id="pager" class="pager">
+		<form>
+			<img src="../plugins/DM_Matrix/images/first.png" class="first"/>
+			<img src="../plugins/DM_Matrix/images/prev.png" class="prev"/>
+			<input type="text" class="pagedisplay"/>
+			<img src="../plugins/DM_Matrix/images/next.png" class="next"/>
+			<img src="../plugins/DM_Matrix/images/last.png" class="last"/>
+			<select class="pagesize">
+				<option selected="selected"  value="10">10</option>
+				<option value="20">20</option>
+				<option value="30">30</option>
+				<option  value="40">40</option>
+			</select>
+		</form>
+		</div>
 		<form method="post" action="load.php?id=DM_Matrix&schema&action=matrix_manager&add">
 		<ul class="fields">
 		
@@ -410,6 +424,21 @@ elseif (isset($_GET['view']))
 		
 		</tbody>
 		</table>
+		<div id="pager" class="pager">
+		<form>
+			<img src="../plugins/DM_Matrix/images/first.png" class="first"/>
+			<img src="../plugins/DM_Matrix/images/prev.png" class="prev"/>
+			<input type="text" class="pagedisplay"/>
+			<img src="../plugins/DM_Matrix/images/next.png" class="next"/>
+			<img src="../plugins/DM_Matrix/images/last.png" class="last"/>
+			<select class="pagesize">
+				<option selected="selected"  value="10">10</option>
+				<option value="20">20</option>
+				<option value="30">30</option>
+				<option  value="40">40</option>
+			</select>
+		</form>
+		</div>
 <?
 	} 		
 }
