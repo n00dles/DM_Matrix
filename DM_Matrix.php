@@ -114,6 +114,11 @@ if (isset($_GET['add']) && isset($_GET['addrecord'])){
 	addRecordFromForm($table);
 	}
 	
+if (isset($_GET['add']) && isset($_GET['updaterecord'])){
+	$table=$_GET['add'];
+	updateRecordFromForm($table);
+	}
+	
 
 
 if (isset($_GET['edit']) && isset($_GET['addfield'])){
@@ -156,6 +161,23 @@ function addRecordFromForm($tbl){
 
 		createRecord($tbl, $tempArray);		
 }
+
+function updateRecordFromForm($tbl){
+		debugLog("updating record from form...");
+		global $fieldtypes,$schemaArray;
+		$tempArray=array();	
+		foreach ($schemaArray[$tbl]['fields'] as $field=>$type)
+		{
+			if (isset($_POST["post-".$field]))
+			{
+				$data=DM_manipulate($_POST["post-".$field], $type); 
+				$tempArray[(string)$field]=$data;
+			}
+		}
+
+		updateRecord($tbl,$_POST['post-id'], $tempArray);		
+}
+
 
 function DM_manipulate($field, $type){
 	switch ($type){
@@ -257,10 +279,18 @@ if (isset($_GET['schema'])) {
 	
 	} elseif (isset($_GET['add']))	{
 		$schemaname=$_GET['add'];
-		echo "<h2>Add new ".$schemaname." record</h2>";
-		echo '<form method="post" action="load.php?id=DM_Matrix&action=matrix_manager&add='.$schemaname.'&addrecord">';
-		DM_createForm($schemaname);
-		echo '</form>';
+		if (isset($_GET['field'])){
+			$record=$_GET['field'];
+			echo "<h2>Editing ".$schemaname." record : ".$record."</h2>";
+			echo '<form method="post" action="load.php?id=DM_Matrix&action=matrix_manager&add='.$schemaname.'&updaterecord">';
+			DM_editForm($schemaname,$record);
+			echo '</form>';
+		} else {
+			echo "<h2>Add new ".$schemaname." record</h2>";
+			echo '<form method="post" action="load.php?id=DM_Matrix&action=matrix_manager&add='.$schemaname.'&addrecord">';
+			DM_createForm($schemaname);
+			echo '</form>';
+		}
 	}
 	elseif (isset($_GET['edit']))
 	{
@@ -398,6 +428,7 @@ elseif (isset($_GET['view']))
 			}
 			$count++;
 		}
+		echo "<h2>Manage Records: ".$table."</h2>";
 ?>
 		<table id="editpages" class="tablesorter">
 		<thead><tr><?php echo $tableheader; ?><th>Opts</th></tr></thead>
@@ -418,7 +449,7 @@ elseif (isset($_GET['view']))
 				}
 				echo "<td>".$data."</td>"; 
 			}
-			echo "<td><a href='load.php?id=DM_Matrix&action=matrix_manager&add=".$table."&field=".$id."'><img src='../plugins/DM_Matrix/images/edit.png' title='Edit Field' /></a></td>";
+			echo "<td><a href='load.php?id=DM_Matrix&action=matrix_manager&add=".$table."&field=".$id."'><img src='../plugins/DM_Matrix/images/edit.png' title='Edit Record ".$id."' /></a></td>";
 			
 			echo "</tr>";
 		}
@@ -553,6 +584,24 @@ function createRecord($name,$data=array()){
 	
 }
 
+function updateRecord($name,$record,$data=array()){
+	global $schemaArray;
+	//$id=getNextRecord($name);
+	DMdebuglog('updating record:'.$name.'/'.$record);
+	$file=GSSCHEMAPATH.'/'.$name."/".$record.".xml";
+	$xml = @new SimpleXMLExtended('<channel></channel>');
+	$pages = $xml->addChild('item');
+	$pages->addChild('id',$record);
+	foreach ($data as $field=>$txt){
+		$pages->addChild($field,$txt);	
+	}
+	$xml->asXML($file);
+	DMdebuglog('file:'.$file);
+	//$schemaArray[$name]['id']=$id+1;
+	$ret=DM_saveSchema();
+	
+}
+
 /**
  * Get the next record ID
  *
@@ -677,10 +726,10 @@ function getSchemaTable($name,$query=''){
 	        $data = simplexml_load_string($thisfile_DM_Matrix);
 	        //$count++;   
 	        $id=$data->item;
-			
+			$idNum=$id->id;
 			foreach ($id->children() as $opt=>$val) {
 	            //$pagesArray[(string)$key][(string)$opt]=(string)$val;
-				$table[$fname][(string)$opt]=(string)$val;
+				$table[(int)$idNum][(string)$opt]=(string)$val;
 	        }		
 	    }
 	  }
@@ -692,10 +741,33 @@ function getSchemaTable($name,$query=''){
 	return $table;
 }
 
-function DM_editForm($name){
+
+function DM_getRecord($name, $record){
+	$table=array();
+	$path = GSSCHEMAPATH.'/'.$name."/";
+	$filename=$record.".xml";
+	$thisfile_DM_Matrix = file_get_contents($path.$filename);
+    $data = simplexml_load_string($thisfile_DM_Matrix);
+     //$count++;   
+    $id=$data->item;
+	$idNum=$id->id;
+	foreach ($id->children() as $opt=>$val) {
+           //$pagesArray[(string)$key][(string)$opt]=(string)$val;
+		$table[(string)$opt]=(string)$val;
+    }		
+	return $table;
+}
+
+function DM_editForm($table, $record){
 	global $schemaArray;	
+	global $returnArray;
+	$formValues=DM_getRecord($table,$record);
+	
+	echo "<pre>";
+	print_r($formValues);
+	echo "</pre>";
 	echo '<ul class="fields">';
-	foreach ($schemaArray[$name]['fields'] as $field=>$value) {
+	foreach ($schemaArray[$table]['fields'] as $field=>$value) {
 
 	if ($field!="id"){
 	?>
@@ -703,18 +775,18 @@ function DM_editForm($name){
 		<li class="InputfieldName Inputfield_name ui-widget" id="wrap_Inputfield_name">
 			<label class="ui-widget-header fieldstateToggle" for="Inputfield_name"><?php echo $field; ?></label>
 			<div class="ui-widget-content">
-				<p class="description"><?php echo $schemaArray[$name]['desc'][$field]; ?></p>
-				<?php displayFieldType($field, $value,$name); ?>
+				<p class="description"><?php echo $schemaArray[$table]['desc'][$field]; ?></p>
+				<?php displayFieldType($field, $value,$table,$formValues[$field]); ?>
 			</div>
 		</li>
 	
 	<?php
 	} else {
 	?>
-	<li class="InputfieldHidden Inputfield_id ui-widget" id="wrap_Inputfield_id">
+	<li class="InputfieldName Inputfield_id ui-widget" id="wrap_Inputfield_id">
 		<label class="ui-widget-header fieldstateToggle" for="Inputfield_id">id</label>
 		<div class="ui-widget-content">
-			<input id="Inputfield_id" name="id" value="0" type="hidden">
+			<input id="post-id" name="post-id" value="<?php echo $record; ?>" type="text" readonly="readonly">
 		</div>
 	</li>
 
@@ -781,7 +853,7 @@ function DM_createForm($name){
 }
 
 
-function displayFieldType($name, $type, $schema){
+function displayFieldType($name, $type, $schema,$value=''){
 	global $schemaArray;
 	global $pagesArray;
 	global $TEMPLATE;
@@ -791,8 +863,7 @@ function displayFieldType($name, $type, $schema){
 	$datepick=false;
 	$datetimepick=false;
 	$textedit=false;
-	$value='';
-	
+	$options='';
 	// get caching info in case we need it. 
 	getPagesXmlValues();
 	
@@ -800,11 +871,11 @@ function displayFieldType($name, $type, $schema){
 	switch ($type){
 		// normal text field
 		case "text":
-			echo '<p><input id="post-'.$name.'" class="required" name="post-'.$name.'" type="text" size="50" maxlength="128"></p>';
+			echo '<p><input id="post-'.$name.'" class="required" name="post-'.$name.'" type="text" size="50" maxlength="128" value="'.$value.'"></p>';
 			break; 
 		// long text field, full width		
 		case "textlong":
-			echo '<p><input id="post-'.$name.'" class="required" name="post-'.$name.'" type="text" size="115" maxlength="128"></p>';
+			echo '<p><input id="post-'.$name.'" class="required" name="post-'.$name.'" type="text" size="115" maxlength="128" value="'.$value.'"></p>';
 			break;
 		// Checkbox
 		case "checkbox":
@@ -814,8 +885,10 @@ function displayFieldType($name, $type, $schema){
 		// Dropdown box of existing pages on the site. Values are skug/url 
 		case "pages":
 			echo '<p><select id="post-'.$name.'" name="post-'.$name.'">';
+			echo '<option value=""></option>';
 			foreach ($pagesArray as $page){
-				echo '<option value="'.$page['url'].'">'.$page['title'].'</option>';
+				if ($page['url']==$value) $options=' selected ';
+				echo '<option value="'.$page['url'].'" '.$options.'>'.$page['title'].'</option>';
 			}
 			echo '</select></p>';
 			break;
@@ -833,7 +906,8 @@ function displayFieldType($name, $type, $schema){
 			}			
 			sort($templates);	
 			foreach ($templates as $file){
-				$theme_templates .= '<option value="'.$file.'" >'.$file.'</option>';
+				if ($file==$value) $options=' selected ';
+				$theme_templates .= '<option value="'.$file.'" '.$options.'>'.$file.'</option>';
 			}
 			echo '<p><select  id="post-'.$name.'" name="post-'.$name.'">';
 			echo $theme_templates;
@@ -841,12 +915,12 @@ function displayFieldType($name, $type, $schema){
 			break;
 		// Datepicker. Use settings page to set the front end date format, saved as Unix timestamp
 		case "datepicker";
-			echo '<p><input id="post-'.$name.'" class="datepicker required" name="post-'.$name.'" type="text" size="50" maxlength="128"></p>';
+			echo '<p><input id="post-'.$name.'" class="datepicker required" name="post-'.$name.'" type="text" size="50" maxlength="128" value="'.$value.'"></p>';
 			$datetimepick=true;
 			break;
 		// DateTimepicker. Use settings page to set the front end date format, saved as Unix timestamp
 		case "datetimepicker";
-			echo '<p><input id="post-'.$name.'" class="datetimepicker required" name="post-'.$name.'" type="text" size="50" maxlength="128"></p>';	
+			echo '<p><input id="post-'.$name.'" class="datetimepicker required" name="post-'.$name.'" type="text" size="50" maxlength="128"  value="'.$value.'"></p>';	
 			$datepick=true;
 			break;
 		// Dropdown from another Table/column 
@@ -856,12 +930,13 @@ function displayFieldType($name, $type, $schema){
 			$maintable=getSchemaTable('gallery');
 			echo '<p><select  id="post-'.$name.'" name="post-'.$name.'">';
 			foreach ($maintable as $row){
-				echo '<option value="'.$row[$column].'">'.$row[$column].'</option>';
+				if ($row[$column]==$value) $options=" selected ";
+				echo '<option value="'.$row[$column].'" '.$options.'>'.$row[$column].'</option>';
 			}
 			echo '</select></p>';
 			break;
 		case 'image':
-        	echo '<p><input class="text imagepicker" type="text" id="post-'.$name.'" name="post-'.$name.'" value="" />';
+        	echo '<p><input class="text imagepicker" type="text" id="post-'.$name.'" name="post-'.$name.'"  value="'.$value.'" />';
         	echo ' <span class="edit-nav"><a id="browse-'.$name.'" href="#">Browse</a></span>';
 			echo '<div id="image-'.$name.'"></div>';
        		echo '</p>'; 

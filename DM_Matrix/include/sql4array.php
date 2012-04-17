@@ -343,9 +343,9 @@ class sql4array
 			/**
 			 * SQL Functions
 			 */
-			$patterns[] = '#LOWER\((.*)\)#ie';
-			$patterns[] = '#UPPER\((.*)\)#ie';
-			$patterns[] = '#TRIM\((.*)\)#ie';
+			$patterns[] = '/#LOWER\((.*)\)#ie/';
+			$patterns[] = '/#UPPER\((.*)\)#ie/';
+			$patterns[] = '/#TRIM\((.*)\)#ie/';
 
 			$replacements[] = "'strtolower(\\1)'";
 			$replacements[] = "'strtoupper(\\1)'";
@@ -354,14 +354,14 @@ class sql4array
 			/**
 			 * Basics SQL operators
 			 */
-			$patterns[] = '#(([a-zA-Z0-9\._]+)(\())?([a-zA-Z0-9\.]+)(\))?(\s)+(=|IS)(\s)+([[:digit:]]+)(\s)*#ie';
-			$patterns[] = '#(([a-zA-Z0-9\._]+)(\())?([a-zA-Z0-9\.]+)(\))?(\s)+(=|IS)(\s)+(\'|\")(.*)(\'|\")(\s)*#ie';
-			$patterns[] = '#(([a-zA-Z0-9\._]+)(\())?([a-zA-Z0-9\.]+)(\))?(\s)+(>|<)(\s)+([[:digit:]]+)(\s)*#ie';
-			$patterns[] = '#(([a-zA-Z0-9\._]+)(\())?([a-zA-Z0-9\.]+)(\))?(\s)+(<=|>=)(\s)+([[:digit:]]+)(\s)*#ie';
-			$patterns[] = '#(([a-zA-Z0-9\._]+)(\())?([a-zA-Z0-9\.]+)(\))?(\s)+(<>|IS NOT|!=)(\s)+([[:digit:]]+)(\s)*#ie';
-			$patterns[] = '#(([a-zA-Z0-9\._]+)(\())?([a-zA-Z0-9\.]+)(\))?(\s)+(<>|IS NOT|!=)(\s)+(\'|\")(.*)(\'|\")(\s)*#ie';
-			$patterns[] = '#(([a-zA-Z0-9\._]+)(\())?([a-zA-Z0-9\.]+)(\))?(\s)+(IS)?(NOT IN)(\s)+\((.*)\)#ie';
-			$patterns[] = '#(([a-zA-Z0-9\._]+)(\())?([a-zA-Z0-9\.]+)(\))?(\s)+(IS)?(IN)(\s)+\((.*)\)#ie';
+			$patterns[] = '/#(([a-zA-Z0-9\._]+)(\())?([a-zA-Z0-9\.]+)(\))?(\s)+(=|IS)(\s)+([[:digit:]]+)(\s)*#ie/';
+			$patterns[] = '/#(([a-zA-Z0-9\._]+)(\())?([a-zA-Z0-9\.]+)(\))?(\s)+(=|IS)(\s)+(\'|\")(.*)(\'|\")(\s)*#ie/';
+			$patterns[] = '/#(([a-zA-Z0-9\._]+)(\())?([a-zA-Z0-9\.]+)(\))?(\s)+(>|<)(\s)+([[:digit:]]+)(\s)*#ie/';
+			$patterns[] = '/#(([a-zA-Z0-9\._]+)(\())?([a-zA-Z0-9\.]+)(\))?(\s)+(<=|>=)(\s)+([[:digit:]]+)(\s)*#ie/';
+			$patterns[] = '/#(([a-zA-Z0-9\._]+)(\())?([a-zA-Z0-9\.]+)(\))?(\s)+(<>|IS NOT|!=)(\s)+([[:digit:]]+)(\s)*#ie/';
+			$patterns[] = '/#(([a-zA-Z0-9\._]+)(\())?([a-zA-Z0-9\.]+)(\))?(\s)+(<>|IS NOT|!=)(\s)+(\'|\")(.*)(\'|\")(\s)*#ie/';
+			$patterns[] = '/#(([a-zA-Z0-9\._]+)(\())?([a-zA-Z0-9\.]+)(\))?(\s)+(IS)?(NOT IN)(\s)+\((.*)\)#ie/';
+			$patterns[] = '/#(([a-zA-Z0-9\._]+)(\())?([a-zA-Z0-9\.]+)(\))?(\s)+(IS)?(IN)(\s)+\((.*)\)#ie/';
 
 			$replacements[] = "'\\1'.\$this->parse_where_key(\"\\4\").'\\5 == \\9 '";
 			$replacements[] = "'\\1'.\$this->parse_where_key(\"\\4\").'\\5 == \"\\10\" '";
@@ -382,16 +382,16 @@ class sql4array
 		 */
 		$ereg = array('%' => '(.*)', '_' => '(.)');
 
-		$patterns[] = '#([a-zA-Z0-9\.]+)(\s)+LIKE(\s)*(\'|\")(.*)(\'|\")#ie';
-		$patterns[] = '#([a-zA-Z0-9\.]+)(\s)+ILIKE(\s)*(\'|\")(.*)(\'|\")#ie';
-		$patterns[] = '#([a-zA-Z0-9\.]+)(\s)+NOT LIKE(\s)*(\'|\")(.*)(\'|\")#ie';
-		$patterns[] = '#([a-zA-Z0-9\.]+)(\s)+NOT ILIKE(\s)*(\'|\")(.*)(\'|\")#ie';
+		$patterns[] = '/#([a-zA-Z0-9\.]+)(\s)+LIKE(\s)*(\'|\")(.*)(\'|\")#ie/';
+		$patterns[] = '/#([a-zA-Z0-9\.]+)(\s)+ILIKE(\s)*(\'|\")(.*)(\'|\")#ie/';
+		$patterns[] = '/#([a-zA-Z0-9\.]+)(\s)+NOT LIKE(\s)*(\'|\")(.*)(\'|\")#ie/';
+		$patterns[] = '/#([a-zA-Z0-9\.]+)(\s)+NOT ILIKE(\s)*(\'|\")(.*)(\'|\")#ie/';
 
 		// TODO: use preg to replace ereg
 
-		$replacements[] = "'ereg(\"'.strtr(\"\\5\", \$ereg).'\", '.\$this->parse_where_key(\"\\1\").')'";
+		$replacements[] = "'preg_match(\"'.strtr(\"\\5\", \$ereg).'\", '.\$this->parse_where_key(\"\\1\").')'";
 		$replacements[] = "'eregi(\"'.strtr(\"\\5\", \$ereg).'\", '.\$this->parse_where_key(\"\\1\").')'";
-		$replacements[] = "'!ereg(\"'.strtr(\"\\5\", \$ereg).'\", '.\$this->parse_where_key(\"\\1\").')'";
+		$replacements[] = "'!preg_match(\"'.strtr(\"\\5\", \$ereg).'\", '.\$this->parse_where_key(\"\\1\").')'";
 		$replacements[] = "'!eregi(\"'.strtr(\"\\5\", \$ereg).'\", '.\$this->parse_where_key(\"\\1\").')'";
 
 		$this->parse_where = "return " . stripslashes(trim(preg_replace($patterns, $replacements, $string))) . ";";
