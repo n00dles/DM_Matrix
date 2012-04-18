@@ -45,6 +45,8 @@ $item_title='Matrix';
 $editing=false; 
 
 require "DM_Matrix/include/sql4array.php";
+require "DM_Matrix/include/DM_matrix_functions.php";
+
 $sql = new sql4array();
 $mytable=array();
 
@@ -551,19 +553,6 @@ function DM_saveSchema(){
 	$xml->asXML($file);
 	DM_getSchema(true);
 	return true;
-}
-
-/**
- * Create a Schema folder
- * 
- * Creates a fodler for each of the Tables in the Schema. 
- *
- * @param string $name , Name of the table to create
- * @return boolean , whether table was created or not. 
- */
-function createSchemaFolder($name){
-	$ret = mkdir (GSSCHEMAPATH.'/'.$name);
-	return $ret;
 }
 
 function createRecord($name,$data=array()){
