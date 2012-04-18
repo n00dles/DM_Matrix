@@ -762,10 +762,7 @@ function DM_editForm($table, $record){
 	global $schemaArray;	
 	global $returnArray;
 	$formValues=DM_getRecord($table,$record);
-	
-	echo "<pre>";
-	print_r($formValues);
-	echo "</pre>";
+
 	echo '<ul class="fields">';
 	foreach ($schemaArray[$table]['fields'] as $field=>$value) {
 
