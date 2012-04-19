@@ -5,7 +5,7 @@ jQuery(document).ready(function() {
 $("#editpages").tablesorter({widgets: ['zebra']}) 
 .tablesorterPager({container: $("#pager")}); 
 
-$('#nav_DM_Matrix').insertAfter($('#nav_pages'));
+//$('#nav_DM_Matrix').insertAfter($('#nav_pages'));
 
 //$('#maincontent').css('width','960px');
 

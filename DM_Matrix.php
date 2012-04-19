@@ -50,50 +50,52 @@ $editing=false;
 
 $sql = new sql4array();
 $mytable=array();
+	register_script('DM_Matrix',$SITEURL.'plugins/DM_Matrix/js/DM_Matrix.js', '0.1',FALSE);
+	queue_script('DM_Matrix', GSBACK);
+	register_style('DM_Matrix_css',$SITEURL.'plugins/DM_Matrix/css/style.css', '0.1',FALSE);
+	queue_style('DM_Matrix_css', GSBACK);
+	
+if (isset($_GET['id']) && $_GET['id']=="DM_Matrix"){
 
-
-register_script('DM_Matrix',$SITEURL.'plugins/DM_Matrix/js/DM_Matrix.js', '0.1',FALSE);
-queue_script('DM_Matrix', GSBACK);
-register_style('DM_Matrix_css',$SITEURL.'plugins/DM_Matrix/css/style.css', '0.1',FALSE);
-queue_style('DM_Matrix_css', GSBACK);
-
-
-register_script('codemirror', $SITEURL.'admin/template/js/codemirror/lib/codemirror-compressed.js', '0.2.0', FALSE);
-register_script('codemirror-search', $SITEURL.'admin/template/js/codemirror/lib/searchcursor.js', '0.2.0', FALSE);
-register_script('codemirror-search-cursor', $SITEURL.'admin/template/js/codemirror/lib/search.js', '0.2.0', FALSE);
-register_script('codemirror-dialog', $SITEURL.'admin/template/js/codemirror/lib/dialog.js', '0.2.0', FALSE);
-register_script('codemirror-folding', $SITEURL.'admin/template/js/codemirror/lib/foldcode.js', '0.2.0', FALSE);
-
-register_style('codemirror-css',$SITEURL.'admin/template/js/codemirror/lib/codemirror.css','screen',FALSE);
-register_style('codemirror-theme',$SITEURL.'admin/template/js/codemirror/theme/default.css','screen',FALSE);
-register_style('codemirror-dialog',$SITEURL.'admin/template/js/codemirror/lib/dialog.css','screen',FALSE);
-
-queue_script('codemirror', GSBACK);
-queue_script('codemirror-search', GSBACK);
-queue_script('codemirror-search-cursor', GSBACK);
-queue_script('codemirror-dialog', GSBACK);
-queue_script('codemirror-folding', GSBACK);
-
-
-queue_style('codemirror-css', GSBACK);
-queue_style('codemirror-theme', GSBACK);
-queue_style('codemirror-dialog', GSBACK);
-
-register_script('DM_tablesorter',$SITEURL.'plugins/DM_Matrix/js/jquery.tablesorter.js', '0.1',FALSE);
-queue_script('DM_tablesorter', GSBACK);
-register_script('DM_tablepager',$SITEURL.'plugins/DM_Matrix/js/jquery.tablesorter.pager.js', '0.1',FALSE);
-queue_script('DM_tablepager', GSBACK);
-register_style('DM_tablesorter',$SITEURL.'plugins/DM_Matrix/css/blue/style.css','screen',FALSE);
-queue_style('DM_tablesorter', GSBACK);
-register_style('DM_tablepager',$SITEURL.'plugins/DM_Matrix/js/jquery.tablesorter.pager.css','screen',FALSE);
-queue_style('DM_tablepager', GSBACK);
-
-register_script('DM_Matrix_timepicker',$SITEURL.'plugins/DM_Matrix/js/timepicker.js', '0.1',FALSE);
-queue_script('DM_Matrix_timepicker', GSBACK);
-
-register_style('jquery-ui-css',$SITEURL.'plugins/DM_Matrix/css/redmond/jquery-ui-1.8.16.custom.css','screen',FALSE);
-queue_style('jquery-ui-css', GSBACK);
-queue_script('jquery-ui', GSBACK);
+	
+	
+	register_script('codemirror', $SITEURL.'admin/template/js/codemirror/lib/codemirror-compressed.js', '0.2.0', FALSE);
+	register_script('codemirror-search', $SITEURL.'admin/template/js/codemirror/lib/searchcursor.js', '0.2.0', FALSE);
+	register_script('codemirror-search-cursor', $SITEURL.'admin/template/js/codemirror/lib/search.js', '0.2.0', FALSE);
+	register_script('codemirror-dialog', $SITEURL.'admin/template/js/codemirror/lib/dialog.js', '0.2.0', FALSE);
+	register_script('codemirror-folding', $SITEURL.'admin/template/js/codemirror/lib/foldcode.js', '0.2.0', FALSE);
+	
+	register_style('codemirror-css',$SITEURL.'admin/template/js/codemirror/lib/codemirror.css','screen',FALSE);
+	register_style('codemirror-theme',$SITEURL.'admin/template/js/codemirror/theme/default.css','screen',FALSE);
+	register_style('codemirror-dialog',$SITEURL.'admin/template/js/codemirror/lib/dialog.css','screen',FALSE);
+	
+	queue_script('codemirror', GSBACK);
+	queue_script('codemirror-search', GSBACK);
+	queue_script('codemirror-search-cursor', GSBACK);
+	queue_script('codemirror-dialog', GSBACK);
+	queue_script('codemirror-folding', GSBACK);
+	
+	
+	queue_style('codemirror-css', GSBACK);
+	queue_style('codemirror-theme', GSBACK);
+	queue_style('codemirror-dialog', GSBACK);
+	
+	register_script('DM_tablesorter',$SITEURL.'plugins/DM_Matrix/js/jquery.tablesorter.js', '0.1',FALSE);
+	queue_script('DM_tablesorter', GSBACK);
+	register_script('DM_tablepager',$SITEURL.'plugins/DM_Matrix/js/jquery.tablesorter.pager.js', '0.1',FALSE);
+	queue_script('DM_tablepager', GSBACK);
+	register_style('DM_tablesorter',$SITEURL.'plugins/DM_Matrix/css/blue/style.css','screen',FALSE);
+	queue_style('DM_tablesorter', GSBACK);
+	register_style('DM_tablepager',$SITEURL.'plugins/DM_Matrix/js/jquery.tablesorter.pager.css','screen',FALSE);
+	queue_style('DM_tablepager', GSBACK);
+	
+	register_script('DM_Matrix_timepicker',$SITEURL.'plugins/DM_Matrix/js/timepicker.js', '0.1',FALSE);
+	queue_script('DM_Matrix_timepicker', GSBACK);
+	
+	register_style('jquery-ui-css',$SITEURL.'plugins/DM_Matrix/css/redmond/jquery-ui-1.8.16.custom.css','screen',FALSE);
+	queue_style('jquery-ui-css', GSBACK);
+	queue_script('jquery-ui', GSBACK);
+}
 
 add_action('nav-tab','createNavTab',array('DM_Matrix','DM_Matrix','The Matrix','action=matrix_manager&schema'));
 
@@ -199,6 +201,10 @@ function DM_manipulate($field, $type){
 //Admin Content
 function matrix_manager() {
 global $item_title,$thisfile_DM_Matrix, $fieldtypes,$schemaArray, $sql, $mytable;
+
+
+
+
 
 //Main Navigation For Admin Panel
 ?>
