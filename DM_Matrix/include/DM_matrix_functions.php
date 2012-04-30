@@ -416,6 +416,13 @@ function displayFieldType($name, $type, $schema,$value=''){
 		case "textlong":
 			echo '<p><input id="post-'.$name.'" class="required" name="post-'.$name.'" type="text" size="115" maxlength="128" value="'.$value.'"></p>';
 			break;
+		// Slug/Title
+		case "slug":
+			echo '<p><input id="post-'.$name.'" class="required" name="post-'.$name.'" type="text" size="115" onkeyup="makeSlug(\'post-'.$name.'\');" maxlength="128" value="'.$value.'"></p>';
+			echo '<p>Slug Name</p>';
+			echo '<p><input id="post-'.$name.'-slug" class="required" name="post-'.$name.'" type="text" size="115" maxlength="128" value="'.$value.'"></p>';
+			
+			break;
 		// Checkbox
 		case "checkbox":
 			$label=$schemaArray[$schema]['label'][$name];

@@ -11,7 +11,6 @@ $DM_Matrix_debug=true;
 require "DM_Matrix/include/sql4array.php";
 require "DM_Matrix/include/DM_matrix_functions.php";
 
-
 # get correct id for plugin
 $thisfile_DM_Matrix = basename(__FILE__, '.php');
 
@@ -50,14 +49,14 @@ $editing=false;
 
 $sql = new sql4array();
 $mytable=array();
+
+
+// only load all our scripts and style if were on the MAtrix Plugin page
+if (isset($_GET['id']) && $_GET['id']=="DM_Matrix"){
 	register_script('DM_Matrix',$SITEURL.'plugins/DM_Matrix/js/DM_Matrix.js', '0.1',FALSE);
 	queue_script('DM_Matrix', GSBACK);
 	register_style('DM_Matrix_css',$SITEURL.'plugins/DM_Matrix/css/style.css', '0.1',FALSE);
 	queue_style('DM_Matrix_css', GSBACK);
-	
-if (isset($_GET['id']) && $_GET['id']=="DM_Matrix"){
-
-	
 	
 	register_script('codemirror', $SITEURL.'admin/template/js/codemirror/lib/codemirror-compressed.js', '0.2.0', FALSE);
 	register_script('codemirror-search', $SITEURL.'admin/template/js/codemirror/lib/searchcursor.js', '0.2.0', FALSE);
@@ -70,10 +69,10 @@ if (isset($_GET['id']) && $_GET['id']=="DM_Matrix"){
 	register_style('codemirror-dialog',$SITEURL.'admin/template/js/codemirror/lib/dialog.css','screen',FALSE);
 	
 	queue_script('codemirror', GSBACK);
-	queue_script('codemirror-search', GSBACK);
-	queue_script('codemirror-search-cursor', GSBACK);
-	queue_script('codemirror-dialog', GSBACK);
-	queue_script('codemirror-folding', GSBACK);
+	//queue_script('codemirror-search', GSBACK);
+	//queue_script('codemirror-search-cursor', GSBACK);
+	//queue_script('codemirror-dialog', GSBACK);
+	//queue_script('codemirror-folding', GSBACK);
 	
 	
 	queue_style('codemirror-css', GSBACK);
@@ -122,6 +121,7 @@ if (isset($_GET['add']) && isset($_GET['addrecord'])){
 if (isset($_GET['add']) && isset($_GET['updaterecord'])){
 	$table=$_GET['add'];
 	updateRecordFromForm($table);
+	header('Location: load.php?id=DM_Matrix&action=matrix_manager&view='.$table);
 	}
 	
 
@@ -368,7 +368,7 @@ if (isset($_GET['schema'])) {
 						<option value=""></option>
 						
 						<?php 
-						$types=array('int','text','textlong','checkbox','pages','dropdown','templates','datepicker','datetimepicker','image','textarea','codeeditor','texteditor'); 
+						$types=array('int','slug','text','textlong','checkbox','pages','dropdown','templates','datepicker','datetimepicker','image','textarea','codeeditor','texteditor'); 
 						foreach ($types as $type){
 							if ($formType==$type){
 								$sel=" selected ";
