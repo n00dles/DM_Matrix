@@ -14,6 +14,12 @@ function createSchemaFolder($name){
 }
 
 
+function addRoute($url,$route){
+	global $uri, $uriRoutes;
+	$uriRoutes[(string)$url]=$route;	
+}
+
+
 /**
  * Check if Table exists
  * 
@@ -179,6 +185,9 @@ function createSchemaTable($name, $maxrecords=0, $fields=array()){
 	$schemaArray[(string)$name]['maxrecords']=$maxrecords;
 	if (!in_array('id', $schemaArray)){
 		$schemaArray[(string)$name]['fields']['id']='int';
+		$schemaArray[(string)$name]['desc']['id']='id Field';
+		$schemaArray[(string)$name]['cacheindex']['id']='1';
+		$schemaArray[(string)$name]['tableview']['id']='1';
 	}
 	foreach ($fields as $field=>$value) {
 		$schemaArray[(string)$name]['fields'][(string)$field]=(string)$value;
@@ -461,11 +470,13 @@ function displayFieldType($name, $type, $schema,$value=''){
 			break;
 		// Datepicker. Use settings page to set the front end date format, saved as Unix timestamp
 		case "datepicker";
+			//$value=DM_manipulate($value, 'datepicker');
 			echo '<p><input id="post-'.$name.'" class="datepicker required" name="post-'.$name.'" type="text" size="50" maxlength="128" value="'.$value.'"></p>';
 			$datetimepick=true;
 			break;
 		// DateTimepicker. Use settings page to set the front end date format, saved as Unix timestamp
 		case "datetimepicker";
+			//$value=DM_manipulate($value, 'datetimepicker');
 			echo '<p><input id="post-'.$name.'" class="datetimepicker required" name="post-'.$name.'" type="text" size="50" maxlength="128"  value="'.$value.'"></p>';	
 			$datepick=true;
 			break;

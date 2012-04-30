@@ -37,18 +37,22 @@ define('GSSCHEMAPATH',GSDATAOTHERPATH.'matrix');
 if (!is_dir(GSSCHEMAPATH)){
 	mkdir(GSSCHEMAPATH);
 	DMdebuglog(i18n_r($thisfile_DM_Matrix.'/DM_ERROR_CREATEBASEFOLDER'));
+
 } else {
 	DMdebuglog(i18n_r($thisfile_DM_Matrix.'/DM_ERROR_CREATEBASEFOLDERFAIL'));
 }
+
 
 $defaultDebug = true;
 $schemaArray = array();
 $item_title='Matrix';
 $editing=false; 
-
+$uri='';
+$uriRoutes=array();
 
 $sql = new sql4array();
 $mytable=array();
+
 
 
 // only load all our scripts and style if were on the MAtrix Plugin page
@@ -66,14 +70,8 @@ if (isset($_GET['id']) && $_GET['id']=="DM_Matrix"){
 	
 	register_style('codemirror-css',$SITEURL.'admin/template/js/codemirror/lib/codemirror.css','screen',FALSE);
 	register_style('codemirror-theme',$SITEURL.'admin/template/js/codemirror/theme/default.css','screen',FALSE);
-	register_style('codemirror-dialog',$SITEURL.'admin/template/js/codemirror/lib/dialog.css','screen',FALSE);
-	
+
 	queue_script('codemirror', GSBACK);
-	//queue_script('codemirror-search', GSBACK);
-	//queue_script('codemirror-search-cursor', GSBACK);
-	//queue_script('codemirror-dialog', GSBACK);
-	//queue_script('codemirror-folding', GSBACK);
-	
 	
 	queue_style('codemirror-css', GSBACK);
 	queue_style('codemirror-theme', GSBACK);
@@ -106,7 +104,35 @@ add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Ma
 add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Matrix, "Settings",'settings')); 
 add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Matrix, "About",'about')); 
 
+add_action('error-404','testRoute',array());
+
+
+addRoute('blogger','news');
+addRoute('news','news');
+
+function testRoute(){
+	global $file,$id,$uriRoutes,$uri;
+	$uri = trim(str_replace('index.php', '', $_SERVER['REQUEST_URI']), '/#');
+	$parts=explode('/',$uri);
+	foreach ($uriRoutes as $route=>$key){
+		if ($parts[1]==$route){
+			$file=GSDATAPAGESPATH . $key.'.xml';
+			$id=$key;
+		}
+	}
+}
+
+
 DM_getSchema();
+
+if (!tableExists('_routes')){
+	$ret = createSchemaTable('_routes','0',array('route'=>'text','rewrite'=>'text'));
+}
+
+if (!tableExists('_settings')){
+	$ret = createSchemaTable('_settings','1',array());
+}
+
 
 if (isset($_GET['add']) && isset($_POST['post-addtable'])){
 	DMdebuglog('Trying to add a new table: '.$_POST['post-addtable']);
@@ -139,14 +165,13 @@ if (isset($_GET['edit']) && isset($_GET['addfield'])){
   	}
 	
 	$field=array(
-	'name'=>$_POST['post-name'],
-	'type'=>$_POST['post-type'],
-	'label'=>$_POST['post-label'],
-	'description'=>$_POST['post-desc'],
-	'cacheindex'=>$cacheindex,
-	'tableview'=>$tableview
+		'name'=>$_POST['post-name'],
+		'type'=>$_POST['post-type'],
+		'label'=>$_POST['post-label'],
+		'description'=>$_POST['post-desc'],
+		'cacheindex'=>$cacheindex,
+		'tableview'=>$tableview
 	);
-	
 	addSchemaField($_GET['edit'],$field,true);
 	  //DM_saveSchema();
 }
@@ -192,7 +217,7 @@ function DM_manipulate($field, $type){
 		case "datepicker":
 			return (int)strtotime($field);
 			break;		
-			default: 
+		default: 
 			return $field;
 	}
 		
@@ -235,17 +260,19 @@ if (isset($_GET['schema'])) {
 		<tbody>
 		<?php 
 		foreach($schemaArray as $schema=>$key){
-			echo "<tr><td><a href='load.php?id=DM_Matrix&action=matrix_manager&view=".$schema."' >".$schema."</a></td>";
-			echo "<td>".($key['id'])." / ".$key['maxrecords']."</td>";
-			echo "<td>".count($key['fields'])."</td>";
-			echo "<td>";
-			echo "<a href='load.php?id=DM_Matrix&action=matrix_manager&edit=".$schema."'>";
-			echo "<img src='../plugins/DM_Matrix/images/edit.png' title='".i18n_r($thisfile_DM_Matrix.'/DM_EDITTABLE')."' /></a>";
-			if (count($key['fields'])>1){
-				echo "<a href='load.php?id=DM_Matrix&action=matrix_manager&add=".$schema."'>";
-				echo "<img src='../plugins/DM_Matrix/images/add.png' title='".i18n_r($thisfile_DM_Matrix.'/DM_ADDRECORD')."' /></a>";
+			if (substr($schema,0,1)!="_"){
+				echo "<tr><td><a href='load.php?id=DM_Matrix&action=matrix_manager&view=".$schema."' >".$schema."</a></td>";
+				echo "<td>".($key['id'])." / ".$key['maxrecords']."</td>";
+				echo "<td>".count($key['fields'])."</td>";
+				echo "<td>";
+				echo "<a href='load.php?id=DM_Matrix&action=matrix_manager&edit=".$schema."'>";
+				echo "<img src='../plugins/DM_Matrix/images/edit.png' title='".i18n_r($thisfile_DM_Matrix.'/DM_EDITTABLE')."' /></a>";
+				if (count($key['fields'])>1){
+					echo "<a href='load.php?id=DM_Matrix&action=matrix_manager&add=".$schema."'>";
+					echo "<img src='../plugins/DM_Matrix/images/add.png' title='".i18n_r($thisfile_DM_Matrix.'/DM_ADDRECORD')."' /></a>";
+				}
+				echo "</td></tr>";
 			}
-			echo "</td></tr>";
 		}
 		
 		?>
