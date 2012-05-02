@@ -101,7 +101,9 @@ if (isset($_GET['edit'])){
 	add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Matrix, "Edit Tables",'edit')); 
 }
 add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Matrix, "Manage Records",'view')); 
+add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Matrix, "Manage Routes",'routes')); 
 add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Matrix, "Settings",'settings')); 
+
 add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Matrix, "About",'about')); 
 
 add_action('error-404','testRoute',array());
@@ -173,6 +175,7 @@ if (isset($_GET['edit']) && isset($_GET['addfield'])){
 		'tableview'=>$tableview
 	);
 	addSchemaField($_GET['edit'],$field,true);
+
 	  //DM_saveSchema();
 }
 
@@ -259,6 +262,7 @@ if (isset($_GET['schema'])) {
 		</thead>
 		<tbody>
 		<?php 
+		$tables=0;
 		foreach($schemaArray as $schema=>$key){
 			if (substr($schema,0,1)!="_"){
 				echo "<tr><td><a href='load.php?id=DM_Matrix&action=matrix_manager&view=".$schema."' >".$schema."</a></td>";
@@ -272,7 +276,12 @@ if (isset($_GET['schema'])) {
 					echo "<img src='../plugins/DM_Matrix/images/add.png' title='".i18n_r($thisfile_DM_Matrix.'/DM_ADDRECORD')."' /></a>";
 				}
 				echo "</td></tr>";
+				$tables++;
 			}
+		}
+		 
+		if (count($tables)>0){
+			echo '<tr><td colspan="4">No Tables defined</td></tr>';
 		}
 		
 		?>
