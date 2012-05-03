@@ -100,11 +100,11 @@ add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Ma
 if (isset($_GET['edit'])){
 	add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Matrix, "Edit Tables",'edit')); 
 }
-add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Matrix, "Manage Records",'view')); 
-add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Matrix, "Manage Routes",'routes')); 
-add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Matrix, "Settings",'settings')); 
-
-add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Matrix, "About",'about')); 
+if (isset($_GET['view'])){
+  add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Matrix, "Manage Records",'view')); 
+}
+# add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Matrix, "Settings",'settings')); 
+# add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Matrix, "About",'about')); 
 
 add_action('error-404','testRoute',array());
 
@@ -175,7 +175,6 @@ if (isset($_GET['edit']) && isset($_GET['addfield'])){
 		'tableview'=>$tableview
 	);
 	addSchemaField($_GET['edit'],$field,true);
-
 	  //DM_saveSchema();
 }
 
@@ -262,7 +261,7 @@ if (isset($_GET['schema'])) {
 		</thead>
 		<tbody>
 		<?php 
-		$tables=0;
+    $tables=0;    
 		foreach($schemaArray as $schema=>$key){
 			if (substr($schema,0,1)!="_"){
 				echo "<tr><td><a href='load.php?id=DM_Matrix&action=matrix_manager&view=".$schema."' >".$schema."</a></td>";
@@ -272,18 +271,19 @@ if (isset($_GET['schema'])) {
 				echo "<a href='load.php?id=DM_Matrix&action=matrix_manager&edit=".$schema."'>";
 				echo "<img src='../plugins/DM_Matrix/images/edit.png' title='".i18n_r($thisfile_DM_Matrix.'/DM_EDITTABLE')."' /></a>";
 				if (count($key['fields'])>1){
-					echo "<a href='load.php?id=DM_Matrix&action=matrix_manager&add=".$schema."'>";
+					echo " <a href='load.php?id=DM_Matrix&action=matrix_manager&add=".$schema."'>";
 					echo "<img src='../plugins/DM_Matrix/images/add.png' title='".i18n_r($thisfile_DM_Matrix.'/DM_ADDRECORD')."' /></a>";
 				}
+          // todo: add drop table functionality
+					// echo " <a href='load.php?id=DM_Matrix&action=matrix_manager&drop=".$schema."'>";
+					// echo "<img src='../plugins/DM_Matrix/images/delete.png' title='Drop Table $schema' /></a>";        
 				echo "</td></tr>";
-				$tables++;
+        $tables++;
 			}
 		}
-		 
-		if (count($tables)>0){
-			echo '<tr><td colspan="4">No Tables defined</td></tr>';
-		}
-		
+    if ($tables==0){
+      echo '<tr><td colspan="4">No Tables defined</td></tr>';	
+    }		
 		?>
 		</tbody>
 		</table>
@@ -314,7 +314,7 @@ if (isset($_GET['schema'])) {
 				<p class="description">Max Number of records, leave blank for unlimited</p>
 				<input type="text" id="post-maxrecords" name="post-maxrecords" />	
 				<br/><br/>
-				<button id="Inputfield_submit" class="ui-button ui-widget  ui-state-default form_submit" name="addtable" id="addtable" value="Submit" type="button"><span class="ui-button-text">Submit</span></button>
+				<button id="Inputfield_submit" class="mtrx_but_add form_submit" name="addtable" id="addtable" value="Submit" type="button">Add Table</button>
 			</div>
 		</li>
 		</ul>
@@ -326,12 +326,13 @@ if (isset($_GET['schema'])) {
 		$schemaname=$_GET['add'];
 		if (isset($_GET['field'])){
 			$record=$_GET['field'];
-			echo "<h2>Editing ".$schemaname." record : ".$record."</h2>";
+			echo "<h2>Editing '".$schemaname."' record : ".$record."</h2>";
 			echo '<form method="post" action="load.php?id=DM_Matrix&action=matrix_manager&add='.$schemaname.'&updaterecord">';
 			DM_editForm($schemaname,$record);
 			echo '</form>';
 		} else {
-			echo "<h2>Add new ".$schemaname." record</h2>";
+			echo "<h2>Add new '".$schemaname."' record</h2>";
+      echo "<a href='load.php?id=DM_Matrix&action=matrix_manager&view=$schemaname'>View all records for $schemaname</a>";
 			echo '<form method="post" action="load.php?id=DM_Matrix&action=matrix_manager&add='.$schemaname.'&addrecord">';
 			DM_createForm($schemaname);
 			echo '</form>';
@@ -447,7 +448,7 @@ if (isset($_GET['schema'])) {
 			<li class="InputfieldSubmit field_submit ui-widget" id="wrap_Inputfield_submit">
 				<label class="ui-widget-header fieldStateToggle" for="field_submit">Save this Field</label>
 				<div class="ui-widget-content">
-					<button id="field_submit" class="ui-button ui-widget ui-corner-all ui-state-default form_submit" name="submit" value="Save Field" type="submit"><span class="ui-button-text">Save Field</span></button>
+					<button id="field_submit" class="mtrx_but_add form_submit" name="submit" value="Save Field" type="submit">Save Field</button>
 				</div>
 			</li>
 		</form>
@@ -464,15 +465,17 @@ elseif (isset($_GET['view']))
 		$fields=array();
 		$tableheader='';
 		$count=0;
-		foreach($schemaArray[$table]['fields'] as $schema=>$key){
-			if ($schemaArray[$table]['tableview'][$schema]==1){
-				$fields[$count]['name']=$schema;
-				$fields[$count]['type']=$key;
-				
-				$tableheader.="<th class='sort'>".$schema."</th>";
-			}
-			$count++;
-		}
+    if(isset($schemaArray[$table]) && isset($schemaArray[$table]['fields'])){
+      foreach($schemaArray[$table]['fields'] as $schema=>$key){
+        if ($schemaArray[$table]['tableview'][$schema]==1){
+          $fields[$count]['name']=$schema;
+          $fields[$count]['type']=$key;
+          
+          $tableheader.="<th class='sort'>".$schema."</th>";
+        }
+        $count++;
+      }
+    }
 		echo "<h2>Manage Records: ".$table."</h2>";
 ?>
 		<table id="editpages" class="tablesorter">
@@ -481,28 +484,41 @@ elseif (isset($_GET['view']))
 		<?php 
 		getPagesXmlValues();
 		$mytable=getSchemaTable($table);
-		foreach($mytable as $key=>$value){
-			echo "<tr>";
-			foreach ($fields as $field){
-				if ($field['name']=='id') $id=$mytable[$key][$field['name']];
-				if ($field['type']=='datepicker'){
-					$data=date('d-m-Y',$mytable[$key][$field['name']]);
-				} elseif ($field['type']=='datetimepicker') {
-					$data=date('d-m-Y i:M',$mytable[$key][$field['name']]);
-				} else {
-					$data=$mytable[$key][$field['name']];
-				}
-				echo "<td>".$data."</td>"; 
-			}
-			echo "<td><a href='load.php?id=DM_Matrix&action=matrix_manager&add=".$table."&field=".$id."'><img src='../plugins/DM_Matrix/images/edit.png' title='Edit Record ".$id."' /></a></td>";
-			
-			echo "</tr>";
-		}
-		
+    $record_cnt = 0;
+    if(isset($mytable)){
+      foreach($mytable as $key=>$value){
+        #$fields = isset($mytable[$key]['fields']) ? $mytable[$key]['fields'] : array();
+        #$id = 0;
+        echo "<tr>";
+        foreach ($fields as $field){
+          if ($field['name']=='id') $id=$mytable[$key][$field['name']];
+          if ($field['type']=='datepicker'){
+            $data=date('d-m-Y',$mytable[$key][$field['name']]);
+          } elseif ($field['type']=='datetimepicker') {
+            $data=date('d-m-Y i:M',$mytable[$key][$field['name']]);
+          } else {
+            $data= isset($mytable[$key][$field['name']]) ? $mytable[$key][$field['name']] : '<b>NULL</b>';
+          }
+          echo "<td>".$data."</td>"; 
+        }
+        echo "<td><a href='load.php?id=DM_Matrix&action=matrix_manager&add=".$table."&field=".$id."'><img src='../plugins/DM_Matrix/images/edit.png' title='Edit Record ".$id."' /></a>";
+        //todo delete functionality
+        // echo " <a href='load.php?id=DM_Matrix&action=matrix_manager&delete=".$table."&field=".$id."'><img src='../plugins/DM_Matrix/images/delete.png' title='Delete Record ".$id."!' /></a>";
+        echo "</td></tr>";
+        $record_cnt++;
+      }
+    }else {
+    }  
+    if($record_cnt==0){
+      echo '<tr><td colspan="'.($count+1).'">Table has no records</td></tr>';	 
+    }
 		?>
 		
 		</tbody>
 		</table>
+    <?php 
+    echo "<a class='mtrx_but_add' id='matrix_recordadd' href='load.php?id=DM_Matrix&action=matrix_manager&add=".$table."'>Add Record</a>";
+    ?>     
 		<div id="pager" class="pager">
 		<form>
 			<img src="../plugins/DM_Matrix/images/first.png" class="first"/>

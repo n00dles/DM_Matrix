@@ -324,7 +324,7 @@ function DM_editForm($table, $record){
 			<label class="ui-widget-header fieldstateToggle" for="Inputfield_name"><?php echo $field; ?></label>
 			<div class="ui-widget-content">
 				<p class="description"><?php echo $schemaArray[$table]['desc'][$field]; ?></p>
-				<?php displayFieldType($field, $value,$table,$formValues[$field]); ?>
+				<?php displayFieldType($field, $value,$table,isset($formValues[$field]) ? $formValues[$field]:''); ?>
 			</div>
 		</li>
 	
@@ -347,7 +347,7 @@ function DM_editForm($table, $record){
 	<li class="fieldsubmit Inputfield_submit_save_field ui-widget" id="wrap_Inputfield_submit">
 		<label class="ui-widget-header fieldstateToggle" for="Inputfield_submit">Save Record</label>
 		<div class="ui-widget-content">
-			<button id="Inputfield_submit" class="ui-button ui-widget ui-state-default ui-corner-all" name="submit_save_field" value="Submit" type="submit"><span class="ui-button-text">Save This Record</span></button>
+			<button id="Inputfield_submit" class="mtrx_but_add" name="submit_save_field" value="Submit" type="submit">Save This Record</button>
 		</div>
 	</li>
 
@@ -392,7 +392,7 @@ function DM_createForm($name){
 	<li class="fieldsubmit Inputfield_submit_save_field ui-widget" id="wrap_Inputfield_submit">
 		<label class="ui-widget-header fieldstateToggle" for="Inputfield_submit">Save Record</label>
 		<div class="ui-widget-content">
-			<button id="Inputfield_submit" class="ui-button ui-widget ui-state-default ui-corner-all" name="submit_save_field" value="Submit" type="submit"><span class="ui-button-text">Save This Record</span></button>
+			<button id="Inputfield_submit" class="mtrx_but_add" name="submit_save_field" value="Submit" type="submit">Save This Record</button>
 		</div>
 	</li>
 
@@ -417,7 +417,11 @@ function displayFieldType($name, $type, $schema,$value=''){
 	
 	// Get the filed type
 	switch ($type){
-		// normal text field
+		// int field
+		case "int":
+			echo '<p><input id="post-'.$name.'" class="required" name="post-'.$name.'" type="text" size="50" maxlength="128" value="'.$value.'"></p>';
+			break; 		
+    // normal text field
 		case "text":
 			echo '<p><input id="post-'.$name.'" class="required" name="post-'.$name.'" type="text" size="50" maxlength="128" value="'.$value.'"></p>';
 			break; 

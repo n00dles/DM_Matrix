@@ -148,3 +148,13 @@
 	color: #900;
 	border-color: #C00;
 }
+
+.ui-button .ui-icon.mtrx_dbadd {
+    background-image: url('../images/add.png');
+    width: 16;
+    height: 16; 
+}
+
+#pager{
+  margin-top:10px;
+}
