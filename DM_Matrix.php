@@ -59,8 +59,7 @@ $mytable=array();
 if (isset($_GET['id']) && $_GET['id']=="DM_Matrix"){
 	register_script('DM_Matrix',$SITEURL.'plugins/DM_Matrix/js/DM_Matrix.js', '0.1',FALSE);
 	queue_script('DM_Matrix', GSBACK);
-	register_style('DM_Matrix_css',$SITEURL.'plugins/DM_Matrix/css/style.css', '0.1',FALSE);
-	queue_style('DM_Matrix_css', GSBACK);
+
 	
 	register_script('codemirror', $SITEURL.'admin/template/js/codemirror/lib/codemirror-compressed.js', '0.2.0', FALSE);
 	register_script('codemirror-search', $SITEURL.'admin/template/js/codemirror/lib/searchcursor.js', '0.2.0', FALSE);
@@ -91,7 +90,9 @@ if (isset($_GET['id']) && $_GET['id']=="DM_Matrix"){
 	
 	register_style('jquery-ui-css',$SITEURL.'plugins/DM_Matrix/css/redmond/jquery-ui-1.8.16.custom.css','screen',FALSE);
 	queue_style('jquery-ui-css', GSBACK);
-	queue_script('jquery-ui', GSBACK);
+	queue_script('jquery-ui', GSBACK);	
+	register_style('DM_Matrix_css',$SITEURL.'plugins/DM_Matrix/css/style.css', '0.1',FALSE);
+	queue_style('DM_Matrix_css', GSBACK);
 }
 
 add_action('nav-tab','createNavTab',array('DM_Matrix','DM_Matrix','The Matrix','action=matrix_manager&schema'));
@@ -271,7 +272,7 @@ if (isset($_GET['schema'])) {
 				echo "<td>";
 				echo "<a href='load.php?id=DM_Matrix&action=matrix_manager&edit=".$schema."'>";
 				echo "<img src='../plugins/DM_Matrix/images/edit.png' title='".i18n_r($thisfile_DM_Matrix.'/DM_EDITTABLE')."' /></a>";
-				if (count($key['fields'])>1){
+				if (count($key['fields'])>1 && ){
 					echo "<a href='load.php?id=DM_Matrix&action=matrix_manager&add=".$schema."'>";
 					echo "<img src='../plugins/DM_Matrix/images/add.png' title='".i18n_r($thisfile_DM_Matrix.'/DM_ADDRECORD')."' /></a>";
 				}
@@ -279,8 +280,7 @@ if (isset($_GET['schema'])) {
 				$tables++;
 			}
 		}
-		 
-		if (count($tables)>0){
+		if ($tables==0){
 			echo '<tr><td colspan="4">No Tables defined</td></tr>';
 		}
 		
@@ -305,7 +305,7 @@ if (isset($_GET['schema'])) {
 		<form method="post" action="load.php?id=DM_Matrix&schema&action=matrix_manager&add">
 		<ul class="fields">
 		
-		<li class="InputfieldName Inputfield_name ui-widget" id="wrap_Inputfield_name">
+		<li class="ui-widget" id="wrap_Inputfield_name">
 			<label class="ui-widget-header fieldstateToggle" for="Inputfield_name"><?php echo i18n_r($thisfile_DM_Matrix.'/DM_ADDTABLE') ?></label>
 			<div class="ui-widget-content">
 				<p class="description"><?php echo i18n_r($thisfile_DM_Matrix.'/DM_ADDTABLE_DESC') ?></p>
@@ -389,14 +389,14 @@ if (isset($_GET['schema'])) {
 		}
 		?>
 		<ul class="fields">
-			<li class="InputfieldName Inputfield_name ui-widget" id="wrap_Inputfield_name">
+			<li class="ui-widget" id="wrap_Inputfield_name">
 				<label class="ui-widget-header fieldstateToggle" for="Inputfield_name">Name</label>
 				<div class="ui-widget-content">
 					<p class="description">Any combination of ASCII letters [a-z], numbers [0-9], or underscores (no dashes or spaces).</p>
 					<input type="text" id="post-name" name="post-name" class="required" size="25" <?php echo " value='".$formName."'"; ?> >
 				</div>
 			</li>
-			<li class="InputfieldName Inputfield_name ui-widget" id="wrap_Inputfield_name">
+			<li class="ui-widget" id="wrap_Inputfield_name">
 				<label class="ui-widget-header fieldstateToggle" for="Inputfield_name">Type</label>
 				<div class="ui-widget-content">
 					<p class="description">After selecting your field type, you may be presented with additional configuration options specific to the field type you selected.</p>
@@ -418,7 +418,7 @@ if (isset($_GET['schema'])) {
 					<div id="fieldoptions"></div>	
 				</div>
 			</li>
-			<li class="InputfieldName Inputfield_name ui-widget" id="wrap_Inputfield_name">
+			<li class="ui-widget" id="wrap_Inputfield_name">
 			<label class="ui-widget-header fieldstateToggle" for="Inputfield_name">Add a label</label>
 			<div class="ui-widget-content">
 				<p class="description">Add a label for this Field.</p>
@@ -426,7 +426,7 @@ if (isset($_GET['schema'])) {
 				<br/>		
 			</div>
 			</li>
-			<li class="InputfieldName Inputfield_name ui-widget" id="wrap_Inputfield_name">
+			<li class="ui-widget" id="wrap_Inputfield_name">
 			<label class="ui-widget-header fieldstateToggle" for="Inputfield_name">Add a Description</label>
 			<div class="ui-widget-content">
 				<p class="description">Additional information describing this field and/or instructions on how to enter the content.</p>
@@ -434,7 +434,7 @@ if (isset($_GET['schema'])) {
 				<br/>		
 			</div>
 			</li>
-			<li class="InputfieldName Inputfield_name ui-widget" id="wrap_Inputfield_name">
+			<li class="ui-widget" id="wrap_Inputfield_name">
 			<label class="ui-widget-header fieldstateToggle" for="Inputfield_name">Additional Options</label>
 			<div class="ui-widget-content">
 				<p class="description">Additional options for this Field</p>
@@ -444,7 +444,7 @@ if (isset($_GET['schema'])) {
 				<br/>		
 			</div>
 			</li>
-			<li class="InputfieldSubmit field_submit ui-widget" id="wrap_Inputfield_submit">
+			<li class="ui-widget" id="wrap_Inputfield_submit">
 				<label class="ui-widget-header fieldStateToggle" for="field_submit">Save this Field</label>
 				<div class="ui-widget-content">
 					<button id="field_submit" class="ui-button ui-widget ui-corner-all ui-state-default form_submit" name="submit" value="Save Field" type="submit"><span class="ui-button-text">Save Field</span></button>
