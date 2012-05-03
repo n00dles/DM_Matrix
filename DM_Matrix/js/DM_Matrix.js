@@ -60,6 +60,11 @@ $('#addfield').live("click", function(){
 		}
 })
 
+
+  $('.mtrx_but').button();
+  $('.mtrx_but_add').button({icons:{primary: "mtrx_dbadd"}});
+
+
 })
 
 
