@@ -8,7 +8,7 @@ $("#editpages").tablesorter({widgets: ['zebra']})
 //$('#nav_DM_Matrix').insertAfter($('#nav_pages'));
 
 
-$("button.form_submit").live("click", function(){
+$("button.form_submit").on("click", function(){
 		errors=false;
 		$('.required').each(function(index) { 
 			if ($(this).removeClass('formerror'));
@@ -28,7 +28,7 @@ $('.imagepicker').live("change",function() {
 	//alert("changed..");
 })
 
-$('select#post-type').live("change",function() {
+$('select#post-type').on("change",function() {
 	//alert($(this).val());
 	fieldtype=$(this).val();
 	switch (fieldtype){
@@ -50,7 +50,7 @@ $('.datetimepicker').each(function(){
 	$(this).datetimepicker({ dateFormat: 'dd-mm-yy' });	
 })
 
-$('#dm_addnew').live("click", function(){
+$('#dm_addnew').on("click", function(){
 	$('#DM_addnew_row').stop().slideUp();
 	$(this).next().stop().slideToggle();
 	//alert("add new");	
@@ -58,7 +58,7 @@ $('#dm_addnew').live("click", function(){
 })
 	
 	
-$('#addfield').live("click", function(){
+$('#addfield').on("click", function(){
 	errors=false;
 		$('.required').each(function(index) { 
 			if ($(this).removeClass('error'));
