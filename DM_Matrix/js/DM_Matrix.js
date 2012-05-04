@@ -2,7 +2,7 @@
 
 jQuery(document).ready(function() { 
 
-$("#editpages").tablesorter({widgets: ['zebra']}) 
+$("#editpages").tablesorter({widgets: ['zebra']})
 .tablesorterPager({container: $("#pager")}); 
 
 //$('#nav_DM_Matrix').insertAfter($('#nav_pages'));
@@ -33,13 +33,22 @@ $('select#post-type').on("change",function() {
 	fieldtype=$(this).val();
 	switch (fieldtype){
 		case 'dropdown':
-			$('#fieldoptions').html('test');
+			$('#fieldoptions').html($('#field-dropdown').html());
+			$('#post-table').on("change",function() {
+				fields = $('#post-table option:selected').attr('data-fields');
+				$('#post-rows').find('option').remove().end();
+				 var fieldArray = fields.split(',');
+			    for(var i=0;i<fieldArray.length-1;i++){
+			        $('#post-row').append('<option value="' + fieldArray[i] + '" >'+ fieldArray[i]  + '</option>');
+			    }
+			})
 			break; 
 		default: 
 			$('#fieldoptions').html('');
 			break; 
 	}
 })
+
 
 
 $('.datepicker').each(function(){

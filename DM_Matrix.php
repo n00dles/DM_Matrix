@@ -1,9 +1,17 @@
-<?php 
-/** GetSimple CMS Schema Manager 
-* Web site: http://www.digimute.com/
-* @version  1.0
-* @author   mike@digimute.com
-*/
+<?php
+
+/*
+ * TheMatrix, a plugin for GetSimple CMS 3.1
+ * 
+ * version 0.1
+ *  
+ * Copyright (c) 2012 Mike Swan mike@digimute.com
+ *
+ * Contributions have been made by:
+ * Shawn A (github.com/tablatronix)
+ *
+ */
+
 
 // Turn dubgging on 
 $DM_Matrix_debug=true; 
@@ -370,7 +378,6 @@ if (isset($_GET['schema'])) {
 		
 		</tbody>
 		</table>
-		
 		<form method="post" action="load.php?id=DM_Matrix&action=matrix_manager&edit=<?php echo $schemaname; ?>&addfield">
 		<?php if (isset($_GET['field'])){
 			$formName = $_GET['field'];
@@ -459,6 +466,28 @@ if (isset($_GET['schema'])) {
 			</li>
 		</form>
 		</ul>
+		<!-- hidden elements for additional options on fields -->
+		<div id='field-dropdown' class='hidden'>
+			<br/>
+			<p class="description">Please Select a Table</p>
+			<select id="post-table" name="post-table" >
+				<option value=""></option>
+				<?php 
+					foreach($schemaArray as $schema=>$key){
+						echo '<option value="'.$schema.'" data-fields="';
+							foreach ($schemaArray[$schema]['fields'] as $field=>$key){
+								echo $field.',';
+							}
+						echo '" ">'.$schema.'</option>';	
+					}
+				
+				?>
+			</select>
+			<p class="description">Please select a rown from the table</p>
+			<select id="post-row" name="post-row" >
+				<option></option>
+			</select>
+		</div>
 	<?php
 	} 
 elseif (isset($_GET['add']))
