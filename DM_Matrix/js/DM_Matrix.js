@@ -7,7 +7,6 @@ $("#editpages").tablesorter({widgets: ['zebra']})
 
 //$('#nav_DM_Matrix').insertAfter($('#nav_pages'));
 
-//$('#maincontent').css('width','960px');
 
 $("button.form_submit").live("click", function(){
 		errors=false;
@@ -27,6 +26,19 @@ $("button.form_submit").live("click", function(){
 
 $('.imagepicker').live("change",function() {
 	//alert("changed..");
+})
+
+$('select#post-type').live("change",function() {
+	//alert($(this).val());
+	fieldtype=$(this).val();
+	switch (fieldtype){
+		case 'dropdown':
+			$('#fieldoptions').html('test');
+			break; 
+		default: 
+			$('#fieldoptions').html('');
+			break; 
+	}
 })
 
 

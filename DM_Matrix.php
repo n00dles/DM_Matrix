@@ -266,7 +266,11 @@ if (isset($_GET['schema'])) {
     $tables=0;    
 		foreach($schemaArray as $schema=>$key){
 			if (substr($schema,0,1)!="_"){
-				echo "<tr><td><a href='load.php?id=DM_Matrix&action=matrix_manager&view=".$schema."' >".$schema."</a></td>";
+				if (count($key['fields'])>1){
+					echo "<tr><td><a href='load.php?id=DM_Matrix&action=matrix_manager&view=".$schema."' >".$schema."</a></td>";
+				} else {
+					echo "<tr><td>".$schema."</td>";	
+				}
 				echo "<td>".($key['id'])." / ".$key['maxrecords']."</td>";
 				echo "<td>".count($key['fields'])."</td>";
 				echo "<td>";
