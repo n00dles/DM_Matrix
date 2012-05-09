@@ -393,6 +393,10 @@ if (isset($_GET['schema'])) {
 			$formHeading = $schemaArray[$_GET['edit']]['desc'][$_GET['field']];
 			$formCacheIndex = $schemaArray[$_GET['edit']]['cacheindex'][$_GET['field']];
 			$formTableView = $schemaArray[$_GET['edit']]['tableview'][$_GET['field']];
+			if ($formType=='dropdown'){
+				$formTable = $schemaArray[$_GET['edit']]['table'][$_GET['field']];
+				$formTableRow = $schemaArray[$_GET['edit']]['row'][$_GET['field']];
+			}
 			$editing=true;
 			echo '<h3>Editing Field : '.$_GET['field'].'</h3>'; 
 			$editing=true;
@@ -406,6 +410,8 @@ if (isset($_GET['schema'])) {
 			$formHeading = "";
 			$formCacheIndex = "";
 			$formTableView = "";
+			$formTable = "";
+			$formTableRow = "";
 		}
 		?>
 		<ul class="fields">
@@ -435,7 +441,45 @@ if (isset($_GET['schema'])) {
 						}
 						?>	
 					</select>
-					<div id="fieldoptions"></div>	
+					<div id="fieldoptions">
+						<?php 
+						if ($formType=='dropdown'){
+						?>
+						<div id='field-dropdown' >
+							<br/>
+							<p class="description">Please Select a Table</p>
+							<select id="post-table" name="post-table" >
+								<option value=""></option>
+								<?php 
+									foreach($schemaArray as $schema=>$key){
+										echo '<option value="'.$schema.'" data-fields="';
+											foreach ($schemaArray[$schema]['fields'] as $field=>$key){
+												echo $field.',';
+											}
+										
+										echo '"';
+										if ($schema==$formTable) echo " selected ";
+										echo ' ">'.$schema.'</option>';	
+									}
+								
+								?>
+							</select>
+							<p class="description">Please select a rown from the table</p>
+							<select id="post-row" name="post-row" >
+								<option></option>
+								<?php 
+									foreach ($schemaArray[$formTable]['fields'] as $field=>$key){
+										echo '<option ';
+										if ($field==$formTableRow) echo " selected ";
+										echo '>'.$field.'</option>';
+									}
+								?>
+							</select>
+						</div>
+						<?php	
+						}
+						?>
+					</div>	
 				</div>
 			</li>
 			<li class="ui-widget" id="wrap_Inputfield_name">
