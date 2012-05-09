@@ -54,7 +54,7 @@ Blogs, comment systems, banners, galleries,Lists, Price lists... you name it you
 Example
 
 To setup a simple Blog, set up a new table "blog" 
-add the follwoing fields, 
+add the following fields, 
 
 o - title, textlong 
 o - author, text
@@ -63,7 +63,7 @@ o - content, texteditor
 
 Enter some date. 
 
-On your template or in a function create fetch the records from the table ; 
+On your template use getSchemaTable to return the records from a table to an array ; 
 
 	$blog=getSchemaTable('blog');  // 
 	
@@ -71,7 +71,8 @@ prepare the SQL query
 
 	$sql=new sql4array();
 
-Run the query , ** note ** the from clause is to the array you have defined above and not the real table name. 
+Run the query on the array , 
+** note ** the FROM clause specifies the array you have defined above and not the real table name. 
 
 	$blog = $sql->query('select id,title,author,publishdate,content from blog ORDER by publishdate DESC');
 
