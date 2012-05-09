@@ -11,10 +11,11 @@ http://matrix.digimute.com
 
 What is The Matrix?
 
-It's a plugin for GetSimple CMS 3.1 that allow you to save information in a DB type manner 
-but data is saved in XML files.
+TheMatrix is an XML datastore plugin for GetSimple 3.1
+It allows you to define tables, which user defined fields which you can then query using SQL 
+type queries to retrive the date for you theme/plugin
 
-So the Matrix is basically a flat file DB with various fields to hold you information. 
+The plugin can be used standalone or you can build your plugin around it using it to store your data. 
 
 As of now we support the following field types:
 
