@@ -116,13 +116,13 @@ add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Ma
 # add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Matrix, "Settings",'settings')); 
 # add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Matrix, "About",'about')); 
 
-add_action('error-404','testRoute',array());
+add_action('error-404','doRoute',array());
 
 
 addRoute('blogger','news');
 addRoute('news','news');
 
-function testRoute(){
+function doRoute(){
 	global $file,$id,$uriRoutes,$uri;
 	$uri = trim(str_replace('index.php', '', $_SERVER['REQUEST_URI']), '/#');
 	$parts=explode('/',$uri);
@@ -138,10 +138,12 @@ function testRoute(){
 DM_getSchema();
 
 if (!tableExists('_routes')){
+	DMdebuglog('Creating table _routes ');
 	$ret = createSchemaTable('_routes','0',array('route'=>'text','rewrite'=>'text'));
 }
 
 if (!tableExists('_settings')){
+	DMdebuglog('Creating table _settings ');
 	$ret = createSchemaTable('_settings','1',array());
 }
 
@@ -184,6 +186,10 @@ if (isset($_GET['edit']) && isset($_GET['addfield'])){
 		'cacheindex'=>$cacheindex,
 		'tableview'=>$tableview
 	);
+	if ($_POST['post-type']=='dropdown'){
+		$field['table']=$_POST['post-table'];
+		$field['row']=$_POST['post-row'];
+	}
 	addSchemaField($_GET['edit'],$field,true);
 	  //DM_saveSchema();
 }
@@ -500,18 +506,22 @@ elseif (isset($_GET['view']))
 		$fields=array();
 		$tableheader='';
 		$count=0;
-    if(isset($schemaArray[$table]) && isset($schemaArray[$table]['fields'])){
-      foreach($schemaArray[$table]['fields'] as $schema=>$key){
-        if ($schemaArray[$table]['tableview'][$schema]==1){
-          $fields[$count]['name']=$schema;
-          $fields[$count]['type']=$key;
-          
-          $tableheader.="<th class='sort'>".$schema."</th>";
-        }
-        $count++;
-      }
-    }
-		echo "<h2>Manage Records: ".$table."</h2>";
+	    if(isset($schemaArray[$table]) && isset($schemaArray[$table]['fields'])){
+	      foreach($schemaArray[$table]['fields'] as $schema=>$key){
+	        if ($schemaArray[$table]['tableview'][$schema]==1){
+	          $fields[$count]['name']=$schema;
+	          $fields[$count]['type']=$key;
+	          
+	          $tableheader.="<th class='sort'>".$schema."</th>";
+	        }
+	        $count++;
+	      }
+	    }
+		if ($table=='_routes'){
+			echo "<h2>Manage Routes</h2>";
+		} else {
+			echo "<h2>Manage Records: ".$table."</h2>";
+		}
 ?>
 		<table id="editpages" class="tablesorter">
 		<thead><tr><?php echo $tableheader; ?><th>Opts</th></tr></thead>
@@ -519,34 +529,35 @@ elseif (isset($_GET['view']))
 		<?php 
 		getPagesXmlValues();
 		$mytable=getSchemaTable($table);
-    $record_cnt = 0;
-    if(isset($mytable)){
-      foreach($mytable as $key=>$value){
-        #$fields = isset($mytable[$key]['fields']) ? $mytable[$key]['fields'] : array();
-        #$id = 0;
-        echo "<tr>";
-        foreach ($fields as $field){
-          if ($field['name']=='id') $id=$mytable[$key][$field['name']];
-          if ($field['type']=='datepicker'){
-            $data=date('d-m-Y',$mytable[$key][$field['name']]);
-          } elseif ($field['type']=='datetimepicker') {
-            $data=date('d-m-Y i:M',$mytable[$key][$field['name']]);
-          } else {
-            $data= isset($mytable[$key][$field['name']]) ? $mytable[$key][$field['name']] : '<b>NULL</b>';
-          }
-          echo "<td>".$data."</td>"; 
-        }
-        echo "<td><a href='load.php?id=DM_Matrix&action=matrix_manager&add=".$table."&field=".$id."'><img src='../plugins/DM_Matrix/images/edit.png' title='Edit Record ".$id."' /></a>";
-        //todo delete functionality
-        // echo " <a href='load.php?id=DM_Matrix&action=matrix_manager&delete=".$table."&field=".$id."'><img src='../plugins/DM_Matrix/images/delete.png' title='Delete Record ".$id."!' /></a>";
-        echo "</td></tr>";
-        $record_cnt++;
-      }
-    }else {
-    }  
-    if($record_cnt==0){
-      echo '<tr><td colspan="'.($count+1).'">Table has no records</td></tr>';	 
-    }
+	    $record_cnt = 0;
+	    if(isset($mytable)){
+	      foreach($mytable as $key=>$value){
+	        #$fields = isset($mytable[$key]['fields']) ? $mytable[$key]['fields'] : array();
+	        #$id = 0;
+	        echo "<tr>";
+	        foreach ($fields as $field){
+	          if ($field['name']=='id') $id=$mytable[$key][$field['name']];
+	          if ($field['type']=='datepicker'){
+	            $data=date('d-m-Y',$mytable[$key][$field['name']]);
+	          } elseif ($field['type']=='datetimepicker') {
+	            $data=date('d-m-Y i:M',$mytable[$key][$field['name']]);
+	          } else {
+	            $data= isset($mytable[$key][$field['name']]) ? $mytable[$key][$field['name']] : '<b>NULL</b>';
+	          }
+	          echo "<td>".$data."</td>"; 
+	        }
+	        echo "<td><a href='load.php?id=DM_Matrix&action=matrix_manager&add=".$table."&field=".$id."'><img src='../plugins/DM_Matrix/images/edit.png' title='Edit Record ".$id."' /></a>";
+	        //todo delete functionality
+	        // echo " <a href='load.php?id=DM_Matrix&action=matrix_manager&delete=".$table."&field=".$id."'><img src='../plugins/DM_Matrix/images/delete.png' title='Delete Record ".$id."!' /></a>";
+	        echo "</td></tr>";
+	        $record_cnt++;
+	      }
+	    } else {
+	    	
+	    }  
+	    if($record_cnt==0){
+	      echo '<tr><td colspan="'.($count+1).'">Table has no records</td></tr>';	 
+	    }
 		?>
 		
 		</tbody>
