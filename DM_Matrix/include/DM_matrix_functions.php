@@ -106,6 +106,12 @@ function DM_saveSchema(){
 			$field->addAttribute('cacheindex',@$schemaArray[$table]['cacheindex'][(string)$field]);
 			$field->addAttribute('description',@$schemaArray[$table]['desc'][(string)$field]);
 			$field->addAttribute('label',@$schemaArray[$table]['label'][(string)$field]);
+			
+			if ($type=='dropdown'){
+				$field->addAttribute('table',@$schemaArray[$table]['table'][(string)$field]);
+				$field->addAttribute('row',@$schemaArray[$table]['row'][(string)$field]);
+			}
+			
 		}
 		
 	}
@@ -230,6 +236,10 @@ function addSchemaField($name,$fields=array(),$save=true){
 	$schemaArray[(string)$name]['desc'][(string)$fields['name']]=(string)$fields['description'];
 	$schemaArray[(string)$name]['cacheindex'][(string)$fields['name']]=(string)$fields['cacheindex'];
 	$schemaArray[(string)$name]['tableview'][(string)$fields['name']]=(string)$fields['tableview'];
+	if ((string)$fields['type']=='dropdown'){
+		$schemaArray[(string)$name]['table'][(string)$fields['name']]=(string)$fields['table'];
+		$schemaArray[(string)$name]['row'][(string)$fields['name']]=(string)$fields['row'];
+	}
 	if ($save==true) {
 		$ret=DM_saveSchema();
 		$ret=true;
@@ -432,9 +442,6 @@ function displayFieldType($name, $type, $schema,$value=''){
 		// Slug/Title
 		case "slug":
 			echo '<p><input id="post-'.$name.'" class="required" name="post-'.$name.'" type="text" size="115" onkeyup="makeSlug(\'post-'.$name.'\');" maxlength="128" value="'.$value.'"></p>';
-			echo '<p>Slug Name</p>';
-			echo '<p><input id="post-'.$name.'-slug" class="required" name="post-'.$name.'" type="text" size="115" maxlength="128" value="'.$value.'"></p>';
-			
 			break;
 		// Checkbox
 		case "checkbox":
@@ -488,10 +495,15 @@ function displayFieldType($name, $type, $schema,$value=''){
 		case "dropdown":
 			$table=$schemaArray[$schema]['table'][$name];
 			$column=$schemaArray[$schema]['row'][$name];
-			$maintable=getSchemaTable('gallery');
+			$maintable=getSchemaTable($table);
 			echo '<p><select  id="post-'.$name.'" name="post-'.$name.'">';
+			echo '<option></option>';
 			foreach ($maintable as $row){
-				if ($row[$column]==$value) $options=" selected ";
+				if ($row[$column]==$value) {
+					$options=" selected ";
+				} else {
+					$options="";
+				}
 				echo '<option value="'.$row[$column].'" '.$options.'>'.$row[$column].'</option>';
 			}
 			echo '</select></p>';

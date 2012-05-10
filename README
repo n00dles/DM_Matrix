@@ -11,16 +11,19 @@ http://matrix.digimute.com
 
 What is The Matrix?
 
-It's a plugin for GetSimple CMS 3.1 that allow you to save information in a DB type manner 
-but data is saved in XML files.
+TheMatrix is an XML datastore plugin for GetSimple 3.1
+It allows you to define tables, which user defined fields which you can then query using SQL 
+type queries to retrive the date for you theme/plugin
 
-So the Matrix is basically a flat file DB with various fields to hold you information. 
+The plugin can be used standalone or you can build your plugin around it using it to store your data. 
 
 As of now we support the following field types:
 
+o - int, integer, used for ID field
 o - text, normal text box
 o - textlong, full width Text Box
 o - Checkbox, Checkbox.
+o - slug, add a slug & title to the table
 o - pages, a dropdown of the current Pages. 
 o - templates, a dropdown of the current templates
 o - dropdown, a dropdown from another table. 
@@ -42,7 +45,6 @@ o - cachindex, whether to return the field using sql queries of return it by acc
 
 So you setup your Tables, add some fields and input data into those fields. 
 
-
 The front end allows you to run SQL type queries on the data to build your webpages. 
 
 So what can you use it for ?
@@ -50,18 +52,32 @@ So what can you use it for ?
 Anything !!
 Blogs, comment systems, banners, galleries,Lists, Price lists... you name it you can do it... 
 
+Example
 
-To setup a simple Blog, set up your schema "blog" 
-add some fields, "title, author, publisheddate, content" 
-Enter your data. 
+To setup a simple Blog, set up a new table "blog" 
+add the following fields, 
 
+o - title, textlong 
+o - author, text
+o - publisheddate, datepicker 
+o - content, texteditor
 
-On the front end its as simple as running, 
-$r = array();
-$r = $sql->query("SELECT id,title,author,publisheddate,content FROM blog ORDER BY publisheddate DESC");
+Enter some date. 
 
-You then have your array of data to output and style as you wish... 
+On your template use getSchemaTable to return the records from a table to an array ; 
 
+	$blog=getSchemaTable('blog');  // 
+	
+prepare the SQL query 
+
+	$sql=new sql4array();
+
+Run the query on the array , 
+** note ** the FROM clause specifies the array you have defined above and not the real table name. 
+
+	$blog = $sql->query('select id,title,author,publishdate,content from blog ORDER by publishdate DESC');
+
+You then have your array of data from the 'blog' table sorted by 'publisheddate' to output and style as you wish... 
 
 
 AVAILABLE FUNCTIONS
@@ -76,40 +92,8 @@ dropSchemaTable - Delete a table
 addSchemaField - add a field to a table
 deleteSchemaField - Delete a field from a table
 getSchemaTable - return an array of a tables records. 
-
-
-
-
-//getPagesXmlValues();
-
-//print_r($schemaArray);
-
-//$r = array();
-
-//	$r = $sql->query("SELECT id FROM schemaArray as arr WHERE id > 14 order by id DESC");
-
-//print_r($r);
-
-
-//createSchemaTable('test',array('test'=>'int','blogger'=>'text'));
-
-//createRecord('gallery', array('name'=>'This is a test 1','title'=>'title1','image'=>'image 1'));
-//createRecord('gallery', array('name'=>'This is a test 2','title'=>'title2','image'=>'image 2'));
-//createRecord('gallery', array('name'=>'This is a test 3','title'=>'title3','image'=>'image 3'));
-//createRecord('gallery', array('name'=>'This is a test 4','title'=>'title4','image'=>'image 4'));
-
-
-//deleteSchemaField('blog',array('title','author','date'));
-//dropSchemaTable('blog');
-
-
-//print_r($schemaArray['gallery']);
-//$table=array();
-//$table=getSchemaTable('gallery');
-//echo "<pre>";
-//$r = array();
-
-//$r = $sql->query("SELECT id,image,name,title FROM table ORDER by title LIKE '%4%'");
-
-//print_r($r);
-// echo "</pre>";
+DM_getRecord - get a single record from a table,  supplying tabel and id of record
+tableexists - check if a table exists 
+updateRecord - update a record 
+DM_createForm - create an input form from a table 
+DM_editForm - create a form for editing providing a record number. 

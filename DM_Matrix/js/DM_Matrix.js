@@ -2,13 +2,13 @@
 
 jQuery(document).ready(function() { 
 
-$("#editpages").tablesorter({widgets: ['zebra']}) 
+$("#editpages").tablesorter({widgets: ['zebra']})
 .tablesorterPager({container: $("#pager")}); 
 
 //$('#nav_DM_Matrix').insertAfter($('#nav_pages'));
 
 
-$("button.form_submit").live("click", function(){
+$("button.form_submit").on("click", function(){
 		errors=false;
 		$('.required').each(function(index) { 
 			if ($(this).removeClass('formerror'));
@@ -28,18 +28,27 @@ $('.imagepicker').live("change",function() {
 	//alert("changed..");
 })
 
-$('select#post-type').live("change",function() {
+$('select#post-type').on("change",function() {
 	//alert($(this).val());
 	fieldtype=$(this).val();
 	switch (fieldtype){
 		case 'dropdown':
-			$('#fieldoptions').html('test');
+			$('#fieldoptions').html($('#field-dropdown').html());
+			$('#post-table').on("change",function() {
+				fields = $('#post-table option:selected').attr('data-fields');
+				$('#post-rows').find('option').remove().end();
+				 var fieldArray = fields.split(',');
+			    for(var i=0;i<fieldArray.length-1;i++){
+			        $('#post-row').append('<option value="' + fieldArray[i] + '" >'+ fieldArray[i]  + '</option>');
+			    }
+			})
 			break; 
 		default: 
 			$('#fieldoptions').html('');
 			break; 
 	}
 })
+
 
 
 $('.datepicker').each(function(){
@@ -50,7 +59,7 @@ $('.datetimepicker').each(function(){
 	$(this).datetimepicker({ dateFormat: 'dd-mm-yy' });	
 })
 
-$('#dm_addnew').live("click", function(){
+$('#dm_addnew').on("click", function(){
 	$('#DM_addnew_row').stop().slideUp();
 	$(this).next().stop().slideToggle();
 	//alert("add new");	
@@ -58,7 +67,7 @@ $('#dm_addnew').live("click", function(){
 })
 	
 	
-$('#addfield').live("click", function(){
+$('#addfield').on("click", function(){
 	errors=false;
 		$('.required').each(function(index) { 
 			if ($(this).removeClass('error'));
@@ -82,10 +91,11 @@ $('#addfield').live("click", function(){
 
 
 function makeSlug(element) {
-    var slug = jQuery.trim($('#'+element).val()) // Trimming recommended by Brooke Dukes - http://www.thewebsitetailor.com/2008/04/jquery-slug-plugin/comment-page-1/#comment-23
-    .replace(/\s+/g,'-').replace(/[^a-zA-Z0-9\-]/g,'').toLowerCase() // See http://www.djangosnippets.org/snippets/1488/ 
-    .replace(/\-{2,}/g,'-'); // If we end up with any 'multiple hyphens', replace with just one. Temporary bugfix for input 'this & that'=>'this--that'
-    $('#' + element+"-slug").val(slug);
+    var Text = $('#'+element).val();
+    Text = Text.toLowerCase();
+    var regExp = /\s+/g;
+    Text = Text.replace(regExp,'-');
+    $('#' + element+"").val(Text);
 }
 
 

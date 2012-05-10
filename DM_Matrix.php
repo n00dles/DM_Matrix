@@ -1,9 +1,17 @@
-<?php 
-/** GetSimple CMS Schema Manager 
-* Web site: http://www.digimute.com/
-* @version  1.0
-* @author   mike@digimute.com
-*/
+<?php
+
+/*
+ * TheMatrix, a plugin for GetSimple CMS 3.1
+ * 
+ * version 0.1
+ *  
+ * Copyright (c) 2012 Mike Swan mike@digimute.com
+ *
+ * Contributions have been made by:
+ * Shawn A (github.com/tablatronix)
+ *
+ */
+
 
 // Turn dubgging on 
 $DM_Matrix_debug=true; 
@@ -108,13 +116,13 @@ add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Ma
 # add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Matrix, "Settings",'settings')); 
 # add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Matrix, "About",'about')); 
 
-add_action('error-404','testRoute',array());
+add_action('error-404','doRoute',array());
 
 
 addRoute('blogger','news');
 addRoute('news','news');
 
-function testRoute(){
+function doRoute(){
 	global $file,$id,$uriRoutes,$uri;
 	$uri = trim(str_replace('index.php', '', $_SERVER['REQUEST_URI']), '/#');
 	$parts=explode('/',$uri);
@@ -130,10 +138,12 @@ function testRoute(){
 DM_getSchema();
 
 if (!tableExists('_routes')){
+	DMdebuglog('Creating table _routes ');
 	$ret = createSchemaTable('_routes','0',array('route'=>'text','rewrite'=>'text'));
 }
 
 if (!tableExists('_settings')){
+	DMdebuglog('Creating table _settings ');
 	$ret = createSchemaTable('_settings','1',array());
 }
 
@@ -176,6 +186,10 @@ if (isset($_GET['edit']) && isset($_GET['addfield'])){
 		'cacheindex'=>$cacheindex,
 		'tableview'=>$tableview
 	);
+	if ($_POST['post-type']=='dropdown'){
+		$field['table']=$_POST['post-table'];
+		$field['row']=$_POST['post-row'];
+	}
 	addSchemaField($_GET['edit'],$field,true);
 	  //DM_saveSchema();
 }
@@ -370,7 +384,6 @@ if (isset($_GET['schema'])) {
 		
 		</tbody>
 		</table>
-		
 		<form method="post" action="load.php?id=DM_Matrix&action=matrix_manager&edit=<?php echo $schemaname; ?>&addfield">
 		<?php if (isset($_GET['field'])){
 			$formName = $_GET['field'];
@@ -380,6 +393,10 @@ if (isset($_GET['schema'])) {
 			$formHeading = $schemaArray[$_GET['edit']]['desc'][$_GET['field']];
 			$formCacheIndex = $schemaArray[$_GET['edit']]['cacheindex'][$_GET['field']];
 			$formTableView = $schemaArray[$_GET['edit']]['tableview'][$_GET['field']];
+			if ($formType=='dropdown'){
+				$formTable = $schemaArray[$_GET['edit']]['table'][$_GET['field']];
+				$formTableRow = $schemaArray[$_GET['edit']]['row'][$_GET['field']];
+			}
 			$editing=true;
 			echo '<h3>Editing Field : '.$_GET['field'].'</h3>'; 
 			$editing=true;
@@ -393,6 +410,8 @@ if (isset($_GET['schema'])) {
 			$formHeading = "";
 			$formCacheIndex = "";
 			$formTableView = "";
+			$formTable = "";
+			$formTableRow = "";
 		}
 		?>
 		<ul class="fields">
@@ -422,7 +441,45 @@ if (isset($_GET['schema'])) {
 						}
 						?>	
 					</select>
-					<div id="fieldoptions"></div>	
+					<div id="fieldoptions">
+						<?php 
+						if ($formType=='dropdown'){
+						?>
+						<div id='field-dropdown' >
+							<br/>
+							<p class="description">Please Select a Table</p>
+							<select id="post-table" name="post-table" >
+								<option value=""></option>
+								<?php 
+									foreach($schemaArray as $schema=>$key){
+										echo '<option value="'.$schema.'" data-fields="';
+											foreach ($schemaArray[$schema]['fields'] as $field=>$key){
+												echo $field.',';
+											}
+										
+										echo '"';
+										if ($schema==$formTable) echo " selected ";
+										echo ' ">'.$schema.'</option>';	
+									}
+								
+								?>
+							</select>
+							<p class="description">Please select a rown from the table</p>
+							<select id="post-row" name="post-row" >
+								<option></option>
+								<?php 
+									foreach ($schemaArray[$formTable]['fields'] as $field=>$key){
+										echo '<option ';
+										if ($field==$formTableRow) echo " selected ";
+										echo '>'.$field.'</option>';
+									}
+								?>
+							</select>
+						</div>
+						<?php	
+						}
+						?>
+					</div>	
 				</div>
 			</li>
 			<li class="ui-widget" id="wrap_Inputfield_name">
@@ -459,6 +516,28 @@ if (isset($_GET['schema'])) {
 			</li>
 		</form>
 		</ul>
+		<!-- hidden elements for additional options on fields -->
+		<div id='field-dropdown' class='hidden'>
+			<br/>
+			<p class="description">Please Select a Table</p>
+			<select id="post-table" name="post-table" >
+				<option value=""></option>
+				<?php 
+					foreach($schemaArray as $schema=>$key){
+						echo '<option value="'.$schema.'" data-fields="';
+							foreach ($schemaArray[$schema]['fields'] as $field=>$key){
+								echo $field.',';
+							}
+						echo '" ">'.$schema.'</option>';	
+					}
+				
+				?>
+			</select>
+			<p class="description">Please select a rown from the table</p>
+			<select id="post-row" name="post-row" >
+				<option></option>
+			</select>
+		</div>
 	<?php
 	} 
 elseif (isset($_GET['add']))
@@ -471,18 +550,22 @@ elseif (isset($_GET['view']))
 		$fields=array();
 		$tableheader='';
 		$count=0;
-    if(isset($schemaArray[$table]) && isset($schemaArray[$table]['fields'])){
-      foreach($schemaArray[$table]['fields'] as $schema=>$key){
-        if ($schemaArray[$table]['tableview'][$schema]==1){
-          $fields[$count]['name']=$schema;
-          $fields[$count]['type']=$key;
-          
-          $tableheader.="<th class='sort'>".$schema."</th>";
-        }
-        $count++;
-      }
-    }
-		echo "<h2>Manage Records: ".$table."</h2>";
+	    if(isset($schemaArray[$table]) && isset($schemaArray[$table]['fields'])){
+	      foreach($schemaArray[$table]['fields'] as $schema=>$key){
+	        if ($schemaArray[$table]['tableview'][$schema]==1){
+	          $fields[$count]['name']=$schema;
+	          $fields[$count]['type']=$key;
+	          
+	          $tableheader.="<th class='sort'>".$schema."</th>";
+	        }
+	        $count++;
+	      }
+	    }
+		if ($table=='_routes'){
+			echo "<h2>Manage Routes</h2>";
+		} else {
+			echo "<h2>Manage Records: ".$table."</h2>";
+		}
 ?>
 		<table id="editpages" class="tablesorter">
 		<thead><tr><?php echo $tableheader; ?><th>Opts</th></tr></thead>
@@ -490,34 +573,35 @@ elseif (isset($_GET['view']))
 		<?php 
 		getPagesXmlValues();
 		$mytable=getSchemaTable($table);
-    $record_cnt = 0;
-    if(isset($mytable)){
-      foreach($mytable as $key=>$value){
-        #$fields = isset($mytable[$key]['fields']) ? $mytable[$key]['fields'] : array();
-        #$id = 0;
-        echo "<tr>";
-        foreach ($fields as $field){
-          if ($field['name']=='id') $id=$mytable[$key][$field['name']];
-          if ($field['type']=='datepicker'){
-            $data=date('d-m-Y',$mytable[$key][$field['name']]);
-          } elseif ($field['type']=='datetimepicker') {
-            $data=date('d-m-Y i:M',$mytable[$key][$field['name']]);
-          } else {
-            $data= isset($mytable[$key][$field['name']]) ? $mytable[$key][$field['name']] : '<b>NULL</b>';
-          }
-          echo "<td>".$data."</td>"; 
-        }
-        echo "<td><a href='load.php?id=DM_Matrix&action=matrix_manager&add=".$table."&field=".$id."'><img src='../plugins/DM_Matrix/images/edit.png' title='Edit Record ".$id."' /></a>";
-        //todo delete functionality
-        // echo " <a href='load.php?id=DM_Matrix&action=matrix_manager&delete=".$table."&field=".$id."'><img src='../plugins/DM_Matrix/images/delete.png' title='Delete Record ".$id."!' /></a>";
-        echo "</td></tr>";
-        $record_cnt++;
-      }
-    }else {
-    }  
-    if($record_cnt==0){
-      echo '<tr><td colspan="'.($count+1).'">Table has no records</td></tr>';	 
-    }
+	    $record_cnt = 0;
+	    if(isset($mytable)){
+	      foreach($mytable as $key=>$value){
+	        #$fields = isset($mytable[$key]['fields']) ? $mytable[$key]['fields'] : array();
+	        #$id = 0;
+	        echo "<tr>";
+	        foreach ($fields as $field){
+	          if ($field['name']=='id') $id=$mytable[$key][$field['name']];
+	          if ($field['type']=='datepicker'){
+	            $data=date('d-m-Y',$mytable[$key][$field['name']]);
+	          } elseif ($field['type']=='datetimepicker') {
+	            $data=date('d-m-Y i:M',$mytable[$key][$field['name']]);
+	          } else {
+	            $data= isset($mytable[$key][$field['name']]) ? $mytable[$key][$field['name']] : '<b>NULL</b>';
+	          }
+	          echo "<td>".$data."</td>"; 
+	        }
+	        echo "<td><a href='load.php?id=DM_Matrix&action=matrix_manager&add=".$table."&field=".$id."'><img src='../plugins/DM_Matrix/images/edit.png' title='Edit Record ".$id."' /></a>";
+	        //todo delete functionality
+	        // echo " <a href='load.php?id=DM_Matrix&action=matrix_manager&delete=".$table."&field=".$id."'><img src='../plugins/DM_Matrix/images/delete.png' title='Delete Record ".$id."!' /></a>";
+	        echo "</td></tr>";
+	        $record_cnt++;
+	      }
+	    } else {
+	    	
+	    }  
+	    if($record_cnt==0){
+	      echo '<tr><td colspan="'.($count+1).'">Table has no records</td></tr>';	 
+	    }
 		?>
 		
 		</tbody>
