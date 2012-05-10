@@ -322,6 +322,8 @@ function DM_getRecord($name, $record){
 function DM_editForm($table, $record){
 	global $schemaArray;	
 	global $returnArray;
+	global $TEMPLATE;
+	global $SITEURL;
 	$formValues=DM_getRecord($table,$record);
 
 	echo '<ul class="fields">';
@@ -362,6 +364,55 @@ function DM_editForm($table, $record){
 	</li>
 
 </ul>
+<?php
+		if (defined('GSEDITORHEIGHT')) { $EDHEIGHT = GSEDITORHEIGHT .'px'; } else {	$EDHEIGHT = '500px'; }
+		if (defined('GSEDITORLANG')) { $EDLANG = GSEDITORLANG; } else {	$EDLANG = i18n_r('CKEDITOR_LANG'); }
+		if (defined('GSEDITORTOOL')) { $EDTOOL = GSEDITORTOOL; } else {	$EDTOOL = 'basic'; }
+		if (defined('GSEDITOROPTIONS') && trim(GSEDITOROPTIONS)!="") { $EDOPTIONS = ", ".GSEDITOROPTIONS; } else {	$EDOPTIONS = ''; }
+			
+		if ($EDTOOL == 'advanced') {
+			$toolbar = "
+					['Bold', 'Italic', 'Underline', 'NumberedList', 'BulletedList', 'JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock', 'Table', 'TextColor', 'BGColor', 'Link', 'Unlink', 'Image', 'RemoveFormat', 'Source'],
+	         '/',
+	         ['Styles','Format','Font','FontSize']
+	     ";
+			} elseif ($EDTOOL == 'basic') {
+			$toolbar = "['Bold', 'Italic', 'Underline', 'NumberedList', 'BulletedList', 'JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock', 'Link', 'Unlink', 'Image', 'RemoveFormat', 'Source']";
+		} else {
+			$toolbar = GSEDITORTOOL;
+		}
+		?>
+		
+			<script type="text/javascript">
+			
+			CKEDITOR.replaceAll(function( textarea, config ){
+	        config.skin = 'getsimple',
+	        config.forcePasteAsPlainText = true,
+	        config.language = '<?php echo $EDLANG; ?>',
+	        config.defaultLanguage = 'en',
+	        <?php if (file_exists(GSTHEMESPATH .$TEMPLATE."/editor.css")) { 
+	        	$fullpath = suggest_site_path();
+	        ?>
+            config.contentsCss = '<?php echo $fullpath; ?>theme/<?php echo $TEMPLATE; ?>/editor.css',
+          <?php } ?>
+	        config.entities = false,
+	        config.uiColor = '#FFFFFF',
+			config.height = '<?php echo $EDHEIGHT; ?>',
+			config.baseHref = '<?php echo $SITEURL; ?>',
+	        config.toolbar = 
+	        [
+	        <?php echo $toolbar; ?>
+			]
+			<?php echo $EDOPTIONS; ?>,
+			config.tabSpaces = 10,
+	        config.filebrowserBrowseUrl = 'filebrowser.php?type=all',
+			config.filebrowserImageBrowseUrl = 'filebrowser.php?type=images',
+	        config.filebrowserWindowWidth = '730',
+	        config.filebrowserWindowHeight = '500'
+    		});
+    		
+
+			</script>
 <?php	
 }
 
@@ -369,6 +420,8 @@ function DM_editForm($table, $record){
 
 function DM_createForm($name){
 	global $schemaArray;	
+	global $TEMPLATE;
+	global $SITEURL;
 	echo '<ul class="fields">';
 	foreach ($schemaArray[$name]['fields'] as $field=>$value) {
 
@@ -407,6 +460,55 @@ function DM_createForm($name){
 	</li>
 
 </ul>
+<?php
+		if (defined('GSEDITORHEIGHT')) { $EDHEIGHT = GSEDITORHEIGHT .'px'; } else {	$EDHEIGHT = '500px'; }
+		if (defined('GSEDITORLANG')) { $EDLANG = GSEDITORLANG; } else {	$EDLANG = i18n_r('CKEDITOR_LANG'); }
+		if (defined('GSEDITORTOOL')) { $EDTOOL = GSEDITORTOOL; } else {	$EDTOOL = 'basic'; }
+		if (defined('GSEDITOROPTIONS') && trim(GSEDITOROPTIONS)!="") { $EDOPTIONS = ", ".GSEDITOROPTIONS; } else {	$EDOPTIONS = ''; }
+			
+		if ($EDTOOL == 'advanced') {
+			$toolbar = "
+					['Bold', 'Italic', 'Underline', 'NumberedList', 'BulletedList', 'JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock', 'Table', 'TextColor', 'BGColor', 'Link', 'Unlink', 'Image', 'RemoveFormat', 'Source'],
+	         '/',
+	         ['Styles','Format','Font','FontSize']
+	     ";
+			} elseif ($EDTOOL == 'basic') {
+			$toolbar = "['Bold', 'Italic', 'Underline', 'NumberedList', 'BulletedList', 'JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock', 'Link', 'Unlink', 'Image', 'RemoveFormat', 'Source']";
+		} else {
+			$toolbar = GSEDITORTOOL;
+		}
+		?>
+		
+			<script type="text/javascript">
+			
+			CKEDITOR.replaceAll(function( textarea, config ){
+	        config.skin = 'getsimple',
+	        config.forcePasteAsPlainText = true,
+	        config.language = '<?php echo $EDLANG; ?>',
+	        config.defaultLanguage = 'en',
+	        <?php if (file_exists(GSTHEMESPATH .$TEMPLATE."/editor.css")) { 
+	        	$fullpath = suggest_site_path();
+	        ?>
+            config.contentsCss = '<?php echo $fullpath; ?>theme/<?php echo $TEMPLATE; ?>/editor.css',
+          <?php } ?>
+	        config.entities = false,
+	        config.uiColor = '#FFFFFF',
+			config.height = '<?php echo $EDHEIGHT; ?>',
+			config.baseHref = '<?php echo $SITEURL; ?>',
+	        config.toolbar = 
+	        [
+	        <?php echo $toolbar; ?>
+			]
+			<?php echo $EDOPTIONS; ?>,
+			config.tabSpaces = 10,
+	        config.filebrowserBrowseUrl = 'filebrowser.php?type=all',
+			config.filebrowserImageBrowseUrl = 'filebrowser.php?type=images',
+	        config.filebrowserWindowWidth = '730',
+	        config.filebrowserWindowHeight = '500'
+    		});
+    		
+
+			</script>
 <?php	
 }
 
@@ -421,6 +523,7 @@ function displayFieldType($name, $type, $schema,$value=''){
 	$datepick=false;
 	$datetimepick=false;
 	$textedit=false;
+	$ckeditor=false;
 	$options='';
 	// get caching info in case we need it. 
 	getPagesXmlValues();
@@ -531,17 +634,18 @@ function displayFieldType($name, $type, $schema,$value=''){
 			break;
 		// texteditor converted to CKEditor
 		case "texteditor":
-       		echo '<p><textarea class="codeeditor" id="post-'.$name.'" name="post-'.$name.'" style="width:513px;height:200px;border: 1px solid #AAAAAA;">'.$value.'</textarea></p>';
-			$textedit=true;
+       		echo '<p><textarea class="ckeditor" id="post-'.$name.'" name="post-'.$name.'" style="width:513px;height:200px;border: 1px solid #AAAAAA;">'.$value.'</textarea></p>';
 			break;
 		// Textarea Plain
 		case "textarea":
-       		echo '<p><textarea class="codeeditor" id="post-'.$name.'" name="post-'.$name.'" style="width:513px;height:200px;border: 1px solid #AAAAAA;">'.$value.'</textarea></p>';
+       		echo '<p><textarea class="textarea" id="post-'.$name.'" name="post-'.$name.'" style="width:513px;height:200px;border: 1px solid #AAAAAA;">'.$value.'</textarea></p>';
+			
 			break;
 		default:
 			echo "Unknown"; 
 	}
-
+	
+	
 	if ($codeedit){
 		?>
 			<script type="text/javascript">

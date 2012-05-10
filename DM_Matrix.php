@@ -101,6 +101,12 @@ if (isset($_GET['id']) && $_GET['id']=="DM_Matrix"){
 	queue_script('jquery-ui', GSBACK);	
 	register_style('DM_Matrix_css',$SITEURL.'plugins/DM_Matrix/css/style.css', '0.1',FALSE);
 	queue_style('DM_Matrix_css', GSBACK);
+	
+	register_script('ckeditor', $SITEURL.'admin/template/js/ckeditor/ckeditor.js', '0.2.0', FALSE);
+	queue_script('ckeditor', GSBACK);
+	
+	
+	
 }
 
 add_action('nav-tab','createNavTab',array('DM_Matrix','DM_Matrix','The Matrix','action=matrix_manager&schema'));
@@ -234,7 +240,17 @@ function DM_manipulate($field, $type){
 			break;	
 		case "datepicker":
 			return (int)strtotime($field);
-			break;		
+			break;	
+		case "texteditor":
+			return safe_slash_html($field);
+			break;
+		case "textarea":
+			return safe_slash_html($field);
+			break;
+		case "codeeditor":
+			return safe_slash_html($field);
+			break;
+				
 		default: 
 			return $field;
 	}
