@@ -365,7 +365,14 @@ function DM_editForm($table, $record){
 
 </ul>
 <?php
-		if (defined('GSEDITORHEIGHT')) { $EDHEIGHT = GSEDITORHEIGHT .'px'; } else {	$EDHEIGHT = '500px'; }
+DM_outputCKHeader();	
+}
+
+
+function DM_outputCKHeader(){
+	global $TEMPLATE;
+	global $SITEURL;
+	if (defined('GSEDITORHEIGHT')) { $EDHEIGHT = GSEDITORHEIGHT .'px'; } else {	$EDHEIGHT = '500px'; }
 		if (defined('GSEDITORLANG')) { $EDLANG = GSEDITORLANG; } else {	$EDLANG = i18n_r('CKEDITOR_LANG'); }
 		if (defined('GSEDITORTOOL')) { $EDTOOL = GSEDITORTOOL; } else {	$EDTOOL = 'basic'; }
 		if (defined('GSEDITOROPTIONS') && trim(GSEDITOROPTIONS)!="") { $EDOPTIONS = ", ".GSEDITOROPTIONS; } else {	$EDOPTIONS = ''; }
@@ -385,37 +392,36 @@ function DM_editForm($table, $record){
 		
 			<script type="text/javascript">
 			
-			CKEDITOR.replaceAll(function( textarea, config ){
-	        config.skin = 'getsimple',
-	        config.forcePasteAsPlainText = true,
-	        config.language = '<?php echo $EDLANG; ?>',
-	        config.defaultLanguage = 'en',
+			//CKEDITOR.replaceAll(function( textarea, config ){
+	        CKEDITOR.config.skin = 'getsimple',
+	        CKEDITOR.config.forcePasteAsPlainText = true,
+	        CKEDITOR.config.language = '<?php echo $EDLANG; ?>',
+	        CKEDITOR.config.defaultLanguage = 'en',
 	        <?php if (file_exists(GSTHEMESPATH .$TEMPLATE."/editor.css")) { 
 	        	$fullpath = suggest_site_path();
 	        ?>
-            config.contentsCss = '<?php echo $fullpath; ?>theme/<?php echo $TEMPLATE; ?>/editor.css',
+            CKEDITOR.config.contentsCss = '<?php echo $fullpath; ?>theme/<?php echo $TEMPLATE; ?>/editor.css',
           <?php } ?>
-	        config.entities = false,
-	        config.uiColor = '#FFFFFF',
-			config.height = '<?php echo $EDHEIGHT; ?>',
-			config.baseHref = '<?php echo $SITEURL; ?>',
-	        config.toolbar = 
+	        CKEDITOR.config.entities = false,
+	        CKEDITOR.config.uiColor = '#FFFFFF',
+			CKEDITOR.config.height = '<?php echo $EDHEIGHT; ?>',
+			CKEDITOR.config.baseHref = '<?php echo $SITEURL; ?>',
+	        CKEDITOR.config.toolbar = 
 	        [
 	        <?php echo $toolbar; ?>
 			]
 			<?php echo $EDOPTIONS; ?>,
-			config.tabSpaces = 10,
-	        config.filebrowserBrowseUrl = 'filebrowser.php?type=all',
-			config.filebrowserImageBrowseUrl = 'filebrowser.php?type=images',
-	        config.filebrowserWindowWidth = '730',
-	        config.filebrowserWindowHeight = '500'
-    		});
+			CKEDITOR.config.tabSpaces = 10,
+	        CKEDITOR.config.filebrowserBrowseUrl = 'filebrowser.php?type=all',
+			CKEDITOR.config.filebrowserImageBrowseUrl = 'filebrowser.php?type=images',
+	        CKEDITOR.config.filebrowserWindowWidth = '730',
+	        CKEDITOR.config.filebrowserWindowHeight = '500'
+    		//});
     		
 
 			</script>
 <?php	
 }
-
 
 
 function DM_createForm($name){
@@ -461,55 +467,7 @@ function DM_createForm($name){
 
 </ul>
 <?php
-		if (defined('GSEDITORHEIGHT')) { $EDHEIGHT = GSEDITORHEIGHT .'px'; } else {	$EDHEIGHT = '500px'; }
-		if (defined('GSEDITORLANG')) { $EDLANG = GSEDITORLANG; } else {	$EDLANG = i18n_r('CKEDITOR_LANG'); }
-		if (defined('GSEDITORTOOL')) { $EDTOOL = GSEDITORTOOL; } else {	$EDTOOL = 'basic'; }
-		if (defined('GSEDITOROPTIONS') && trim(GSEDITOROPTIONS)!="") { $EDOPTIONS = ", ".GSEDITOROPTIONS; } else {	$EDOPTIONS = ''; }
-			
-		if ($EDTOOL == 'advanced') {
-			$toolbar = "
-					['Bold', 'Italic', 'Underline', 'NumberedList', 'BulletedList', 'JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock', 'Table', 'TextColor', 'BGColor', 'Link', 'Unlink', 'Image', 'RemoveFormat', 'Source'],
-	         '/',
-	         ['Styles','Format','Font','FontSize']
-	     ";
-			} elseif ($EDTOOL == 'basic') {
-			$toolbar = "['Bold', 'Italic', 'Underline', 'NumberedList', 'BulletedList', 'JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock', 'Link', 'Unlink', 'Image', 'RemoveFormat', 'Source']";
-		} else {
-			$toolbar = GSEDITORTOOL;
-		}
-		?>
-		
-			<script type="text/javascript">
-			
-			CKEDITOR.replaceAll(function( textarea, config ){
-	        config.skin = 'getsimple',
-	        config.forcePasteAsPlainText = true,
-	        config.language = '<?php echo $EDLANG; ?>',
-	        config.defaultLanguage = 'en',
-	        <?php if (file_exists(GSTHEMESPATH .$TEMPLATE."/editor.css")) { 
-	        	$fullpath = suggest_site_path();
-	        ?>
-            config.contentsCss = '<?php echo $fullpath; ?>theme/<?php echo $TEMPLATE; ?>/editor.css',
-          <?php } ?>
-	        config.entities = false,
-	        config.uiColor = '#FFFFFF',
-			config.height = '<?php echo $EDHEIGHT; ?>',
-			config.baseHref = '<?php echo $SITEURL; ?>',
-	        config.toolbar = 
-	        [
-	        <?php echo $toolbar; ?>
-			]
-			<?php echo $EDOPTIONS; ?>,
-			config.tabSpaces = 10,
-	        config.filebrowserBrowseUrl = 'filebrowser.php?type=all',
-			config.filebrowserImageBrowseUrl = 'filebrowser.php?type=images',
-	        config.filebrowserWindowWidth = '730',
-	        config.filebrowserWindowHeight = '500'
-    		});
-    		
-
-			</script>
-<?php	
+DM_outputCKHeader();
 }
 
 
