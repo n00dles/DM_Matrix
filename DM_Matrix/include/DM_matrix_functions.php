@@ -599,6 +599,18 @@ function displayFieldType($name, $type, $schema,$value=''){
 	}
 }
 
+function DM_query($query,$cache=true){
+	$sql=new sql4array();
+	$sql->createFromGlobals(false);
+	$tables = $sql->get_tablenames($query);
+
+	foreach($tables as $table){
+		if(!isset($DM_tables_cache[$table]) or $cache==false) $DM_tables_cache[$table] = getSchemaTable($table);
+		$sql->asset($table,$DM_tables_cache[$table]);
+	}
+
+	return $sql->query($query);
+}
 
 function DMdebuglog($log){
 	global $DM_Matrix_debug;

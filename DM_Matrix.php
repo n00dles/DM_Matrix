@@ -61,7 +61,7 @@ $uriRoutes=array();
 $sql = new sql4array();
 $mytable=array();
 
-
+$DM_tables_cache = array(); // hold cached schema loads
 
 // only load all our scripts and style if were on the MAtrix Plugin page
 if (isset($_GET['id']) && $_GET['id']=="DM_Matrix"){
