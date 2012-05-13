@@ -554,6 +554,22 @@ class sql4array
 
 		return $return;
 	}
+	
+	public function get_tablenames($query){
+			$this->destroy();
+			$this->query = $query;
+
+			# if (!$this->cacheQueryGet($this->query))
+			# {
+
+				$this
+					->parse_query()
+					->parse_from()
+				;
+			# }
+			
+			return $this->parse_from;
+	}		
 }
 
 ?>
