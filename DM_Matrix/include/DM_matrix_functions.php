@@ -97,23 +97,25 @@ function DM_saveSchema(){
 		$pages->addChild('name',$table);
 		$pages->addChild('id',$key['id']);
 		$pages->addChild('maxrecords',$key['maxrecords']);
-		foreach($key['fields'] as $field=>$type){
-			//$options=$schemaArray[$table]['options'];
-
-			$field=$pages->addChild('field',$field);
-			$field->addAttribute('type',$type);
-			$field->addAttribute('tableview',@$schemaArray[$table]['tableview'][(string)$field]);
-			$field->addAttribute('cacheindex',@$schemaArray[$table]['cacheindex'][(string)$field]);
-			$field->addAttribute('description',@$schemaArray[$table]['desc'][(string)$field]);
-			$field->addAttribute('label',@$schemaArray[$table]['label'][(string)$field]);
-			
-			if ($type=='dropdown'){
-				$field->addAttribute('table',@$schemaArray[$table]['table'][(string)$field]);
-				$field->addAttribute('row',@$schemaArray[$table]['row'][(string)$field]);
-			}
-			
-		}
 		
+		if (isset($key['fields'])){		
+			foreach($key['fields'] as $field=>$type){
+				//$options=$schemaArray[$table]['options'];
+
+				$field=$pages->addChild('field',$field);
+				$field->addAttribute('type',$type);
+				$field->addAttribute('tableview',@$schemaArray[$table]['tableview'][(string)$field]);
+				$field->addAttribute('cacheindex',@$schemaArray[$table]['cacheindex'][(string)$field]);
+				$field->addAttribute('description',@$schemaArray[$table]['desc'][(string)$field]);
+				$field->addAttribute('label',@$schemaArray[$table]['label'][(string)$field]);
+				
+				if ($type=='dropdown'){
+					$field->addAttribute('table',@$schemaArray[$table]['table'][(string)$field]);
+					$field->addAttribute('row',@$schemaArray[$table]['row'][(string)$field]);
+				}
+				
+			}
+		}
 	}
 	$xml->asXML($file);
 	DM_getSchema(true);
@@ -507,14 +509,14 @@ function displayFieldType($name, $type, $schema,$value=''){
 		// Checkbox
 		case "checkbox":
 			$label=$schemaArray[$schema]['label'][$name];
-			echo '<p><input id="post-'.$name.'" class="required" name="post-'.$name.'" type="checkbox" > '.$label.'</p>';
+			echo '<p><input id="post-'.$name.'" class="required" name="post-'.$name.'" type="checkbox" '. ($value=='on' ? 'checked' : '') .'> '.$label.'</p>';
 			break;
 		// Dropdown box of existing pages on the site. Values are skug/url 
 		case "pages":
 			echo '<p><select id="post-'.$name.'" name="post-'.$name.'">';
 			echo '<option value=""></option>';
 			foreach ($pagesArray as $page){
-				if ($page['url']==$value) $options=' selected ';
+				$page['url']==$value ? $options=' selected ' : $options='';
 				echo '<option value="'.$page['url'].'" '.$options.'>'.$page['title'].'</option>';
 			}
 			echo '</select></p>';
@@ -533,7 +535,7 @@ function displayFieldType($name, $type, $schema,$value=''){
 			}			
 			sort($templates);	
 			foreach ($templates as $file){
-				if ($file==$value) $options=' selected ';
+				$file==$value ? $options=' selected ' : $options='';			
 				$theme_templates .= '<option value="'.$file.'" '.$options.'>'.$file.'</option>';
 			}
 			echo '<p><select  id="post-'.$name.'" name="post-'.$name.'">';
@@ -661,6 +663,18 @@ function displayFieldType($name, $type, $schema,$value=''){
 	}
 }
 
+function DM_query($query,$cache=true){
+	$sql=new sql4array();
+	$sql->createFromGlobals(false);
+	$tables = $sql->get_tablenames($query);
+
+	foreach($tables as $table){
+		if(!isset($DM_tables_cache[$table]) or $cache==false) $DM_tables_cache[$table] = getSchemaTable($table);
+		$sql->asset($table,$DM_tables_cache[$table]);
+	}
+
+	return $sql->query($query);
+}
 
 function DMdebuglog($log){
 	global $DM_Matrix_debug;
