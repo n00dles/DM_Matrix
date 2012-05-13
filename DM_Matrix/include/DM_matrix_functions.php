@@ -507,7 +507,7 @@ function displayFieldType($name, $type, $schema,$value=''){
 		// Checkbox
 		case "checkbox":
 			$label=$schemaArray[$schema]['label'][$name];
-			echo '<p><input id="post-'.$name.'" class="required" name="post-'.$name.'" type="checkbox" > '.$label.'</p>';
+			echo '<p><input id="post-'.$name.'" class="required" name="post-'.$name.'" type="checkbox" '. ($value=='on' ? 'checked' : '') .'> '.$label.'</p>';
 			break;
 		// Dropdown box of existing pages on the site. Values are skug/url 
 		case "pages":
@@ -533,7 +533,7 @@ function displayFieldType($name, $type, $schema,$value=''){
 			}			
 			sort($templates);	
 			foreach ($templates as $file){
-				if ($file==$value) $options=' selected ';
+				$file==$value ? $options=' selected ' : $options='';			
 				$theme_templates .= '<option value="'.$file.'" '.$options.'>'.$file.'</option>';
 			}
 			echo '<p><select  id="post-'.$name.'" name="post-'.$name.'">';
