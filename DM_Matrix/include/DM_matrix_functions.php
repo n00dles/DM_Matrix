@@ -514,7 +514,7 @@ function displayFieldType($name, $type, $schema,$value=''){
 			echo '<p><select id="post-'.$name.'" name="post-'.$name.'">';
 			echo '<option value=""></option>';
 			foreach ($pagesArray as $page){
-				if ($page['url']==$value) $options=' selected ';
+				$page['url']==$value ? $options=' selected ' : $options='';
 				echo '<option value="'.$page['url'].'" '.$options.'>'.$page['title'].'</option>';
 			}
 			echo '</select></p>';
