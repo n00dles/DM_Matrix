@@ -158,3 +158,17 @@
 #pager{
   margin-top:10px;
 }
+
+textarea .ckeditor{
+	width: 635px;
+height: 420px;
+line-height: 18px;
+text-align: left;
+color: #333;
+border: 1px solid #AAA;
+padding: 5px;
+font-family: Arial, Helvetica Neue, Helvetica, sans-serif;
+font-size: 12px;
+border-radius: 2px;
+border-image: initial;
+}
