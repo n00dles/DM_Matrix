@@ -97,23 +97,25 @@ function DM_saveSchema(){
 		$pages->addChild('name',$table);
 		$pages->addChild('id',$key['id']);
 		$pages->addChild('maxrecords',$key['maxrecords']);
-		foreach($key['fields'] as $field=>$type){
-			//$options=$schemaArray[$table]['options'];
-
-			$field=$pages->addChild('field',$field);
-			$field->addAttribute('type',$type);
-			$field->addAttribute('tableview',@$schemaArray[$table]['tableview'][(string)$field]);
-			$field->addAttribute('cacheindex',@$schemaArray[$table]['cacheindex'][(string)$field]);
-			$field->addAttribute('description',@$schemaArray[$table]['desc'][(string)$field]);
-			$field->addAttribute('label',@$schemaArray[$table]['label'][(string)$field]);
-			
-			if ($type=='dropdown'){
-				$field->addAttribute('table',@$schemaArray[$table]['table'][(string)$field]);
-				$field->addAttribute('row',@$schemaArray[$table]['row'][(string)$field]);
-			}
-			
-		}
 		
+		if (isset($key['fields'])){		
+			foreach($key['fields'] as $field=>$type){
+				//$options=$schemaArray[$table]['options'];
+
+				$field=$pages->addChild('field',$field);
+				$field->addAttribute('type',$type);
+				$field->addAttribute('tableview',@$schemaArray[$table]['tableview'][(string)$field]);
+				$field->addAttribute('cacheindex',@$schemaArray[$table]['cacheindex'][(string)$field]);
+				$field->addAttribute('description',@$schemaArray[$table]['desc'][(string)$field]);
+				$field->addAttribute('label',@$schemaArray[$table]['label'][(string)$field]);
+				
+				if ($type=='dropdown'){
+					$field->addAttribute('table',@$schemaArray[$table]['table'][(string)$field]);
+					$field->addAttribute('row',@$schemaArray[$table]['row'][(string)$field]);
+				}
+				
+			}
+		}
 	}
 	$xml->asXML($file);
 	DM_getSchema(true);
