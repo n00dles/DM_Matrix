@@ -117,9 +117,9 @@ function DM_saveSchema(){
 			}
 		}
 	}
-	$xml->asXML($file);
+	$ret = $xml->asXML($file);
 	DM_getSchema(true);
-	return true;
+	return $ret;
 }
 
 function createRecord($name,$data=array()){
@@ -137,7 +137,7 @@ function createRecord($name,$data=array()){
 	DMdebuglog('file:'.$file);
 	$schemaArray[$name]['id']=$id+1;
 	$ret=DM_saveSchema();
-	
+	return $ret;
 }
 
 function updateRecord($name,$record,$data=array()){
@@ -155,7 +155,7 @@ function updateRecord($name,$record,$data=array()){
 	DMdebuglog('file:'.$file);
 	//$schemaArray[$name]['id']=$id+1;
 	$ret=DM_saveSchema();
-	
+	return $ret;
 }
 
 /**
@@ -203,7 +203,7 @@ function createSchemaTable($name, $maxrecords=0, $fields=array()){
 	createSchemaFolder($name);		
 	$ret=DM_saveSchema();
 	DMdebuglog(i18n_r($thisfile_DM_Matrix.'/DM_ERROR_CREATETABLESUCCESS'));
-	return true;
+	return $ret;
 }
 
 /**
@@ -219,6 +219,7 @@ function dropSchemaTable($name){
 	global $schemaArray;
 	unset($schemaArray[(string)$name]);
 	$ret=DM_saveSchema();	
+	return $ret;
 }
 
 /**
@@ -431,33 +432,35 @@ function DM_createForm($name){
 	global $TEMPLATE;
 	global $SITEURL;
 	echo '<ul class="fields">';
-	foreach ($schemaArray[$name]['fields'] as $field=>$value) {
+	if(isset($schemaArray[$name])){
+		foreach ($schemaArray[$name]['fields'] as $field=>$value) {
 
-	if ($field!="id"){
-	?>
-	
-		<li class="InputfieldName Inputfield_name ui-widget" id="wrap_Inputfield_name">
-			<label class="ui-widget-header fieldstateToggle" for="Inputfield_name"><?php echo $field; ?></label>
+		if ($field!="id"){
+		?>
+		
+			<li class="InputfieldName Inputfield_name ui-widget" id="wrap_Inputfield_name">
+				<label class="ui-widget-header fieldstateToggle" for="Inputfield_name"><?php echo $field; ?></label>
+				<div class="ui-widget-content">
+					<p class="description"><?php echo $schemaArray[$name]['desc'][$field]; ?></p>
+					<?php displayFieldType($field, $value,$name); ?>
+				</div>
+			</li>
+		
+		<?php
+		} else {
+		?>
+		<li class="InputfieldHidden Inputfield_id ui-widget" id="wrap_Inputfield_id">
+			<label class="ui-widget-header fieldstateToggle" for="Inputfield_id">id</label>
 			<div class="ui-widget-content">
-				<p class="description"><?php echo $schemaArray[$name]['desc'][$field]; ?></p>
-				<?php displayFieldType($field, $value,$name); ?>
+				<input id="Inputfield_id" name="id" value="0" type="hidden">
 			</div>
 		</li>
-	
-	<?php
-	} else {
-	?>
-	<li class="InputfieldHidden Inputfield_id ui-widget" id="wrap_Inputfield_id">
-		<label class="ui-widget-header fieldstateToggle" for="Inputfield_id">id</label>
-		<div class="ui-widget-content">
-			<input id="Inputfield_id" name="id" value="0" type="hidden">
-		</div>
-	</li>
 
-		
-	<?php	
+			
+		<?php	
+			}
 		}
-	}
+	}	
 ?>
 
 	<li class="fieldsubmit Inputfield_submit_save_field ui-widget" id="wrap_Inputfield_submit">
