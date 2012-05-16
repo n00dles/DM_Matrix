@@ -83,14 +83,14 @@ function DM_getSchema($flag=false){
 					
 					}
 				
-  			}
+			}
 		}
 	}
 }
 
 function DM_saveSchema(){
 	global $schemaArray;	
-  	$file=GSSCHEMAPATH."/schema.xml";
+	$file=GSSCHEMAPATH."/schema.xml";
 	$xml = @new SimpleXMLExtended('<channel></channel>');
 	foreach ($schemaArray as $table=>$key){
 		$pages = $xml->addChild('item');
@@ -117,9 +117,9 @@ function DM_saveSchema(){
 			}
 		}
 	}
-	$xml->asXML($file);
+	$ret = $xml->asXML($file);
 	DM_getSchema(true);
-	return true;
+	return $ret;
 }
 
 function createRecord($name,$data=array()){
@@ -137,7 +137,7 @@ function createRecord($name,$data=array()){
 	DMdebuglog('file:'.$file);
 	$schemaArray[$name]['id']=$id+1;
 	$ret=DM_saveSchema();
-	
+	return $ret;
 }
 
 function updateRecord($name,$record,$data=array()){
@@ -155,7 +155,7 @@ function updateRecord($name,$record,$data=array()){
 	DMdebuglog('file:'.$file);
 	//$schemaArray[$name]['id']=$id+1;
 	$ret=DM_saveSchema();
-	
+	return $ret;
 }
 
 /**
@@ -203,7 +203,7 @@ function createSchemaTable($name, $maxrecords=0, $fields=array()){
 	createSchemaFolder($name);		
 	$ret=DM_saveSchema();
 	DMdebuglog(i18n_r($thisfile_DM_Matrix.'/DM_ERROR_CREATETABLESUCCESS'));
-	return true;
+	return $ret;
 }
 
 /**
@@ -219,6 +219,7 @@ function dropSchemaTable($name){
 	global $schemaArray;
 	unset($schemaArray[(string)$name]);
 	$ret=DM_saveSchema();	
+	return $ret;
 }
 
 /**
@@ -282,19 +283,19 @@ function getSchemaTable($name,$query=''){
 	  $dir_handle = @opendir($path) or die("Unable to open $path");
 	  $filenames = array();
 	  while ($filename = readdir($dir_handle)) {
-	    $ext = substr($filename, strrpos($filename, '.') + 1);
+		$ext = substr($filename, strrpos($filename, '.') + 1);
 		$fname=substr($filename,0, strrpos($filename, '.'));
-	    if ($ext=="xml"){
+		if ($ext=="xml"){
 			$thisfile_DM_Matrix = file_get_contents($path.$filename);
-	        $data = simplexml_load_string($thisfile_DM_Matrix);
-	        //$count++;   
-	        $id=$data->item;
+			$data = simplexml_load_string($thisfile_DM_Matrix);
+			//$count++;   
+			$id=$data->item;
 			$idNum=$id->id;
 			foreach ($id->children() as $opt=>$val) {
-	            //$pagesArray[(string)$key][(string)$opt]=(string)$val;
+				//$pagesArray[(string)$key][(string)$opt]=(string)$val;
 				$table[(int)$idNum][(string)$opt]=(string)$val;
-	        }		
-	    }
+			}		
+		}
 	  }
 	if ($query!=''){
 		$returnArray=$table;
@@ -310,14 +311,14 @@ function DM_getRecord($name, $record){
 	$path = GSSCHEMAPATH.'/'.$name."/";
 	$filename=$record.".xml";
 	$thisfile_DM_Matrix = file_get_contents($path.$filename);
-    $data = simplexml_load_string($thisfile_DM_Matrix);
-     //$count++;   
-    $id=$data->item;
+	$data = simplexml_load_string($thisfile_DM_Matrix);
+	 //$count++;   
+	$id=$data->item;
 	$idNum=$id->id;
 	foreach ($id->children() as $opt=>$val) {
-           //$pagesArray[(string)$key][(string)$opt]=(string)$val;
+		   //$pagesArray[(string)$key][(string)$opt]=(string)$val;
 		$table[(string)$opt]=(string)$val;
-    }		
+	}		
 	return $table;
 }
 
@@ -382,9 +383,9 @@ function DM_outputCKHeader(){
 		if ($EDTOOL == 'advanced') {
 			$toolbar = "
 					['Bold', 'Italic', 'Underline', 'NumberedList', 'BulletedList', 'JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock', 'Table', 'TextColor', 'BGColor', 'Link', 'Unlink', 'Image', 'RemoveFormat', 'Source'],
-	         '/',
-	         ['Styles','Format','Font','FontSize']
-	     ";
+			 '/',
+			 ['Styles','Format','Font','FontSize']
+		 ";
 			} elseif ($EDTOOL == 'basic') {
 			$toolbar = "['Bold', 'Italic', 'Underline', 'NumberedList', 'BulletedList', 'JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock', 'Link', 'Unlink', 'Image', 'RemoveFormat', 'Source']";
 		} else {
@@ -395,31 +396,31 @@ function DM_outputCKHeader(){
 			<script type="text/javascript">
 			
 			//CKEDITOR.replaceAll(function( textarea, config ){
-	        CKEDITOR.config.skin = 'getsimple',
-	        CKEDITOR.config.forcePasteAsPlainText = true,
-	        CKEDITOR.config.language = '<?php echo $EDLANG; ?>',
-	        CKEDITOR.config.defaultLanguage = 'en',
-	        <?php if (file_exists(GSTHEMESPATH .$TEMPLATE."/editor.css")) { 
-	        	$fullpath = suggest_site_path();
-	        ?>
-            CKEDITOR.config.contentsCss = '<?php echo $fullpath; ?>theme/<?php echo $TEMPLATE; ?>/editor.css',
-          <?php } ?>
-	        CKEDITOR.config.entities = false,
-	        CKEDITOR.config.uiColor = '#FFFFFF',
+			CKEDITOR.config.skin = 'getsimple',
+			CKEDITOR.config.forcePasteAsPlainText = true,
+			CKEDITOR.config.language = '<?php echo $EDLANG; ?>',
+			CKEDITOR.config.defaultLanguage = 'en',
+			<?php if (file_exists(GSTHEMESPATH .$TEMPLATE."/editor.css")) { 
+				$fullpath = suggest_site_path();
+			?>
+			CKEDITOR.config.contentsCss = '<?php echo $fullpath; ?>theme/<?php echo $TEMPLATE; ?>/editor.css',
+		  <?php } ?>
+			CKEDITOR.config.entities = false,
+			CKEDITOR.config.uiColor = '#FFFFFF',
 			CKEDITOR.config.height = '<?php echo $EDHEIGHT; ?>',
 			CKEDITOR.config.baseHref = '<?php echo $SITEURL; ?>',
-	        CKEDITOR.config.toolbar = 
-	        [
-	        <?php echo $toolbar; ?>
+			CKEDITOR.config.toolbar = 
+			[
+			<?php echo $toolbar; ?>
 			]
 			<?php echo $EDOPTIONS; ?>,
 			CKEDITOR.config.tabSpaces = 10,
-	        CKEDITOR.config.filebrowserBrowseUrl = 'filebrowser.php?type=all',
+			CKEDITOR.config.filebrowserBrowseUrl = 'filebrowser.php?type=all',
 			CKEDITOR.config.filebrowserImageBrowseUrl = 'filebrowser.php?type=images',
-	        CKEDITOR.config.filebrowserWindowWidth = '730',
-	        CKEDITOR.config.filebrowserWindowHeight = '500'
-    		//});
-    		
+			CKEDITOR.config.filebrowserWindowWidth = '730',
+			CKEDITOR.config.filebrowserWindowHeight = '500'
+			//});
+			
 
 			</script>
 <?php	
@@ -431,33 +432,35 @@ function DM_createForm($name){
 	global $TEMPLATE;
 	global $SITEURL;
 	echo '<ul class="fields">';
-	foreach ($schemaArray[$name]['fields'] as $field=>$value) {
+	if(isset($schemaArray[$name])){
+		foreach ($schemaArray[$name]['fields'] as $field=>$value) {
 
-	if ($field!="id"){
-	?>
-	
-		<li class="InputfieldName Inputfield_name ui-widget" id="wrap_Inputfield_name">
-			<label class="ui-widget-header fieldstateToggle" for="Inputfield_name"><?php echo $field; ?></label>
+		if ($field!="id"){
+		?>
+		
+			<li class="InputfieldName Inputfield_name ui-widget" id="wrap_Inputfield_name">
+				<label class="ui-widget-header fieldstateToggle" for="Inputfield_name"><?php echo $field; ?></label>
+				<div class="ui-widget-content">
+					<p class="description"><?php echo $schemaArray[$name]['desc'][$field]; ?></p>
+					<?php displayFieldType($field, $value,$name); ?>
+				</div>
+			</li>
+		
+		<?php
+		} else {
+		?>
+		<li class="InputfieldHidden Inputfield_id ui-widget" id="wrap_Inputfield_id">
+			<label class="ui-widget-header fieldstateToggle" for="Inputfield_id">id</label>
 			<div class="ui-widget-content">
-				<p class="description"><?php echo $schemaArray[$name]['desc'][$field]; ?></p>
-				<?php displayFieldType($field, $value,$name); ?>
+				<input id="Inputfield_id" name="id" value="0" type="hidden">
 			</div>
 		</li>
-	
-	<?php
-	} else {
-	?>
-	<li class="InputfieldHidden Inputfield_id ui-widget" id="wrap_Inputfield_id">
-		<label class="ui-widget-header fieldstateToggle" for="Inputfield_id">id</label>
-		<div class="ui-widget-content">
-			<input id="Inputfield_id" name="id" value="0" type="hidden">
-		</div>
-	</li>
 
-		
-	<?php	
+			
+		<?php	
+			}
 		}
-	}
+	}	
 ?>
 
 	<li class="fieldsubmit Inputfield_submit_save_field ui-widget" id="wrap_Inputfield_submit">
@@ -494,7 +497,7 @@ function displayFieldType($name, $type, $schema,$value=''){
 		case "int":
 			echo '<p><input id="post-'.$name.'" class="required" name="post-'.$name.'" type="text" size="50" maxlength="128" value="'.$value.'"></p>';
 			break; 		
-    // normal text field
+	// normal text field
 		case "text":
 			echo '<p><input id="post-'.$name.'" class="required" name="post-'.$name.'" type="text" size="50" maxlength="128" value="'.$value.'"></p>';
 			break; 
@@ -529,8 +532,8 @@ function displayFieldType($name, $type, $schema,$value=''){
 			while ($file = readdir($themes_handle))	{		
 				if( isFile($file, $themes_path, 'php') ) {		
 					if ($file != 'functions.php' && !strpos(strtolower($file), '.inc.php')) {		
-			      $templates[] = $file;		
-			    }		
+				  $templates[] = $file;		
+				}		
 				}		
 			}			
 			sort($templates);	
@@ -572,32 +575,16 @@ function displayFieldType($name, $type, $schema,$value=''){
 			echo '</select></p>';
 			break;
 		case 'image':
-        	echo '<p><input class="text imagepicker" type="text" id="post-'.$name.'" name="post-'.$name.'"  value="'.$value.'" />';
-        	echo ' <span class="edit-nav"><a id="browse-'.$name.'" href="#">Browse</a></span>';
-			echo '<div id="image-'.$name.'"></div>';
-       		echo '</p>'; 
-        
-		?>
-		<script type="text/javascript">
-		  $(function() { 
-		    $('#browse-<?php echo $name; ?>').click(function(e) {
-		      window.open('<?php echo $SITEURL; ?>admin/filebrowser.php?CKEditorFuncNum=1&func=test&returnid=post-<?php echo $name; ?>&type=images', 'browser', 'width=800,height=500,left=100,top=100,scrollbars=yes');
-		    });
-		  });
-		</script>
-		<?php
-		break;
-		case 'filepicker':
-			echo '<p><input class="text filepicker" type="text" id="post-'.$name.'" name="post-'.$name.'"  value="'.$value.'" />';
+			echo '<p><input class="text imagepicker" type="text" id="post-'.$name.'" name="post-'.$name.'"  value="'.$value.'" />';
 			echo ' <span class="edit-nav"><a id="browse-'.$name.'" href="#">Browse</a></span>';
-			echo '<div id="file-'.$name.'"></div>';
+			echo '<div id="image-'.$name.'"></div>';
 			echo '</p>'; 
 		
 		?>
 		<script type="text/javascript">
 		  $(function() { 
 			$('#browse-<?php echo $name; ?>').click(function(e) {
-			  window.open('<?php echo $SITEURL; ?>admin/filebrowser.php?CKEditorFuncNum=1&func=test&returnid=post-<?php echo $name; ?>&type=all', 'browser', 'width=800,height=500,left=100,top=100,scrollbars=yes');
+			  window.open('<?php echo $SITEURL; ?>admin/filebrowser.php?CKEditorFuncNum=1&func=test&returnid=post-<?php echo $name; ?>&type=images', 'browser', 'width=800,height=500,left=100,top=100,scrollbars=yes');
 			});
 		  });
 		</script>
@@ -605,16 +592,16 @@ function displayFieldType($name, $type, $schema,$value=''){
 		break;
 		// Textarea converted to a code editor.
 		case "codeeditor":
-       		echo '<p><textarea class="codeeditor" id="post-'.$name.'" name="post-'.$name.'" style="width:513px;height:200px;border: 1px solid #AAAAAA;">'.$value.'</textarea></p>';
+			echo '<p><textarea class="codeeditor" id="post-'.$name.'" name="post-'.$name.'" style="width:513px;height:200px;border: 1px solid #AAAAAA;">'.$value.'</textarea></p>';
 			$codeedit=true;
 			break;
 		// texteditor converted to CKEditor
 		case "texteditor":
-       		echo '<p><textarea class="ckeditor" id="post-'.$name.'" name="post-'.$name.'" style="width:513px;height:200px;border: 1px solid #AAAAAA;">'.$value.'</textarea></p>';
+			echo '<p><textarea class="ckeditor" id="post-'.$name.'" name="post-'.$name.'" style="width:513px;height:200px;border: 1px solid #AAAAAA;">'.$value.'</textarea></p>';
 			break;
 		// Textarea Plain
 		case "textarea":
-       		echo '<p><textarea class="textarea" id="post-'.$name.'" name="post-'.$name.'" style="width:513px;height:200px;border: 1px solid #AAAAAA;">'.$value.'</textarea></p>';
+			echo '<p><textarea class="textarea" id="post-'.$name.'" name="post-'.$name.'" style="width:513px;height:200px;border: 1px solid #AAAAAA;">'.$value.'</textarea></p>';
 			
 			break;
 		default:
@@ -628,52 +615,52 @@ function displayFieldType($name, $type, $schema,$value=''){
 			jQuery(document).ready(function() { 
 				  var foldFunc = CodeMirror.newFoldFunction(CodeMirror.braceRangeFinder);
 				  function keyEvent(cm, e) {
-				    if (e.keyCode == 81 && e.ctrlKey) {
-				      if (e.type == "keydown") {
-				        e.stop();
-				        setTimeout(function() {foldFunc(cm, cm.getCursor().line);}, 50);
-				      }
-				      return true;
-				    }
+					if (e.keyCode == 81 && e.ctrlKey) {
+					  if (e.type == "keydown") {
+						e.stop();
+						setTimeout(function() {foldFunc(cm, cm.getCursor().line);}, 50);
+					  }
+					  return true;
+					}
 				  }
 				  function toggleFullscreenEditing()
-				    {
-				        var editorDiv = $('.CodeMirror-scroll');
-				        if (!editorDiv.hasClass('fullscreen')) {
-				            toggleFullscreenEditing.beforeFullscreen = { height: editorDiv.height(), width: editorDiv.width() }
-				            editorDiv.addClass('fullscreen');
-				            editorDiv.height('100%');
-				            editorDiv.width('100%');
-				            editor.refresh();
-				        }
-				        else {
-				            editorDiv.removeClass('fullscreen');
-				            editorDiv.height(toggleFullscreenEditing.beforeFullscreen.height);
-				            editorDiv.width(toggleFullscreenEditing.beforeFullscreen.width);
-				            editor.refresh();
-				        }
-				    }
-			      var editor = CodeMirror.fromTextArea(document.getElementById("post-<?php echo $name; ?>"), {
-			        lineNumbers: true,
-			        matchBrackets: true,
-			        indentUnit: 4,
-			        indentWithTabs: true,
-			        enterMode: "keep",
-			        tabMode: "shift",
-			        theme:'default',
-			        mode: "text/html",
-			    	onGutterClick: foldFunc,
-			    	extraKeys: {"Ctrl-Q": function(cm){foldFunc(cm, cm.getCursor().line);},
-			    				"F11": toggleFullscreenEditing, "Esc": toggleFullscreenEditing},
-			        onCursorActivity: function() {
-					   	editor.setLineClass(hlLine, null);
-					   	hlLine = editor.setLineClass(editor.getCursor().line, "activeline");
+					{
+						var editorDiv = $('.CodeMirror-scroll');
+						if (!editorDiv.hasClass('fullscreen')) {
+							toggleFullscreenEditing.beforeFullscreen = { height: editorDiv.height(), width: editorDiv.width() }
+							editorDiv.addClass('fullscreen');
+							editorDiv.height('100%');
+							editorDiv.width('100%');
+							editor.refresh();
+						}
+						else {
+							editorDiv.removeClass('fullscreen');
+							editorDiv.height(toggleFullscreenEditing.beforeFullscreen.height);
+							editorDiv.width(toggleFullscreenEditing.beforeFullscreen.width);
+							editor.refresh();
+						}
 					}
-			      	});
-			     var hlLine = editor.setLineClass(0, "activeline");
-			    
-			    })
-			     
+				  var editor = CodeMirror.fromTextArea(document.getElementById("post-<?php echo $name; ?>"), {
+					lineNumbers: true,
+					matchBrackets: true,
+					indentUnit: 4,
+					indentWithTabs: true,
+					enterMode: "keep",
+					tabMode: "shift",
+					theme:'default',
+					mode: "text/html",
+					onGutterClick: foldFunc,
+					extraKeys: {"Ctrl-Q": function(cm){foldFunc(cm, cm.getCursor().line);},
+								"F11": toggleFullscreenEditing, "Esc": toggleFullscreenEditing},
+					onCursorActivity: function() {
+						editor.setLineClass(hlLine, null);
+						hlLine = editor.setLineClass(editor.getCursor().line, "activeline");
+					}
+					});
+				 var hlLine = editor.setLineClass(0, "activeline");
+				
+				})
+				 
 			</script>
 			<?php
 	}
@@ -698,4 +685,3 @@ function DMdebuglog($log){
 		debuglog($log);
 	}
 }
-
