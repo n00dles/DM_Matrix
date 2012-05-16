@@ -71,9 +71,7 @@ if (isset($_GET['id']) && $_GET['id']=="DM_Matrix"){
 	
 	register_script('codemirror', $SITEURL.'admin/template/js/codemirror/lib/codemirror-compressed.js', '0.2.0', FALSE);
 	queue_script('codemirror', GSBACK);
-	//echo $SITEURL.'admin/template/js/codemirror/lib/searchcursor.js';
-	//if (file_exists('../../admin/template/js/codemirror/lib/searchcursor.js')){
-
+	if (file_exists(GSADMINPATH.'/template/js/codemirror/lib/searchcursor.js')){
 		register_script('codemirror-search', $SITEURL.'admin/template/js/codemirror/lib/searchcursor.js', '0.2.0', FALSE);
 		register_script('codemirror-search-cursor', $SITEURL.'admin/template/js/codemirror/lib/search.js', '0.2.0', FALSE);
 		register_script('codemirror-dialog', $SITEURL.'admin/template/js/codemirror/lib/dialog.js', '0.2.0', FALSE);
@@ -83,8 +81,7 @@ if (isset($_GET['id']) && $_GET['id']=="DM_Matrix"){
 		queue_script('codemirror-search', GSBACK);
 		queue_script('codemirror-search-cursor', GSBACK);
 		queue_script('codemirror-folding', GSBACK);
-
-	//} 
+	} 
 	
 	register_style('codemirror-css',$SITEURL.'admin/template/js/codemirror/lib/codemirror.css','screen',FALSE);
 	register_style('codemirror-theme',$SITEURL.'admin/template/js/codemirror/theme/default.css','screen',FALSE);		
