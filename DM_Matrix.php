@@ -387,17 +387,16 @@ if (isset($_GET['schema'])) {
 		</thead>
 		<tbody>
 		<?php 
-		if( isset($schemaArray[$schemaname]['fields'])){
-			foreach($schemaArray[$schemaname]['fields'] as $schema=>$key){
-				echo "<tr><td>".$schema."</td><td>".$key."</td>";
-				if ($schema!="id"){
-					echo "<td><a href='load.php?id=DM_Matrix&action=matrix_manager&edit=".$schemaname."&field=".$schema."'><img src='../plugins/DM_Matrix/images/edit.png' title='Edit Field' /></a></td>";
-				} else {
-					echo "<td></td>";
-				}
-				echo "</tr>";
+		foreach($schemaArray[$schemaname]['fields'] as $schema=>$key){
+			echo "<tr><td>".$schema."</td><td>".$key."</td>";
+			if ($schema!="id"){
+				echo "<td><a href='load.php?id=DM_Matrix&action=matrix_manager&edit=".$schemaname."&field=".$schema."'><img src='../plugins/DM_Matrix/images/edit.png' title='Edit Field' /></a></td>";
+			} else {
+				echo "<td></td>";
 			}
-		}	
+			echo "</tr>";
+		}
+		
 		?>
 		
 		</tbody>
