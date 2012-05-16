@@ -70,19 +70,27 @@ if (isset($_GET['id']) && $_GET['id']=="DM_Matrix"){
 
 	
 	register_script('codemirror', $SITEURL.'admin/template/js/codemirror/lib/codemirror-compressed.js', '0.2.0', FALSE);
-	register_script('codemirror-search', $SITEURL.'admin/template/js/codemirror/lib/searchcursor.js', '0.2.0', FALSE);
-	register_script('codemirror-search-cursor', $SITEURL.'admin/template/js/codemirror/lib/search.js', '0.2.0', FALSE);
-	register_script('codemirror-dialog', $SITEURL.'admin/template/js/codemirror/lib/dialog.js', '0.2.0', FALSE);
-	register_script('codemirror-folding', $SITEURL.'admin/template/js/codemirror/lib/foldcode.js', '0.2.0', FALSE);
+	queue_script('codemirror', GSBACK);
+	//echo $SITEURL.'admin/template/js/codemirror/lib/searchcursor.js';
+	//if (file_exists('../../admin/template/js/codemirror/lib/searchcursor.js')){
+
+		register_script('codemirror-search', $SITEURL.'admin/template/js/codemirror/lib/searchcursor.js', '0.2.0', FALSE);
+		register_script('codemirror-search-cursor', $SITEURL.'admin/template/js/codemirror/lib/search.js', '0.2.0', FALSE);
+		register_script('codemirror-dialog', $SITEURL.'admin/template/js/codemirror/lib/dialog.js', '0.2.0', FALSE);
+		register_script('codemirror-folding', $SITEURL.'admin/template/js/codemirror/lib/foldcode.js', '0.2.0', FALSE);
+
+		queue_script('codemirror-dialog', GSBACK);
+		queue_script('codemirror-search', GSBACK);
+		queue_script('codemirror-search-cursor', GSBACK);
+		queue_script('codemirror-folding', GSBACK);
+
+	//} 
 	
 	register_style('codemirror-css',$SITEURL.'admin/template/js/codemirror/lib/codemirror.css','screen',FALSE);
-	register_style('codemirror-theme',$SITEURL.'admin/template/js/codemirror/theme/default.css','screen',FALSE);
-
-	queue_script('codemirror', GSBACK);
+	register_style('codemirror-theme',$SITEURL.'admin/template/js/codemirror/theme/default.css','screen',FALSE);		
 	
 	queue_style('codemirror-css', GSBACK);
 	queue_style('codemirror-theme', GSBACK);
-	queue_style('codemirror-dialog', GSBACK);
 	
 	register_script('DM_tablesorter',$SITEURL.'plugins/DM_Matrix/js/jquery.tablesorter.js', '0.1',FALSE);
 	queue_script('DM_tablesorter', GSBACK);
@@ -104,7 +112,6 @@ if (isset($_GET['id']) && $_GET['id']=="DM_Matrix"){
 	
 	register_script('ckeditor', $SITEURL.'admin/template/js/ckeditor/ckeditor.js', '0.2.0', FALSE);
 	queue_script('ckeditor', GSBACK);
-	
 	
 	
 }
