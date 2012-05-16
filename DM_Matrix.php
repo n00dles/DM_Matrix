@@ -173,16 +173,16 @@ if (isset($_GET['add']) && isset($_GET['updaterecord'])){
 
 
 if (isset($_GET['edit']) && isset($_GET['addfield'])){
-  	if (isset($_POST['post-cacheindex'])){
-  		$cacheindex=1;
-  	} else {
-  		$cacheindex=0;
-  	}
+	if (isset($_POST['post-cacheindex'])){
+		$cacheindex=1;
+	} else {
+		$cacheindex=0;
+	}
 	if (isset($_POST['post-tableview'])){
-  		$tableview=1;
-  	} else {
-  		$tableview=0;
-  	}
+		$tableview=1;
+	} else {
+		$tableview=0;
+	}
 	
 	$field=array(
 		'name'=>$_POST['post-name'],
@@ -293,7 +293,7 @@ if (isset($_GET['schema'])) {
 		</thead>
 		<tbody>
 		<?php 
-    $tables=0;    
+	$tables=0;    
 		foreach($schemaArray as $schema=>$key){
 			$fieldcnt = isset($key['fields']) ? count($key['fields']) : '0';
 			if (substr($schema,0,1)!="_"){
@@ -311,16 +311,16 @@ if (isset($_GET['schema'])) {
 					echo " <a href='load.php?id=DM_Matrix&action=matrix_manager&add=".$schema."'>";
 					echo "<img src='../plugins/DM_Matrix/images/add.png' title='".i18n_r($thisfile_DM_Matrix.'/DM_ADDRECORD')."' /></a>";
 				}
-          // todo: add drop table functionality
+		  // todo: add drop table functionality
 					// echo " <a href='load.php?id=DM_Matrix&action=matrix_manager&drop=".$schema."'>";
 					// echo "<img src='../plugins/DM_Matrix/images/delete.png' title='Drop Table $schema' /></a>";        
 				echo "</td></tr>";
-        $tables++;
+		$tables++;
 			}
 		}
-    if ($tables==0){
-      echo '<tr><td colspan="4">No Tables defined</td></tr>';	
-    }		
+	if ($tables==0){
+	  echo '<tr><td colspan="4">No Tables defined</td></tr>';	
+	}		
 		?>
 		</tbody>
 		</table>
@@ -369,7 +369,7 @@ if (isset($_GET['schema'])) {
 			echo '</form>';
 		} else {
 			echo "<h2>Add new '".$schemaname."' record</h2>";
-      echo "<a href='load.php?id=DM_Matrix&action=matrix_manager&view=$schemaname'>View all records for $schemaname</a>";
+	  echo "<a href='load.php?id=DM_Matrix&action=matrix_manager&view=$schemaname'>View all records for $schemaname</a>";
 			echo '<form method="post" action="load.php?id=DM_Matrix&action=matrix_manager&add='.$schemaname.'&addrecord">';
 			DM_createForm($schemaname);
 			echo '</form>';
@@ -387,16 +387,17 @@ if (isset($_GET['schema'])) {
 		</thead>
 		<tbody>
 		<?php 
-		foreach($schemaArray[$schemaname]['fields'] as $schema=>$key){
-			echo "<tr><td>".$schema."</td><td>".$key."</td>";
-			if ($schema!="id"){
-				echo "<td><a href='load.php?id=DM_Matrix&action=matrix_manager&edit=".$schemaname."&field=".$schema."'><img src='../plugins/DM_Matrix/images/edit.png' title='Edit Field' /></a></td>";
-			} else {
-				echo "<td></td>";
+		if( isset($schemaArray[$schemaname]['fields'])){
+			foreach($schemaArray[$schemaname]['fields'] as $schema=>$key){
+				echo "<tr><td>".$schema."</td><td>".$key."</td>";
+				if ($schema!="id"){
+					echo "<td><a href='load.php?id=DM_Matrix&action=matrix_manager&edit=".$schemaname."&field=".$schema."'><img src='../plugins/DM_Matrix/images/edit.png' title='Edit Field' /></a></td>";
+				} else {
+					echo "<td></td>";
+				}
+				echo "</tr>";
 			}
-			echo "</tr>";
-		}
-		
+		}	
 		?>
 		
 		</tbody>
@@ -447,7 +448,7 @@ if (isset($_GET['schema'])) {
 						<option value=""></option>
 						
 						<?php 
-						$types=array('int','slug','text','textlong','checkbox','pages','dropdown','templates','datepicker','datetimepicker','image','filepicker','textarea','codeeditor','texteditor'); 
+						$types=array('int','slug','text','textlong','checkbox','pages','dropdown','templates','datepicker','datetimepicker','image','textarea','codeeditor','texteditor'); 
 						foreach ($types as $type){
 							if ($formType==$type){
 								$sel=" selected ";
@@ -567,17 +568,17 @@ elseif (isset($_GET['view']))
 		$fields=array();
 		$tableheader='';
 		$count=0;
-	    if(isset($schemaArray[$table]) && isset($schemaArray[$table]['fields'])){
-	      foreach($schemaArray[$table]['fields'] as $schema=>$key){
-	        if ($schemaArray[$table]['tableview'][$schema]==1){
-	          $fields[$count]['name']=$schema;
-	          $fields[$count]['type']=$key;
-	          
-	          $tableheader.="<th class='sort'>".$schema."</th>";
-	        }
-	        $count++;
-	      }
-	    }
+		if(isset($schemaArray[$table]) && isset($schemaArray[$table]['fields'])){
+		  foreach($schemaArray[$table]['fields'] as $schema=>$key){
+			if ($schemaArray[$table]['tableview'][$schema]==1){
+			  $fields[$count]['name']=$schema;
+			  $fields[$count]['type']=$key;
+			  
+			  $tableheader.="<th class='sort'>".$schema."</th>";
+			}
+			$count++;
+		  }
+		}
 		if ($table=='_routes'){
 			echo "<h2>Manage Routes</h2>";
 		} else {
@@ -590,42 +591,42 @@ elseif (isset($_GET['view']))
 		<?php 
 		getPagesXmlValues();
 		$mytable=getSchemaTable($table);
-	    $record_cnt = 0;
-	    if(isset($mytable)){
-	      foreach($mytable as $key=>$value){
-	        #$fields = isset($mytable[$key]['fields']) ? $mytable[$key]['fields'] : array();
-	        #$id = 0;
-	        echo "<tr>";
-	        foreach ($fields as $field){
-	          if ($field['name']=='id') $id=$mytable[$key][$field['name']];
-	          if ($field['type']=='datepicker'){
-	            $data=date('d-m-Y',$mytable[$key][$field['name']]);
-	          } elseif ($field['type']=='datetimepicker') {
-	            $data=date('d-m-Y i:M',$mytable[$key][$field['name']]);
-	          } else {
-	            $data= isset($mytable[$key][$field['name']]) ? $mytable[$key][$field['name']] : '<b>NULL</b>';
-	          }
-	          echo "<td>".$data."</td>"; 
-	        }
-	        echo "<td><a href='load.php?id=DM_Matrix&action=matrix_manager&add=".$table."&field=".$id."'><img src='../plugins/DM_Matrix/images/edit.png' title='Edit Record ".$id."' /></a>";
-	        //todo delete functionality
-	        // echo " <a href='load.php?id=DM_Matrix&action=matrix_manager&delete=".$table."&field=".$id."'><img src='../plugins/DM_Matrix/images/delete.png' title='Delete Record ".$id."!' /></a>";
-	        echo "</td></tr>";
-	        $record_cnt++;
-	      }
-	    } else {
-	    	
-	    }  
-	    if($record_cnt==0){
-	      echo '<tr><td colspan="'.($count+1).'">Table has no records</td></tr>';	 
-	    }
+		$record_cnt = 0;
+		if(isset($mytable)){
+		  foreach($mytable as $key=>$value){
+			#$fields = isset($mytable[$key]['fields']) ? $mytable[$key]['fields'] : array();
+			#$id = 0;
+			echo "<tr>";
+			foreach ($fields as $field){
+			  if ($field['name']=='id') $id=$mytable[$key][$field['name']];
+			  if ($field['type']=='datepicker'){
+				$data=date('d-m-Y',$mytable[$key][$field['name']]);
+			  } elseif ($field['type']=='datetimepicker') {
+				$data=date('d-m-Y i:M',$mytable[$key][$field['name']]);
+			  } else {
+				$data= isset($mytable[$key][$field['name']]) ? $mytable[$key][$field['name']] : '<b>NULL</b>';
+			  }
+			  echo "<td>".$data."</td>"; 
+			}
+			echo "<td><a href='load.php?id=DM_Matrix&action=matrix_manager&add=".$table."&field=".$id."'><img src='../plugins/DM_Matrix/images/edit.png' title='Edit Record ".$id."' /></a>";
+			//todo delete functionality
+			// echo " <a href='load.php?id=DM_Matrix&action=matrix_manager&delete=".$table."&field=".$id."'><img src='../plugins/DM_Matrix/images/delete.png' title='Delete Record ".$id."!' /></a>";
+			echo "</td></tr>";
+			$record_cnt++;
+		  }
+		} else {
+			
+		}  
+		if($record_cnt==0){
+		  echo '<tr><td colspan="'.($count+1).'">Table has no records</td></tr>';	 
+		}
 		?>
 		
 		</tbody>
 		</table>
-    <?php 
-    echo "<a class='mtrx_but_add' id='matrix_recordadd' href='load.php?id=DM_Matrix&action=matrix_manager&add=".$table."'>Add Record</a>";
-    ?>     
+	<?php 
+	echo "<a class='mtrx_but_add' id='matrix_recordadd' href='load.php?id=DM_Matrix&action=matrix_manager&add=".$table."'>Add Record</a>";
+	?>     
 		<div id="pager" class="pager">
 		<form>
 			<img src="../plugins/DM_Matrix/images/first.png" class="first"/>
@@ -650,4 +651,3 @@ elseif (isset($_GET['view']))
 //echo "<pre>";
 //print_r($schemaArray);
 //echo "</pre>";
-
