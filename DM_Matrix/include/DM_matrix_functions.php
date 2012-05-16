@@ -587,6 +587,22 @@ function displayFieldType($name, $type, $schema,$value=''){
 		</script>
 		<?php
 		break;
+		case 'filepicker':
+			echo '<p><input class="text filepicker" type="text" id="post-'.$name.'" name="post-'.$name.'"  value="'.$value.'" />';
+			echo ' <span class="edit-nav"><a id="browse-'.$name.'" href="#">Browse</a></span>';
+			echo '<div id="file-'.$name.'"></div>';
+			echo '</p>'; 
+		
+		?>
+		<script type="text/javascript">
+		  $(function() { 
+			$('#browse-<?php echo $name; ?>').click(function(e) {
+			  window.open('<?php echo $SITEURL; ?>admin/filebrowser.php?CKEditorFuncNum=1&func=test&returnid=post-<?php echo $name; ?>&type=all', 'browser', 'width=800,height=500,left=100,top=100,scrollbars=yes');
+			});
+		  });
+		</script>
+		<?php
+		break;
 		// Textarea converted to a code editor.
 		case "codeeditor":
        		echo '<p><textarea class="codeeditor" id="post-'.$name.'" name="post-'.$name.'" style="width:513px;height:200px;border: 1px solid #AAAAAA;">'.$value.'</textarea></p>';

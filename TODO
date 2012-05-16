@@ -1,7 +1,9 @@
 List of things to do, in no particular order. 
 
-o - add CKeditor option to texteditor Field. 
-o - add edit record feature. 90% done
+o - add when you select an image display the selected image within the field. 
+o - remove indexing function until next released version. 
+o - add CKeditor option to texteditor Field - done
+o - add edit record feature. = done
 o - convert unix timestamps back to date/time format - done 
 o - add table sorting to record view.  - done
 o - add new field form, fix validation - 50% done
