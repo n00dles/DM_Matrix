@@ -30,6 +30,7 @@ o - dropdown, a dropdown from another table.
 o - datepicker, a date picker field. 
 o - datetimepicker, a date and time picker. 
 o - image, an image selector field
+o - filepicker, a file selector field
 o - textarea, a plain textarea
 o - codeeditor, a codemirror textarea
 o - texteditor, a CKEditor enabled textarea. 

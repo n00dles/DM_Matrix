@@ -9,7 +9,7 @@
  * @return boolean , whether table was created or not. 
  */
 function createSchemaFolder($name){
-	$ret = mkdir (GSSCHEMAPATH.'/'.$name);
+	$ret = mkdir(GSSCHEMAPATH.'/'.$name);
 	return $ret;
 }
 
