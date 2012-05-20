@@ -565,12 +565,10 @@ function displayFieldType($name, $type, $schema,$value=''){
 			echo '<p><select  id="post-'.$name.'" name="post-'.$name.'">';
 			echo '<option></option>';
 			foreach ($maintable as $row){
-				if ($row[$column]==$value) {
-					$options=" selected ";
-				} else {
-					$options="";
+				if(isset($row[$column])){
+					$options = $row[$column]==$value ? ' selected ' : '';
+					echo '<option value="'.$row[$column].'" '.$options.'>'.$row[$column].'</option>';
 				}
-				echo '<option value="'.$row[$column].'" '.$options.'>'.$row[$column].'</option>';
 			}
 			echo '</select></p>';
 			break;
