@@ -234,15 +234,33 @@ function dropSchemaTable($name){
  */
 function addSchemaField($name,$fields=array(),$save=true){
 	global $schemaArray;
-	$schemaArray[(string)$name]['fields'][(string)$fields['name']]=(string)$fields['type'];	
-	$schemaArray[(string)$name]['label'][(string)$fields['name']]=(string)$fields['label'];
-	$schemaArray[(string)$name]['desc'][(string)$fields['name']]=(string)$fields['description'];
-	$schemaArray[(string)$name]['cacheindex'][(string)$fields['name']]=(string)$fields['cacheindex'];
-	$schemaArray[(string)$name]['tableview'][(string)$fields['name']]=(string)$fields['tableview'];
-	if ((string)$fields['type']=='dropdown'){
-		$schemaArray[(string)$name]['table'][(string)$fields['name']]=(string)$fields['table'];
-		$schemaArray[(string)$name]['row'][(string)$fields['name']]=(string)$fields['row'];
+	
+	// used for field param to schema table key translation
+	$fieldsKeys = array(
+	'type' => 'fields',
+	'label' => 'label',
+	'description' => 'desc',
+	'desc' => 'desc',
+	'cacheindex' => 'cacheindex',
+	'tableview' => 'tableview',
+	'table' => 'table',
+	'row' => 'row'	
+	);
+	
+	foreach($fields as $key=>$value){
+			if( (($key == 'table' or $key=='row') and $fields['type'] != 'dropdown') or $key=='name') continue;
+			$schemaArray[(string)$name][$fieldsKeys[$key]][(string)$fields['name']]=(string)$value;		
 	}
+	
+	#$schemaArray[(string)$name]['fields'][(string)$fields['name']]=(string)$fields['type'];	
+	#$schemaArray[(string)$name]['label'][(string)$fields['name']]=(string)$fields['label'];
+	#$schemaArray[(string)$name]['desc'][(string)$fields['name']]=(string)$fields['description'];
+	#$schemaArray[(string)$name]['cacheindex'][(string)$fields['name']]=(string)$fields['cacheindex'];
+	#$schemaArray[(string)$name]['tableview'][(string)$fields['name']]=(string)$fields['tableview'];
+	#if ((string)$fields['type']=='dropdown'){
+	#	$schemaArray[(string)$name]['table'][(string)$fields['name']]=(string)$fields['table'];
+	#	$schemaArray[(string)$name]['row'][(string)$fields['name']]=(string)$fields['row'];
+	#}
 	if ($save==true) {
 		$ret=DM_saveSchema();
 		$ret=true;
@@ -565,12 +583,10 @@ function displayFieldType($name, $type, $schema,$value=''){
 			echo '<p><select  id="post-'.$name.'" name="post-'.$name.'">';
 			echo '<option></option>';
 			foreach ($maintable as $row){
-				if ($row[$column]==$value) {
-					$options=" selected ";
-				} else {
-					$options="";
+				if(isset($row[$column])){
+					$options = $row[$column]==$value ? ' selected ' : '';
+					echo '<option value="'.$row[$column].'" '.$options.'>'.$row[$column].'</option>';
 				}
-				echo '<option value="'.$row[$column].'" '.$options.'>'.$row[$column].'</option>';
 			}
 			echo '</select></p>';
 			break;
