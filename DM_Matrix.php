@@ -205,7 +205,7 @@ if (isset($_GET['edit']) && isset($_GET['addfield'])){
 }
 
 function addRecordFromForm($tbl){
-		debugLog("addign form");
+		debugLog("adding form");
 		global $fieldtypes,$schemaArray;
 		$tempArray=array();	
 		foreach ($schemaArray[$tbl]['fields'] as $field=>$type)
@@ -486,7 +486,7 @@ if (isset($_GET['schema'])) {
 								
 								?>
 							</select>
-							<p class="description">Please select a rown from the table</p>
+							<p class="description">Please select a row from the table</p>
 							<select id="post-row" name="post-row" >
 								<option></option>
 								<?php 
@@ -604,9 +604,9 @@ elseif (isset($_GET['view']))
 			foreach ($fields as $field){
 			  if ($field['name']=='id') $id=$mytable[$key][$field['name']];
 			  if ($field['type']=='datepicker'){
-				$data=date('d-m-Y',$mytable[$key][$field['name']]);
+				$data= isset($mytable[$key][$field['name']]) ? date('d-m-Y',$mytable[$key][$field['name']]) : '<b>NULL</b>';
 			  } elseif ($field['type']=='datetimepicker') {
-				$data=date('d-m-Y i:M',$mytable[$key][$field['name']]);
+				$data= isset($mytable[$key][$field['name']]) ? date('d-m-Y i:M',$mytable[$key][$field['name']]) : '<b>NULL</b>';
 			  } else {
 				$data= isset($mytable[$key][$field['name']]) ? $mytable[$key][$field['name']] : '<b>NULL</b>';
 			  }
