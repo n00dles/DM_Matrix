@@ -413,31 +413,36 @@ function DM_outputCKHeader(){
 		
 			<script type="text/javascript">
 			
-			//CKEDITOR.replaceAll(function( textarea, config ){
-			CKEDITOR.config.skin = 'getsimple',
-			CKEDITOR.config.forcePasteAsPlainText = true,
-			CKEDITOR.config.language = '<?php echo $EDLANG; ?>',
-			CKEDITOR.config.defaultLanguage = 'en',
-			<?php if (file_exists(GSTHEMESPATH .$TEMPLATE."/editor.css")) { 
-				$fullpath = suggest_site_path();
-			?>
-			CKEDITOR.config.contentsCss = '<?php echo $fullpath; ?>theme/<?php echo $TEMPLATE; ?>/editor.css',
-		  <?php } ?>
-			CKEDITOR.config.entities = false,
-			CKEDITOR.config.uiColor = '#FFFFFF',
-			CKEDITOR.config.height = '<?php echo $EDHEIGHT; ?>',
-			CKEDITOR.config.baseHref = '<?php echo $SITEURL; ?>',
-			CKEDITOR.config.toolbar = 
-			[
-			<?php echo $toolbar; ?>
-			]
-			<?php echo $EDOPTIONS; ?>,
-			CKEDITOR.config.tabSpaces = 10,
-			CKEDITOR.config.filebrowserBrowseUrl = 'filebrowser.php?type=all',
-			CKEDITOR.config.filebrowserImageBrowseUrl = 'filebrowser.php?type=images',
-			CKEDITOR.config.filebrowserWindowWidth = '730',
-			CKEDITOR.config.filebrowserWindowHeight = '500'
-			//});
+			CKEDITOR.replaceAll(function(textarea,config){
+				// converts all textareas with class of 'DMckeditor' to ckeditor instances.
+				if (textarea.className!="DMckeditor") return false; //for only assign a class
+				jQuery.extend(config,
+				{
+					skin : 'getsimple',
+					forcePasteAsPlainText : true,
+					language : '<?php echo $EDLANG; ?>',
+					defaultLanguage : 'en',
+					<?php if (file_exists(GSTHEMESPATH .$TEMPLATE."/editor.css")) { 
+						$fullpath = suggest_site_path();
+					?>
+					contentsCss : '<?php echo $fullpath; ?>theme/<?php echo $TEMPLATE; ?>/editor.css',
+					<?php } ?>
+					entities : false,
+					uiColor : '#FFFFFF',
+					height : '<?php echo $EDHEIGHT; ?>',
+					baseHref : '<?php echo $SITEURL; ?>',
+					toolbar : 
+					[
+					<?php echo $toolbar; ?>
+					]
+					<?php echo $EDOPTIONS; ?>,
+					tabSpaces : 10,
+					filebrowserBrowseUrl : 'filebrowser.php?type:all',
+					filebrowserImageBrowseUrl : 'filebrowser.php?type:images',
+					filebrowserWindowWidth : '730',
+					filebrowserWindowHeight : '500'
+				});				
+			});
 			
 
 			</script>
@@ -628,7 +633,7 @@ function displayFieldType($name, $type, $schema,$value=''){
 			break;
 		// texteditor converted to CKEditor
 		case "texteditor":
-			echo '<p><textarea class="ckeditor" id="post-'.$name.'" name="post-'.$name.'" style="width:513px;height:200px;border: 1px solid #AAAAAA;">'.$value.'</textarea></p>';
+			echo '<p><textarea class="DMckeditor" id="post-'.$name.'" name="post-'.$name.'" style="width:513px;height:200px;border: 1px solid #AAAAAA;">'.$value.'</textarea></p>';
 			break;
 		// Textarea Plain
 		case "textarea":
