@@ -437,8 +437,8 @@ function DM_outputCKHeader(){
 					]
 					<?php echo $EDOPTIONS; ?>,
 					tabSpaces : 10,
-					filebrowserBrowseUrl : 'filebrowser.php?type:all',
-					filebrowserImageBrowseUrl : 'filebrowser.php?type:images',
+					filebrowserBrowseUrl : 'filebrowser.php?type=all',
+					filebrowserImageBrowseUrl : 'filebrowser.php?type=images',
 					filebrowserWindowWidth : '730',
 					filebrowserWindowHeight : '500'
 				});				
