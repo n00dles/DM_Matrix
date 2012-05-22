@@ -172,3 +172,30 @@ font-size: 12px;
 border-radius: 2px;
 border-image: initial;
 }
+
+
+/* apply getsimple ckeditor skin styles to all ckeditor instances */
+.cke_top {
+	border-bottom:1px solid #999 !important;
+	background:#eeeeee !important;
+	background: -moz-linear-gradient(top, #eeeeee, #e2e2e2) !important;
+	background: -webkit-gradient(linear, left top, left bottom, from(#eeeeee), to(#e2e2e2)) !important;
+}
+.cke_bottom {
+	border-top:1px solid #eee !important;
+	background:#f6f6f6 !important;
+}
+.cke_top .cke_toolbar {
+	margin:2px 0 0px 2px !important;
+	background:transparent !important;	
+}
+.cke_top .cke_toolbox, .cke_top .cke_toolgroup {background:transparent !important;	}
+
+.cke_skin_getsimple {
+	border:1px solid #999;
+	-moz-border-radius: 4px 4px 0 0;
+	-khtml-border-radius: 4px 4px 0 0;
+	-webkit-border-radius: 4px 4px 0 0;
+	border-radius:4px 4px 0 0;
+	overflow:hidden;
+}
