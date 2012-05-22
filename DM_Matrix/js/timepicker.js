@@ -857,6 +857,7 @@ $.extend(Timepicker.prototype, {
 				case 'h':  return hour;
 				case 'mm': return ('0' + time.minute).slice(-2);
 				case 'm':  return time.minute;
+				case 'M':  return time.minute;
 				case 'ss': return ('0' + time.second).slice(-2);
 				case 's':  return time.second;
 				case 'l':  return ('00' + time.millisec).slice(-3);

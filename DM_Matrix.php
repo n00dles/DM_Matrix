@@ -606,7 +606,7 @@ elseif (isset($_GET['view']))
 			  if ($field['type']=='datepicker'){
 				$data= isset($mytable[$key][$field['name']]) ? date(i18n('DATE_FORMAT',false),$mytable[$key][$field['name']]) : '<b>NULL</b>';
 			  } elseif ($field['type']=='datetimepicker') {
-				$data= isset($mytable[$key][$field['name']]) ? date(i18n('DATE_FORMAT',false).' i:M',$mytable[$key][$field['name']]) : '<b>NULL</b>';
+				$data= isset($mytable[$key][$field['name']]) ? date(i18n('DATE_FORMAT',false).' H:i',$mytable[$key][$field['name']]) : '<b>NULL</b>';
 			  } else {
 				$data= isset($mytable[$key][$field['name']]) ? $mytable[$key][$field['name']] : '<b>NULL</b>';
 			  }
