@@ -251,16 +251,7 @@ function addSchemaField($name,$fields=array(),$save=true){
 			if( (($key == 'table' or $key=='row') and $fields['type'] != 'dropdown') or $key=='name') continue;
 			$schemaArray[(string)$name][$fieldsKeys[$key]][(string)$fields['name']]=(string)$value;		
 	}
-	
-	#$schemaArray[(string)$name]['fields'][(string)$fields['name']]=(string)$fields['type'];	
-	#$schemaArray[(string)$name]['label'][(string)$fields['name']]=(string)$fields['label'];
-	#$schemaArray[(string)$name]['desc'][(string)$fields['name']]=(string)$fields['description'];
-	#$schemaArray[(string)$name]['cacheindex'][(string)$fields['name']]=(string)$fields['cacheindex'];
-	#$schemaArray[(string)$name]['tableview'][(string)$fields['name']]=(string)$fields['tableview'];
-	#if ((string)$fields['type']=='dropdown'){
-	#	$schemaArray[(string)$name]['table'][(string)$fields['name']]=(string)$fields['table'];
-	#	$schemaArray[(string)$name]['row'][(string)$fields['name']]=(string)$fields['row'];
-	#}
+
 	if ($save==true) {
 		$ret=DM_saveSchema();
 		$ret=true;
@@ -393,6 +384,10 @@ DM_outputCKHeader();
 function DM_outputCKHeader(){
 	global $TEMPLATE;
 	global $SITEURL;
+	$dateformat=i18n('DATE_FORMAT',false);
+	$dateformat = str_replace('Y', 'yy', $dateformat);
+	$dateformat = str_replace('j', 'd', $dateformat);
+	
 	if (defined('GSEDITORHEIGHT')) { $EDHEIGHT = GSEDITORHEIGHT .'px'; } else {	$EDHEIGHT = '500px'; }
 		if (defined('GSEDITORLANG')) { $EDLANG = GSEDITORLANG; } else {	$EDLANG = i18n_r('CKEDITOR_LANG'); }
 		if (defined('GSEDITORTOOL')) { $EDTOOL = GSEDITORTOOL; } else {	$EDTOOL = 'basic'; }
@@ -444,7 +439,13 @@ function DM_outputCKHeader(){
 				});				
 			});
 			
-
+			$('.datepicker').each(function(){
+			    $(this).datepicker({ dateFormat: '<?php echo $dateformat; ?>' });
+			});
+			
+			$('.datetimepicker').each(function(){
+				$(this).datetimepicker({ dateFormat: '<?php echo $dateformat." i:M"; ?>' });	
+			})
 			</script>
 <?php	
 }
@@ -571,13 +572,13 @@ function displayFieldType($name, $type, $schema,$value=''){
 		// Datepicker. Use settings page to set the front end date format, saved as Unix timestamp
 		case "datepicker";
 			//$value=DM_manipulate($value, 'datepicker');
-			echo '<p><input id="post-'.$name.'" class="datepicker required" name="post-'.$name.'" type="text" size="50" maxlength="128" value="'.$value.'"></p>';
+			echo '<p><input id="post-'.$name.'" class="datepicker required" name="post-'.$name.'" type="text" size="50" maxlength="128" value="'.date(i18n('DATE_FORMAT',false),$value).'"></p>';
 			$datetimepick=true;
 			break;
 		// DateTimepicker. Use settings page to set the front end date format, saved as Unix timestamp
 		case "datetimepicker";
 			//$value=DM_manipulate($value, 'datetimepicker');
-			echo '<p><input id="post-'.$name.'" class="datetimepicker required" name="post-'.$name.'" type="text" size="50" maxlength="128"  value="'.$value.'"></p>';	
+			echo '<p><input id="post-'.$name.'" class="datetimepicker required" name="post-'.$name.'" type="text" size="50" maxlength="128"  value="'.date(i18n('DATE_FORMAT',false).' i:M',$value).'"></p>';	
 			$datepick=true;
 			break;
 		// Dropdown from another Table/column 
