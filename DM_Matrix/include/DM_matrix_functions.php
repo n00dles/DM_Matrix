@@ -598,7 +598,7 @@ function displayFieldType($name, $type, $schema,$value=''){
 			break;
 		case 'image':
 			echo '<p><input class="text imagepicker" type="text" id="post-'.$name.'" name="post-'.$name.'"  value="'.$value.'" />';
-			echo ' <span class="edit-nav"><a id="browse-'.$name.'" href="#">Browse</a></span>';
+			echo ' <span class="edit-nav"><a id="browse-'.$name.'" href="javascript:void(0);">Browse</a></span>';
 			echo '<div id="image-'.$name.'"></div>';
 			echo '</p>'; 
 		
@@ -614,7 +614,7 @@ function displayFieldType($name, $type, $schema,$value=''){
 		break;
 		case 'filepicker':
 			echo '<p><input class="text imagepicker" type="text" id="post-'.$name.'" name="post-'.$name.'"  value="'.$value.'" />';
-			echo ' <span class="edit-nav"><a id="browse-'.$name.'" href="#">Browse</a></span>';
+			echo ' <span class="edit-nav"><a id="browse-'.$name.'" href="javascript:void(0);">Browse</a></span>';
 			echo '</p>'; 
 		
 		?>
