@@ -452,7 +452,7 @@ if (isset($_GET['schema'])) {
 						<option value=""></option>
 						
 						<?php 
-						$types=array('int','slug','text','textlong','checkbox','pages','dropdown','templates','datepicker','datetimepicker','image','filepicker','textarea','codeeditor','texteditor'); 
+						$types=array('int','slug','text','textlong','checkbox','pages','dropdown','templates','datepicker','datetimepicker','image','filepicker','textarea','codeeditor','wysiwyg'); 
 						foreach ($types as $type){
 							if ($formType==$type){
 								$sel=" selected ";

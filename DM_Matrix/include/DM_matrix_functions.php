@@ -633,6 +633,7 @@ function displayFieldType($name, $type, $schema,$value=''){
 			break;
 		// texteditor converted to CKEditor
 		case "texteditor":
+		case "wysiwyg":
 			echo '<p><textarea class="DMckeditor" id="post-'.$name.'" name="post-'.$name.'" style="width:513px;height:200px;border: 1px solid #AAAAAA;">'.$value.'</textarea></p>';
 			break;
 		// Textarea Plain
