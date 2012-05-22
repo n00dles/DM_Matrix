@@ -606,7 +606,7 @@ function displayFieldType($name, $type, $schema,$value=''){
 		<script type="text/javascript">
 		  $(function() { 
 			$('#browse-<?php echo $name; ?>').click(function(e) {
-			  window.open('<?php echo $SITEURL; ?>admin/filebrowser.php?CKEditorFuncNum=1&func=test&returnid=post-<?php echo $name; ?>&type=images', 'browser', 'width=800,height=500,left=100,top=100,scrollbars=yes');
+			  window.open('<?php echo $SITEURL; ?>admin/filebrowser.php?CKEditorFuncNum=1&func=addImageThumbNail&returnid=post-<?php echo $name; ?>&type=images', 'browser', 'width=800,height=500,left=100,top=100,scrollbars=yes');
 			});
 		  });
 		</script>
@@ -621,7 +621,7 @@ function displayFieldType($name, $type, $schema,$value=''){
 		<script type="text/javascript">
 		  $(function() { 
 			$('#browse-<?php echo $name; ?>').click(function(e) {
-			  window.open('<?php echo $SITEURL; ?>admin/filebrowser.php?CKEditorFuncNum=1&func=test&returnid=post-<?php echo $name; ?>&type=all', 'browser', 'width=800,height=500,left=100,top=100,scrollbars=yes');
+			  window.open('<?php echo $SITEURL; ?>admin/filebrowser.php?CKEditorFuncNum=1&returnid=post-<?php echo $name; ?>&type=all', 'browser', 'width=800,height=500,left=100,top=100,scrollbars=yes');
 			});
 		  });
 		</script>
