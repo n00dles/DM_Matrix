@@ -418,7 +418,6 @@ function DM_outputCKHeader(){
 				if (textarea.className!="DMckeditor") return false; //for only assign a class
 				jQuery.extend(config,
 				{
-					skin : 'getsimple',
 					forcePasteAsPlainText : true,
 					language : '<?php echo $EDLANG; ?>',
 					defaultLanguage : 'en',
@@ -440,7 +439,8 @@ function DM_outputCKHeader(){
 					filebrowserBrowseUrl : 'filebrowser.php?type=all',
 					filebrowserImageBrowseUrl : 'filebrowser.php?type=images',
 					filebrowserWindowWidth : '730',
-					filebrowserWindowHeight : '500'
+					filebrowserWindowHeight : '500',
+					skin : 'getsimple'
 				});				
 			});
 			
