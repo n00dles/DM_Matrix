@@ -56,7 +56,6 @@ $schemaArray = array();
 $item_title='Matrix';
 $editing=false; 
 $uri='';
-$uriRoutes=array();
 
 $sql = new sql4array();
 $mytable=array();
