@@ -251,16 +251,7 @@ function addSchemaField($name,$fields=array(),$save=true){
 			if( (($key == 'table' or $key=='row') and $fields['type'] != 'dropdown') or $key=='name') continue;
 			$schemaArray[(string)$name][$fieldsKeys[$key]][(string)$fields['name']]=(string)$value;		
 	}
-	
-	#$schemaArray[(string)$name]['fields'][(string)$fields['name']]=(string)$fields['type'];	
-	#$schemaArray[(string)$name]['label'][(string)$fields['name']]=(string)$fields['label'];
-	#$schemaArray[(string)$name]['desc'][(string)$fields['name']]=(string)$fields['description'];
-	#$schemaArray[(string)$name]['cacheindex'][(string)$fields['name']]=(string)$fields['cacheindex'];
-	#$schemaArray[(string)$name]['tableview'][(string)$fields['name']]=(string)$fields['tableview'];
-	#if ((string)$fields['type']=='dropdown'){
-	#	$schemaArray[(string)$name]['table'][(string)$fields['name']]=(string)$fields['table'];
-	#	$schemaArray[(string)$name]['row'][(string)$fields['name']]=(string)$fields['row'];
-	#}
+
 	if ($save==true) {
 		$ret=DM_saveSchema();
 		$ret=true;
@@ -393,6 +384,10 @@ DM_outputCKHeader();
 function DM_outputCKHeader(){
 	global $TEMPLATE;
 	global $SITEURL;
+	$dateformat=i18n('DATE_FORMAT',false);
+	$dateformat = str_replace('Y', 'yy', $dateformat);
+	$dateformat = str_replace('j', 'd', $dateformat);
+	
 	if (defined('GSEDITORHEIGHT')) { $EDHEIGHT = GSEDITORHEIGHT .'px'; } else {	$EDHEIGHT = '500px'; }
 		if (defined('GSEDITORLANG')) { $EDLANG = GSEDITORLANG; } else {	$EDLANG = i18n_r('CKEDITOR_LANG'); }
 		if (defined('GSEDITORTOOL')) { $EDTOOL = GSEDITORTOOL; } else {	$EDTOOL = 'basic'; }
@@ -418,7 +413,6 @@ function DM_outputCKHeader(){
 				if (textarea.className!="DMckeditor") return false; //for only assign a class
 				jQuery.extend(config,
 				{
-					skin : 'getsimple',
 					forcePasteAsPlainText : true,
 					language : '<?php echo $EDLANG; ?>',
 					defaultLanguage : 'en',
@@ -437,14 +431,21 @@ function DM_outputCKHeader(){
 					]
 					<?php echo $EDOPTIONS; ?>,
 					tabSpaces : 10,
-					filebrowserBrowseUrl : 'filebrowser.php?type:all',
-					filebrowserImageBrowseUrl : 'filebrowser.php?type:images',
+					filebrowserBrowseUrl : 'filebrowser.php?type=all',
+					filebrowserImageBrowseUrl : 'filebrowser.php?type=images',
 					filebrowserWindowWidth : '730',
-					filebrowserWindowHeight : '500'
+					filebrowserWindowHeight : '500',
+					skin : 'getsimple'
 				});				
 			});
 			
-
+			$('.datepicker').each(function(){
+			    $(this).datepicker({ dateFormat: '<?php echo $dateformat; ?>' });
+			});
+			
+			$('.datetimepicker').each(function(){
+				$(this).datetimepicker({ dateFormat: '<?php echo $dateformat." H:i"; ?>' });	
+			})
 			</script>
 <?php	
 }
@@ -571,13 +572,13 @@ function displayFieldType($name, $type, $schema,$value=''){
 		// Datepicker. Use settings page to set the front end date format, saved as Unix timestamp
 		case "datepicker";
 			//$value=DM_manipulate($value, 'datepicker');
-			echo '<p><input id="post-'.$name.'" class="datepicker required" name="post-'.$name.'" type="text" size="50" maxlength="128" value="'.$value.'"></p>';
+			echo '<p><input id="post-'.$name.'" class="datepicker required" name="post-'.$name.'" type="text" size="50" maxlength="128" value="'.date(i18n('DATE_FORMAT',false),$value).'"></p>';
 			$datetimepick=true;
 			break;
 		// DateTimepicker. Use settings page to set the front end date format, saved as Unix timestamp
 		case "datetimepicker";
 			//$value=DM_manipulate($value, 'datetimepicker');
-			echo '<p><input id="post-'.$name.'" class="datetimepicker required" name="post-'.$name.'" type="text" size="50" maxlength="128"  value="'.$value.'"></p>';	
+			echo '<p><input id="post-'.$name.'" class="datetimepicker required" name="post-'.$name.'" type="text" size="50" maxlength="128"  value="'.date(i18n('DATE_FORMAT',false).' H:i',$value).'"></p>';	
 			$datepick=true;
 			break;
 		// Dropdown from another Table/column 
@@ -597,7 +598,7 @@ function displayFieldType($name, $type, $schema,$value=''){
 			break;
 		case 'image':
 			echo '<p><input class="text imagepicker" type="text" id="post-'.$name.'" name="post-'.$name.'"  value="'.$value.'" />';
-			echo ' <span class="edit-nav"><a id="browse-'.$name.'" href="#">Browse</a></span>';
+			echo ' <span class="edit-nav"><a id="browse-'.$name.'" href="javascript:void(0);">Browse</a></span>';
 			echo '<div id="image-'.$name.'"></div>';
 			echo '</p>'; 
 		
@@ -605,7 +606,7 @@ function displayFieldType($name, $type, $schema,$value=''){
 		<script type="text/javascript">
 		  $(function() { 
 			$('#browse-<?php echo $name; ?>').click(function(e) {
-			  window.open('<?php echo $SITEURL; ?>admin/filebrowser.php?CKEditorFuncNum=1&func=test&returnid=post-<?php echo $name; ?>&type=images', 'browser', 'width=800,height=500,left=100,top=100,scrollbars=yes');
+			  window.open('<?php echo $SITEURL; ?>admin/filebrowser.php?CKEditorFuncNum=1&func=addImageThumbNail&returnid=post-<?php echo $name; ?>&type=images', 'browser', 'width=800,height=500,left=100,top=100,scrollbars=yes');
 			});
 		  });
 		</script>
@@ -613,14 +614,14 @@ function displayFieldType($name, $type, $schema,$value=''){
 		break;
 		case 'filepicker':
 			echo '<p><input class="text imagepicker" type="text" id="post-'.$name.'" name="post-'.$name.'"  value="'.$value.'" />';
-			echo ' <span class="edit-nav"><a id="browse-'.$name.'" href="#">Browse</a></span>';
+			echo ' <span class="edit-nav"><a id="browse-'.$name.'" href="javascript:void(0);">Browse</a></span>';
 			echo '</p>'; 
 		
 		?>
 		<script type="text/javascript">
 		  $(function() { 
 			$('#browse-<?php echo $name; ?>').click(function(e) {
-			  window.open('<?php echo $SITEURL; ?>admin/filebrowser.php?CKEditorFuncNum=1&func=test&returnid=post-<?php echo $name; ?>&type=all', 'browser', 'width=800,height=500,left=100,top=100,scrollbars=yes');
+			  window.open('<?php echo $SITEURL; ?>admin/filebrowser.php?CKEditorFuncNum=1&returnid=post-<?php echo $name; ?>&type=all', 'browser', 'width=800,height=500,left=100,top=100,scrollbars=yes');
 			});
 		  });
 		</script>
@@ -633,6 +634,7 @@ function displayFieldType($name, $type, $schema,$value=''){
 			break;
 		// texteditor converted to CKEditor
 		case "texteditor":
+		case "wysiwyg":
 			echo '<p><textarea class="DMckeditor" id="post-'.$name.'" name="post-'.$name.'" style="width:513px;height:200px;border: 1px solid #AAAAAA;">'.$value.'</textarea></p>';
 			break;
 		// Textarea Plain

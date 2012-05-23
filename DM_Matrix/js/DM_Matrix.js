@@ -2,11 +2,14 @@
 
 jQuery(document).ready(function() { 
 
-$("#editpages").tablesorter({widgets: ['zebra']})
-.tablesorterPager({container: $("#pager")}); 
+$("#editpages").tablesorter({	
+	widgets: ['zebra'],
+	sortList: [[0,0]],
+})
+
+.tablesorterPager({container: $("#pager")})
 
 //$('#nav_DM_Matrix').insertAfter($('#nav_pages'));
-
 
 $("button.form_submit").on("click", function(){
 		errors=false;
@@ -51,13 +54,7 @@ $('select#post-type').on("change",function() {
 
 
 
-$('.datepicker').each(function(){
-    $(this).datepicker({ dateFormat: 'dd-mm-yy' });
-});
 
-$('.datetimepicker').each(function(){
-	$(this).datetimepicker({ dateFormat: 'dd-mm-yy' });	
-})
 
 $('#dm_addnew').on("click", function(){
 	$('#DM_addnew_row').stop().slideUp();
@@ -89,6 +86,11 @@ $('#addfield').on("click", function(){
 })
 
 
+function addImageThumbNail(txt){
+	el=txt.replace('post-','image-');
+	$('#'+el).empty().append('<img src="/'+$('#'+txt).val()+'" alt="" />');
+	
+}
 
 function makeSlug(element) {
     var Text = $('#'+element).val();
