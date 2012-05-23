@@ -85,7 +85,10 @@ $('#addfield').on("click", function(){
 
 function addImageThumbNail(txt){
 	el=txt.replace('post-','image-');
-	$('#'+el).empty().append('<img src="/'+$('#'+txt).val()+'" alt="" />');
+	//filepath=$('#'+txt).val();
+	//filename=filepath.substr(filepath.lastIndexOf("/")+1,filepath.length);
+	
+	$('#'+el).empty().append('<img src="/'+filename.replace(filename,'')+'" alt="" />');
 	
 }
 

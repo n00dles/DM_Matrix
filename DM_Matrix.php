@@ -386,7 +386,7 @@ if (isset($_GET['schema'])) {
 		$schemaname=$_GET['edit'];
 		echo "<h2>Edit Schema: ".$schemaname."</h2>";
 		?>
-		<table id="editpages" class="tablesorter">
+		<table id="edittable" class="tablesorter">
 		<thead><tr><th>Name</th><th >Type</th><th style="width:75px;">Options</th></tr>
 		</thead>
 		<tbody>
