@@ -15,8 +15,7 @@ function createSchemaFolder($name){
 
 
 function addRoute($url,$route){
-	global $uri, $uriRoutes;
-	$uriRoutes[(string)$url]=$route;	
+	createRecord('_routes',array('route'=>$url,'rewrite'=>$route));	
 }
 
 
@@ -124,6 +123,7 @@ function DM_saveSchema(){
 
 function createRecord($name,$data=array()){
 	global $schemaArray;
+	DM_getSchema(true);
 	$id=getNextRecord($name);
 	DMdebuglog('record:'.$id);
 	$file=GSSCHEMAPATH.'/'.$name."/".$id.".xml";

@@ -129,17 +129,16 @@ add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Ma
 add_action('error-404','doRoute',array());
 
 
-addRoute('blogger','news');
-addRoute('news','news');
-
 function doRoute(){
-	global $file,$id,$uriRoutes,$uri;
+	global $file,$id,$uri;
+	$myquery = "select route,rewrite from _routes";  
+	$uriRoutes=DM_query($myquery);
 	$uri = trim(str_replace('index.php', '', $_SERVER['REQUEST_URI']), '/#');
 	$parts=explode('/',$uri);
-	foreach ($uriRoutes as $route=>$key){
-		if ($parts[1]==$route){
-			$file=GSDATAPAGESPATH . $key.'.xml';
-			$id=$key;
+	foreach ($uriRoutes as $routes){
+		if ($parts[1]==$routes['route']){
+			$file=GSDATAPAGESPATH . str_replace('.php','.xml',$routes['rewrite']);
+			$id=pathinfo($routes['rewrite'],PATHINFO_FILENAME);
 		}
 	}
 }
@@ -663,8 +662,6 @@ elseif (isset($_GET['view']))
 <?
 	} 		
 }
-
-
 
 //echo "<pre>";
 //print_r($schemaArray);
