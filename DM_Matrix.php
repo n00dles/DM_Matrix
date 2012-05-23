@@ -300,18 +300,21 @@ if (isset($_GET['schema'])) {
 	$tables=0;    
 		foreach($schemaArray as $schema=>$key){
 			$fieldcnt = isset($key['fields']) ? count($key['fields']) : '0';
+			$numRecords=DM_getNumRecords($schema);
+			$maxRecords=$key['maxrecords'];
+			
 			if (substr($schema,0,1)!="_"){
 				if ($fieldcnt > 1){
 					echo "<tr><td><a href='load.php?id=DM_Matrix&action=matrix_manager&view=".$schema."' >".$schema."</a></td>";
 				} else {
 					echo "<tr><td>".$schema."</td>";	
 				}
-				echo "<td>".($key['id'])." / ".$key['maxrecords']."</td>";
+				echo "<td>".$numRecords." / ".$maxRecords."</td>";
 				echo "<td>".$fieldcnt."</td>";
 				echo "<td>";
 				echo "<a href='load.php?id=DM_Matrix&action=matrix_manager&edit=".$schema."'>";
 				echo "<img src='../plugins/DM_Matrix/images/edit.png' title='".i18n_r($thisfile_DM_Matrix.'/DM_EDITTABLE')."' /></a>";
-				if ($fieldcnt > 1){
+				if ($fieldcnt > 1 && (($numRecords<$maxRecords) or ($maxRecords==0))){
 					echo " <a href='load.php?id=DM_Matrix&action=matrix_manager&add=".$schema."'>";
 					echo "<img src='../plugins/DM_Matrix/images/add.png' title='".i18n_r($thisfile_DM_Matrix.'/DM_ADDRECORD')."' /></a>";
 				}
@@ -621,6 +624,7 @@ elseif (isset($_GET['view']))
 			echo "</td></tr>";
 			$record_cnt++;
 		  }
+		$maxRecords=$record_cnt;
 		} else {
 			
 		}  
@@ -632,7 +636,14 @@ elseif (isset($_GET['view']))
 		</tbody>
 		</table>
 	<?php 
-	echo "<a class='mtrx_but_add' id='matrix_recordadd' href='load.php?id=DM_Matrix&action=matrix_manager&add=".$table."'>Add Record</a>";
+	$numRecords=$record_cnt;
+	$maxRecords=$schemaArray[$table]['maxrecords'];
+	
+	if ($maxRecords==0 or $numRecords < $maxRecords){
+		echo "<a class='mtrx_but_add' id='matrix_recordadd' href='load.php?id=DM_Matrix&action=matrix_manager&add=".$table."'>Add Record</a>";
+	} else {
+		echo "<p>Max Records Reached</p>";
+	}
 	?>     
 		<div id="pager" class="pager">
 		<form>

@@ -331,6 +331,22 @@ function DM_getRecord($name, $record){
 	return $table;
 }
 
+
+// get the number of records for a given table. 
+function DM_getNumRecords($table){
+	$numRecords=0;
+	  $path = GSSCHEMAPATH.'/'.$table."/";
+	  $dir_handle = @opendir($path) or die("Unable to open $path");
+	  while ($filename = readdir($dir_handle)) {
+		$ext = substr($filename, strrpos($filename, '.') + 1);
+		if ($ext=="xml"){
+			$numRecords++;	
+		}
+	  }		
+	  return $numRecords;
+}
+
+
 function DM_editForm($table, $record){
 	global $schemaArray;	
 	global $returnArray;
