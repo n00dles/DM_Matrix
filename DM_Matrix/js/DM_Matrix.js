@@ -24,7 +24,6 @@ $("button.form_submit").on("click", function(){
 	});	
 
 $('select#post-type').on("change",function() {
-	//alert($(this).val());
 	fieldtype=$(this).val();
 	switch (fieldtype){
 		case 'dropdown':
@@ -51,7 +50,6 @@ $('select#post-type').on("change",function() {
 $('#dm_addnew').on("click", function(){
 	$('#DM_addnew_row').stop().slideUp();
 	$(this).next().stop().slideToggle();
-	//alert("add new");	
 	return false;	
 })
 	
