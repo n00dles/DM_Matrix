@@ -524,8 +524,11 @@ if (isset($_GET['schema'])) {
 			<label class="ui-widget-header fieldstateToggle" for="Inputfield_name">Additional Options</label>
 			<div class="ui-widget-content">
 				<p class="description">Additional options for this Field</p>
-				<input type="checkbox" id="post-cacheindex" name="post-cacheindex" <?php if ($formCacheIndex=='1') echo " checked "; ?> >&nbsp;Allow this field to be indexed<br/> 
-				<input type="checkbox" id="post-tableview" name="post-tableview" <?php if ($formTableView=='1') echo " checked "; ?>>&nbsp;Show in Table View
+				<input class="hidden" type="checkbox" id="post-cacheindex" name="post-cacheindex" <?php if ($formCacheIndex=='1') echo " checked "; ?> >
+				<!--&nbsp;Allow this field to be indexed<br/> -->
+				
+				<input type="checkbox" id="post-tableview" name="post-tableview" <?php if ($formTableView=='1') echo " checked "; ?>>
+				&nbsp;Show in Table View
 				
 				<br/>		
 			</div>
