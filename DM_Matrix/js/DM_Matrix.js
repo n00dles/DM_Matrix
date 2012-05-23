@@ -23,11 +23,6 @@ $("button.form_submit").on("click", function(){
 		return false;
 	});	
 
-
-$('.imagepicker').live("change",function() {
-	//alert("changed..");
-})
-
 $('select#post-type').on("change",function() {
 	//alert($(this).val());
 	fieldtype=$(this).val();
