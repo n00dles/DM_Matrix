@@ -642,7 +642,7 @@ elseif (isset($_GET['view']))
 	if ($maxRecords==0 or $numRecords < $maxRecords){
 		echo "<a class='mtrx_but_add' id='matrix_recordadd' href='load.php?id=DM_Matrix&action=matrix_manager&add=".$table."'>Add Record</a>";
 	} else {
-		echo "<p>Max Records Reached</p>";
+		echo "<p class='error'>Max Number of Records Reached</p>";
 	}
 	?>     
 		<div id="pager" class="pager">
