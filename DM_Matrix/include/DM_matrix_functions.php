@@ -457,7 +457,9 @@ function DM_outputCKHeader(){
 			});
 			
 			$('.datetimepicker').each(function(){
-				$(this).datetimepicker({ dateFormat: '<?php echo $dateformat; ?>' });	
+				$(this).datetimepicker({ 
+				dateFormat: '<?php echo $dateformat; ?>',
+				timeFormat: 'hh:mm'
 			})
 			</script>
 <?php	
@@ -584,19 +586,13 @@ function displayFieldType($name, $type, $schema,$value=''){
 			break;
 		// Datepicker. Use settings page to set the front end date format, saved as Unix timestamp
 		case "datepicker";
-			if ($value!=''){
-				$value=date(i18n('DATE_FORMAT',false),$value);
-			}
-			echo '<p><input id="post-'.$name.'" class="datepicker required" name="post-'.$name.'" type="text" size="50" maxlength="128" value="'.$value.'"></p>';
-			$datetimepick=true;
+				echo '<p><input id="post-'.$name.'" class="datepicker required" name="post-'.$name.'" type="text" size="50" maxlength="128" value="'. (isset($value) and  $value!='' ? date(i18n('DATE_FORMAT',false),(int)$value) : '') .'"></p>';
+       			$datetimepick=true;
 			break;
 		// DateTimepicker. Use settings page to set the front end date format, saved as Unix timestamp
 		case "datetimepicker";
-			if ($value!=''){
-				$value=date(i18n('DATE_FORMAT',false).' H:i',$value);
-			}
-			echo '<p><input id="post-'.$name.'" class="datetimepicker required" name="post-'.$name.'" type="text" size="50" maxlength="128"  value="'.$value.'"></p>';	
-			$datepick=true;
+			echo '<p><input id="post-'.$name.'" class="datetimepicker required" name="post-'.$name.'" type="text" size="50" maxlength="128"  value="'. (isset($value) and  $value!='' ? date(i18n('DATE_FORMAT',false).' H:i',(int)$value) : '') .'"></p>';  
+       		$datepick=true;
 			break;
 		// Dropdown from another Table/column 
 		case "dropdown":
