@@ -2,11 +2,14 @@
 
 jQuery(document).ready(function() { 
 
-$("#editpages").tablesorter({widgets: ['zebra']})
-.tablesorterPager({container: $("#pager")}); 
+$("#editpages").tablesorter({	
+	widgets: ['zebra'],
+	sortList: [[0,0]],
+})
+
+.tablesorterPager({container: $("#pager")})
 
 //$('#nav_DM_Matrix').insertAfter($('#nav_pages'));
-
 
 $("button.form_submit").on("click", function(){
 		errors=false;
