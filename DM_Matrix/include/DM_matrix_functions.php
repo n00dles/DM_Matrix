@@ -123,7 +123,6 @@ function DM_saveSchema(){
 
 function createRecord($name,$data=array()){
 	global $schemaArray;
-	DM_getSchema(true);
 	$id=getNextRecord($name);
 	DMdebuglog('record:'.$id);
 	$file=GSSCHEMAPATH.'/'.$name."/".$id.".xml";
@@ -142,7 +141,6 @@ function createRecord($name,$data=array()){
 
 function updateRecord($name,$record,$data=array()){
 	global $schemaArray;
-	//$id=getNextRecord($name);
 	DMdebuglog('updating record:'.$name.'/'.$record);
 	$file=GSSCHEMAPATH.'/'.$name."/".$record.".xml";
 	$xml = @new SimpleXMLExtended('<channel></channel>');
@@ -153,7 +151,6 @@ function updateRecord($name,$record,$data=array()){
 	}
 	$xml->asXML($file);
 	DMdebuglog('file:'.$file);
-	//$schemaArray[$name]['id']=$id+1;
 	$ret=DM_saveSchema();
 	return $ret;
 }
@@ -460,10 +457,7 @@ function DM_outputCKHeader(){
 			});
 			
 			$('.datetimepicker').each(function(){
-				$(this).datetimepicker({ 
-					dateFormat: '<?php echo $dateformat; ?>',
-					timeFormat: 'hh:mm'
-				});	
+				$(this).datetimepicker({ dateFormat: '<?php echo $dateformat; ?>' });	
 			})
 			</script>
 <?php	
@@ -590,14 +584,18 @@ function displayFieldType($name, $type, $schema,$value=''){
 			break;
 		// Datepicker. Use settings page to set the front end date format, saved as Unix timestamp
 		case "datepicker";
-			//$value=DM_manipulate($value, 'datepicker');
-			echo '<p><input id="post-'.$name.'" class="datepicker required" name="post-'.$name.'" type="text" size="50" maxlength="128" value="'. (isset($value) and  $value!='' ? date(i18n('DATE_FORMAT',false),(int)$value) : '') .'"></p>';
+			if ($value!=''){
+				$value=date(i18n('DATE_FORMAT',false),$value);
+			}
+			echo '<p><input id="post-'.$name.'" class="datepicker required" name="post-'.$name.'" type="text" size="50" maxlength="128" value="'.$value.'"></p>';
 			$datetimepick=true;
 			break;
 		// DateTimepicker. Use settings page to set the front end date format, saved as Unix timestamp
 		case "datetimepicker";
-			//$value=DM_manipulate($value, 'datetimepicker');
-			echo '<p><input id="post-'.$name.'" class="datetimepicker required" name="post-'.$name.'" type="text" size="50" maxlength="128"  value="'. (isset($value) and  $value!='' ? date(i18n('DATE_FORMAT',false).' H:i',(int)$value) : '') .'"></p>';	
+			if ($value!=''){
+				$value=date(i18n('DATE_FORMAT',false).' H:i',$value);
+			}
+			echo '<p><input id="post-'.$name.'" class="datetimepicker required" name="post-'.$name.'" type="text" size="50" maxlength="128"  value="'.$value.'"></p>';	
 			$datepick=true;
 			break;
 		// Dropdown from another Table/column 
