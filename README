@@ -26,21 +26,21 @@ o - Checkbox, Checkbox.
 o - slug, add a slug & title to the table
 o - pages, a dropdown of the current Pages. 
 o - templates, a dropdown of the current templates
-o - dropdown, a dropdown from another table. 
+o - dropdown, a dropdown that populates its values from another table. 
 o - datepicker, a date picker field. 
 o - datetimepicker, a date and time picker. 
 o - image, an image selector field
 o - filepicker, a file selector field
 o - textarea, a plain textarea
 o - codeeditor, a codemirror textarea
-o - texteditor, a CKEditor enabled textarea. 
+o - wysiwyg, a CKEditor enabled textarea. 
 
 Each field has the following options: 
 
 o - label, short label displayed on the field entry screen
 o - description, a full description for the end user as to what the field does. 
 o - tableview, whether to display the field on the record view screen. 
-o - cachindex, whether to return the field using sql queries of return it by accessing the file directly, 
+o - cachindex, (not currently implemented) whether to return the field using sql queries of return it by accessing the file directly, 
 	this will be used primarily for large type fields (textareas etc..) which may hold large amount of data 
 	which should not be loaded into memory. 
 
@@ -82,7 +82,10 @@ You then have your array of data from the 'blog' table sorted by 'publisheddate'
 
 
 AVAILABLE FUNCTIONS
+* See wiki for more details
+* https://github.com/n00dles/DM_Matrix/wiki/Usage
 
+DM_query(query) - perform a simple query, results returned in an array
 DM_getSchema - get the main Schema 
 DM_saveSchema - Save the schema out to an XML file schema.xml
 createSchemaFolder - create the base folder for the record files
