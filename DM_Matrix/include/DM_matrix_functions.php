@@ -123,7 +123,6 @@ function DM_saveSchema(){
 
 function createRecord($name,$data=array()){
 	global $schemaArray;
-	DM_getSchema(true);
 	$id=getNextRecord($name);
 	DMdebuglog('record:'.$id);
 	$file=GSSCHEMAPATH.'/'.$name."/".$id.".xml";
@@ -142,7 +141,6 @@ function createRecord($name,$data=array()){
 
 function updateRecord($name,$record,$data=array()){
 	global $schemaArray;
-	//$id=getNextRecord($name);
 	DMdebuglog('updating record:'.$name.'/'.$record);
 	$file=GSSCHEMAPATH.'/'.$name."/".$record.".xml";
 	$xml = @new SimpleXMLExtended('<channel></channel>');
@@ -153,7 +151,6 @@ function updateRecord($name,$record,$data=array()){
 	}
 	$xml->asXML($file);
 	DMdebuglog('file:'.$file);
-	//$schemaArray[$name]['id']=$id+1;
 	$ret=DM_saveSchema();
 	return $ret;
 }

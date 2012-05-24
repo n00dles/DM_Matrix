@@ -662,6 +662,7 @@ elseif (isset($_GET['view']))
 	} 		
 }
 
+
 //echo "<pre>";
 //print_r($schemaArray);
 //echo "</pre>";
