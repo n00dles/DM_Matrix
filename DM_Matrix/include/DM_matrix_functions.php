@@ -458,8 +458,9 @@ function DM_outputCKHeader(){
 			
 			$('.datetimepicker').each(function(){
 				$(this).datetimepicker({ 
-				dateFormat: '<?php echo $dateformat; ?>',
-				timeFormat: 'hh:mm'
+					dateFormat: '<?php echo $dateformat; ?>',
+					timeFormat: 'hh:mm'
+				})
 			})
 			</script>
 <?php	

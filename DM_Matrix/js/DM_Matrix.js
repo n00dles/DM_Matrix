@@ -81,7 +81,8 @@ $('#addfield').on("click", function(){
 
 function addImageThumbNail(txt){
 	el=txt.replace('post-','image-');
-	$('#'+el).empty().append('<img src="/'+filename.replace(filename,'')+'" alt="" />');
+	filepath=$('#'+txt).val();
+	$('#'+el).empty().append('<img src="'+filepath+'" alt="" />');
 	
 }
 
@@ -92,6 +93,5 @@ function makeSlug(element) {
     Text = Text.replace(regExp,'-');
     $('#' + element+"").val(Text);
 }
-
 
 
