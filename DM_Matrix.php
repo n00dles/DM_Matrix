@@ -109,6 +109,8 @@ if (isset($_GET['id']) && $_GET['id']=="DM_Matrix"){
 	register_script('ckeditor', $SITEURL.'admin/template/js/ckeditor/ckeditor.js', '0.2.0', FALSE);
 	queue_script('ckeditor', GSBACK);
 	
+	register_script('askconfirm', $SITEURL.'plugins/DM_Matrix/js/jconfirm.jquery.js', '0.2.0', FALSE);
+	queue_script('askconfirm', GSBACK);
 	
 }
 
@@ -171,7 +173,15 @@ if (isset($_GET['add']) && isset($_GET['updaterecord'])){
 	updateRecordFromForm($table);
 	header('Location: load.php?id=DM_Matrix&action=matrix_manager&view='.$table);
 	}
-	
+
+if (isset($_GET['view']) && isset($_GET['delete'])){
+	$table=$_GET['view'];
+	$id=$_GET['delete'];
+	$ret=DM_deleteRecord($table,$id);
+	if ($ret){
+		$success="Record ".$table.' / '.$id.' Deleted';
+	}
+}
 
 
 if (isset($_GET['edit']) && isset($_GET['addfield'])){
@@ -264,9 +274,6 @@ function matrix_manager() {
 global $item_title,$thisfile_DM_Matrix, $fieldtypes,$schemaArray, $sql, $mytable;
 
 
-
-
-
 //Main Navigation For Admin Panel
 ?>
 
@@ -278,6 +285,9 @@ global $item_title,$thisfile_DM_Matrix, $fieldtypes,$schemaArray, $sql, $mytable
 <div class="main" style="margin-top:-10px;">
 
 <?php
+
+
+
 
 //Alert Admin If Items Manager Settings XML File Is Directory Does Not Exist
 if (isset($_GET['schema'])) {
@@ -301,7 +311,8 @@ if (isset($_GET['schema'])) {
 			$numRecords=DM_getNumRecords($schema);
 			$maxRecords=$key['maxrecords'];
 			
-			if (substr($schema,0,1)!="_"){
+			//if (substr($schema,0,1)!="_"){
+				$schemaName=$schema;
 				if ($fieldcnt > 1){
 					echo "<tr><td><a href='load.php?id=DM_Matrix&action=matrix_manager&view=".$schema."' >".$schema."</a></td>";
 				} else {
@@ -313,15 +324,19 @@ if (isset($_GET['schema'])) {
 				echo "<a href='load.php?id=DM_Matrix&action=matrix_manager&edit=".$schema."'>";
 				echo "<img src='../plugins/DM_Matrix/images/edit.png' title='".i18n_r($thisfile_DM_Matrix.'/DM_EDITTABLE')."' /></a>";
 				if ($fieldcnt > 1 && (($numRecords<$maxRecords) or ($maxRecords==0))){
-					echo " <a href='load.php?id=DM_Matrix&action=matrix_manager&add=".$schema."'>";
+					echo "<a href='load.php?id=DM_Matrix&action=matrix_manager&add=".$schema."'>";
 					echo "<img src='../plugins/DM_Matrix/images/add.png' title='".i18n_r($thisfile_DM_Matrix.'/DM_ADDRECORD')."' /></a>";
+				} else {
+					echo "<img src='../plugins/DM_Matrix/images/blank.png' title='' />";
 				}
-		  // todo: add drop table functionality
-					// echo " <a href='load.php?id=DM_Matrix&action=matrix_manager&drop=".$schema."'>";
-					// echo "<img src='../plugins/DM_Matrix/images/delete.png' title='Drop Table $schema' /></a>";        
+				if ($numRecords==0){
+		  		// todo: add drop table functionality
+					 echo " <a href='load.php?id=DM_Matrix&action=matrix_manager&drop=".$schema."' class='askconfirm' title='Delete Table $schema ?'>";
+					 echo "<img src='../plugins/DM_Matrix/images/delete.png' title='Delete Table $schema' /></a>";
+				}        
 				echo "</td></tr>";
 		$tables++;
-			}
+			//}
 		}
 	if ($tables==0){
 	  echo '<tr><td colspan="4">No Tables defined</td></tr>';	
@@ -618,7 +633,7 @@ elseif (isset($_GET['view']))
 			}
 			echo "<td><a href='load.php?id=DM_Matrix&action=matrix_manager&add=".$table."&field=".$id."'><img src='../plugins/DM_Matrix/images/edit.png' title='Edit Record ".$id."' /></a>";
 			//todo delete functionality
-			// echo " <a href='load.php?id=DM_Matrix&action=matrix_manager&delete=".$table."&field=".$id."'><img src='../plugins/DM_Matrix/images/delete.png' title='Delete Record ".$id."!' /></a>";
+			echo " <a href='load.php?id=DM_Matrix&action=matrix_manager&view=".$table."&delete=".$id."' title='Delete Record ".$id." ?' class='askconfirm'><img src='../plugins/DM_Matrix/images/delete.png' title='Delete Record ".$id."' /></a>";
 			echo "</td></tr>";
 			$record_cnt++;
 		  }

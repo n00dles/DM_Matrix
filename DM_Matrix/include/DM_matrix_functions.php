@@ -139,6 +139,17 @@ function createRecord($name,$data=array()){
 	return $ret;
 }
 
+
+function DM_deleteRecord($table,$id){
+	$file=GSSCHEMAPATH.'/'.$table."/".$id.".xml";
+	if (file_exists($file)){
+		unlink($file);
+		return true;
+	} else {
+		return false;
+	}
+}
+
 function updateRecord($name,$record,$data=array()){
 	global $schemaArray;
 	DMdebuglog('updating record:'.$name.'/'.$record);

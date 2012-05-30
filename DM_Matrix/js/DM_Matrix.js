@@ -9,6 +9,9 @@ $("#editpages").tablesorter({
 
 .tablesorterPager({container: $("#pager")})
 
+
+$('.askconfirm').jConfirmAction();
+
 //$('#nav_DM_Matrix').insertAfter($('#nav_pages'));
 
 $("button.form_submit").on("click", function(){
