@@ -150,6 +150,22 @@ function DM_deleteRecord($table,$id){
 	}
 }
 
+function DM_deleteTable($table){
+	$numRecords=DM_getNumRecords($table);
+	echo $numRecords;
+	if ($numRecords==0){
+		if (is_dir(GSSCHEMAPATH.'/'.$table)) {
+			$ret=rmdir(GSSCHEMAPATH.'/'.$table);
+			dropSchemaTable($table);
+		} else {
+			$ret=false;
+		}
+	} else {
+		$ret=false;
+	}
+	return $ret;
+}
+
 function updateRecord($name,$record,$data=array()){
 	global $schemaArray;
 	DMdebuglog('updating record:'.$name.'/'.$record);

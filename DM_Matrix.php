@@ -145,22 +145,12 @@ function doRoute(){
 }
 
 
-DM_getSchema();
-
-if (!tableExists('_routes')){
-	DMdebuglog('Creating table _routes ');
-	$ret = createSchemaTable('_routes','0',array('route'=>'text','rewrite'=>'text'));
-}
-
-if (!tableExists('_settings')){
-	DMdebuglog('Creating table _settings ');
-	$ret = createSchemaTable('_settings','1',array());
-}
-
-
 if (isset($_GET['add']) && isset($_POST['post-addtable'])){
 	DMdebuglog('Trying to add a new table: '.$_POST['post-addtable']);
 	$ret=createSchemaTable($_POST['post-addtable'],$_POST['post-maxrecords'],array());
+	if ($ret){
+		$success="Table ".$_POST['post-addtable'].' created successfully';
+	}
 }
 
 if (isset($_GET['add']) && isset($_GET['addrecord'])){
@@ -182,6 +172,32 @@ if (isset($_GET['view']) && isset($_GET['delete'])){
 		$success="Record ".$table.' / '.$id.' Deleted';
 	}
 }
+
+if (isset($_GET['schema']) && isset($_GET['drop'])){
+	DM_getSchema();
+	$table=$_GET['drop'];
+	$ret=DM_deleteTable($table);
+	if ($ret){
+		$success="Dropped ".$table.' successfully';
+	} else {
+		$success="Unable to drop  ".$table.' successfully';
+	}
+}
+
+
+
+DM_getSchema();
+
+if (!tableExists('_routes')){
+	DMdebuglog('Creating table _routes ');
+	$ret = createSchemaTable('_routes','0',array('route'=>'text','rewrite'=>'text'));
+}
+
+if (!tableExists('_settings')){
+	DMdebuglog('Creating table _settings ');
+	$ret = createSchemaTable('_settings','1',array());
+}
+
 
 
 if (isset($_GET['edit']) && isset($_GET['addfield'])){
@@ -331,7 +347,7 @@ if (isset($_GET['schema'])) {
 				}
 				if ($numRecords==0){
 		  		// todo: add drop table functionality
-					 echo " <a href='load.php?id=DM_Matrix&action=matrix_manager&drop=".$schema."' class='askconfirm' title='Delete Table $schema ?'>";
+					 echo " <a href='load.php?id=DM_Matrix&action=matrix_manager&schema&drop=".$schema."' class='askconfirm' title='Delete Table $schema ?'>";
 					 echo "<img src='../plugins/DM_Matrix/images/delete.png' title='Delete Table $schema' /></a>";
 				}        
 				echo "</td></tr>";
