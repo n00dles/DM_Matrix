@@ -152,7 +152,6 @@ function DM_deleteRecord($table,$id){
 
 function DM_deleteTable($table){
 	$numRecords=DM_getNumRecords($table);
-	echo $numRecords;
 	if ($numRecords==0){
 		if (is_dir(GSSCHEMAPATH.'/'.$table)) {
 			$ret=rmdir(GSSCHEMAPATH.'/'.$table);
