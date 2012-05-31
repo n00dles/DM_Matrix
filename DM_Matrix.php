@@ -131,6 +131,8 @@ add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Ma
 add_action('error-404','doRoute',array());
 
 
+DM_getSchema();
+
 if (isset($_GET['add']) && isset($_POST['post-addtable'])){
 	DMdebuglog('Trying to add a new table: '.$_POST['post-addtable']);
 	$ret=createSchemaTable($_POST['post-addtable'],$_POST['post-maxrecords'],array());
@@ -172,7 +174,6 @@ if (isset($_GET['schema']) && isset($_GET['drop'])){
 
 
 
-DM_getSchema();
 
 if (!tableExists('_routes')){
 	DMdebuglog('Creating table _routes ');
