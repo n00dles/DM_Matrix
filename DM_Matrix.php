@@ -123,9 +123,9 @@ if (isset($_GET['edit'])){
 if (isset($_GET['view'])){
   add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Matrix, "Manage Records",'view')); 
 }
-add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Matrix, "Manage Routes",'routes')); 
+# add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Matrix, "Manage Routes",'routes')); 
 # add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Matrix, "Settings",'settings')); 
-# add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Matrix, "About",'about')); 
+add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Matrix, "About",'about')); 
 
 add_action('error-404','doRoute',array());
 
@@ -191,13 +191,7 @@ DM_getSchema();
 if (!tableExists('_routes')){
 	DMdebuglog('Creating table _routes ');
 	$ret = createSchemaTable('_routes','0',array('route'=>'text','rewrite'=>'text'));
-}
-
-if (!tableExists('_settings')){
-	DMdebuglog('Creating table _settings ');
-	$ret = createSchemaTable('_settings','1',array());
-}
-
+} 
 
 
 if (isset($_GET['edit']) && isset($_GET['addfield'])){
@@ -338,14 +332,18 @@ if (isset($_GET['schema'])) {
 				echo "<td>".$fieldcnt."</td>";
 				echo "<td>";
 				echo "<a href='load.php?id=DM_Matrix&action=matrix_manager&edit=".$schema."'>";
-				echo "<img src='../plugins/DM_Matrix/images/edit.png' title='".i18n_r($thisfile_DM_Matrix.'/DM_EDITTABLE')."' /></a>";
+				if ($schema!='_routes'){
+					echo "<img src='../plugins/DM_Matrix/images/edit.png' title='".i18n_r($thisfile_DM_Matrix.'/DM_EDITTABLE')."' /></a>";
+				} else {
+					echo "<img src='../plugins/DM_Matrix/images/blank.png' title='' />";
+				}
 				if ($fieldcnt > 1 && (($numRecords<$maxRecords) or ($maxRecords==0))){
 					echo "<a href='load.php?id=DM_Matrix&action=matrix_manager&add=".$schema."'>";
 					echo "<img src='../plugins/DM_Matrix/images/add.png' title='".i18n_r($thisfile_DM_Matrix.'/DM_ADDRECORD')."' /></a>";
 				} else {
 					echo "<img src='../plugins/DM_Matrix/images/blank.png' title='' />";
 				}
-				if ($numRecords==0){
+				if ($numRecords==0 && $schema!='_routes'){
 		  		// todo: add drop table functionality
 					 echo " <a href='load.php?id=DM_Matrix&action=matrix_manager&schema&drop=".$schema."' class='askconfirm' title='Delete Table $schema ?'>";
 					 echo "<img src='../plugins/DM_Matrix/images/delete.png' title='Delete Table $schema' /></a>";
