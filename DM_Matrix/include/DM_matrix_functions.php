@@ -165,6 +165,78 @@ function DM_deleteTable($table){
 	return $ret;
 }
 
+function addRecordFromForm($tbl){
+		debugLog("adding form");
+		global $fieldtypes,$schemaArray;
+		$tempArray=array();	
+		foreach ($schemaArray[$tbl]['fields'] as $field=>$type)
+		{
+			if (isset($_POST["post-".$field]))
+			{
+				$data=DM_manipulate($_POST["post-".$field], $type); 
+				$tempArray[(string)$field]=$data;
+			}
+		}
+
+		createRecord($tbl, $tempArray);		
+}
+
+function updateRecordFromForm($tbl){
+		debugLog("updating record from form...");
+		global $fieldtypes,$schemaArray;
+		$tempArray=array();	
+		foreach ($schemaArray[$tbl]['fields'] as $field=>$type)
+		{
+			if (isset($_POST["post-".$field]))
+			{
+				$data=DM_manipulate($_POST["post-".$field], $type); 
+				$tempArray[(string)$field]=$data;
+			}
+		}
+
+		updateRecord($tbl,$_POST['post-id'], $tempArray);		
+}
+
+
+function DM_manipulate($field, $type){
+	switch ($type){
+		case "datetimepicker":
+			return (int)strtotime($field);
+			break;	
+		case "datepicker":
+			return (int)strtotime($field);
+			break;	
+		case "texteditor":
+			return safe_slash_html($field);
+			break;
+		case "textarea":
+			return safe_slash_html($field);
+			break;
+		case "codeeditor":
+			return safe_slash_html($field);
+			break;
+				
+		default: 
+			return $field;
+	}
+		
+}
+
+function doRoute(){
+	global $file,$id,$uri;
+	$myquery = "select route,rewrite from _routes";  
+	$uriRoutes=DM_query($myquery);
+	$uri = trim(str_replace('index.php', '', $_SERVER['REQUEST_URI']), '/#');
+	$parts=explode('/',$uri);
+	foreach ($uriRoutes as $routes){
+		if ($parts[1]==$routes['route']){
+			$file=GSDATAPAGESPATH . str_replace('.php','.xml',$routes['rewrite']);
+			$id=pathinfo($routes['rewrite'],PATHINFO_FILENAME);
+		}
+	}
+}
+
+
 function updateRecord($name,$record,$data=array()){
 	global $schemaArray;
 	DMdebuglog('updating record:'.$name.'/'.$record);
