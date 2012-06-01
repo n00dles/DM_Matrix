@@ -85,6 +85,10 @@ $('#addfield').on("click", function(){
 function addImageThumbNail(txt){
 	el=txt.replace('post-','image-');
 	filepath=$('#'+txt).val();
+	filepath=filepath.replace('/uploads/','/thumbs/');
+	var fileNameIndex = filepath.lastIndexOf("/") + 1;
+	var filename = filepath.substr(fileNameIndex);
+	filepath=filepath.replace(filename,'thumbsm.'+filename);
 	$('#'+el).empty().append('<img src="'+filepath+'" alt="" />');
 	
 }
