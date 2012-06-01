@@ -37,8 +37,12 @@ function tableExists($table){
 }
 
 
-/** Load The main schema XML file and fill the array $schema
-  */
+/**
+ * Load the main Schema File
+ * 
+ *
+ * @param boolean $flag , Name of the table to test
+ */
 function DM_getSchema($flag=false){
   global $schemaArray;	
   
@@ -87,6 +91,10 @@ function DM_getSchema($flag=false){
 	}
 }
 
+/**
+ * Save the main Schema File
+ * 
+ */
 function DM_saveSchema(){
 	global $schemaArray;	
 	$file=GSSCHEMAPATH."/schema.xml";
@@ -121,6 +129,13 @@ function DM_saveSchema(){
 	return $ret;
 }
 
+/**
+ * Create a record
+ * 
+ *
+ * @param boolean $flag , Name of the table to test
+ */
+
 function createRecord($name,$data=array()){
 	global $schemaArray;
 	$id=getNextRecord($name);
@@ -139,7 +154,12 @@ function createRecord($name,$data=array()){
 	return $ret;
 }
 
-
+/**
+ * Delete a record from a table
+ * 
+ * @param string $table , Table name
+ * @param string $id , record ID to delete
+ */
 function DM_deleteRecord($table,$id){
 	$file=GSSCHEMAPATH.'/'.$table."/".$id.".xml";
 	if (file_exists($file)){
@@ -150,6 +170,11 @@ function DM_deleteRecord($table,$id){
 	}
 }
 
+/**
+ * Delete a Table from the Schema
+ * 
+ * @param string $table , Table name
+ */
 function DM_deleteTable($table){
 	$numRecords=DM_getNumRecords($table);
 	if ($numRecords==0){
@@ -165,11 +190,16 @@ function DM_deleteTable($table){
 	return $ret;
 }
 
-function addRecordFromForm($tbl){
+/**
+ * Add a record to a table from the input form
+ * 
+ * @param string $table , Table name
+ */
+function addRecordFromForm($table){
 		debugLog("adding form");
 		global $fieldtypes,$schemaArray;
 		$tempArray=array();	
-		foreach ($schemaArray[$tbl]['fields'] as $field=>$type)
+		foreach ($schemaArray[$table]['fields'] as $field=>$type)
 		{
 			if (isset($_POST["post-".$field]))
 			{
@@ -178,14 +208,19 @@ function addRecordFromForm($tbl){
 			}
 		}
 
-		createRecord($tbl, $tempArray);		
+		createRecord($table, $tempArray);		
 }
 
-function updateRecordFromForm($tbl){
+/**
+ * Fetch values from the form and send to updateRecord
+ * 
+ * @param string $table , Table name
+ */
+function updateRecordFromForm($table){
 		debugLog("updating record from form...");
 		global $fieldtypes,$schemaArray;
 		$tempArray=array();	
-		foreach ($schemaArray[$tbl]['fields'] as $field=>$type)
+		foreach ($schemaArray[$table]['fields'] as $field=>$type)
 		{
 			if (isset($_POST["post-".$field]))
 			{
@@ -194,10 +229,15 @@ function updateRecordFromForm($tbl){
 			}
 		}
 
-		updateRecord($tbl,$_POST['post-id'], $tempArray);		
+		updateRecord($table,$_POST['post-id'], $tempArray);		
 }
 
-
+/**
+ * Manipulate Form values before saving
+ * 
+ * @param string $field , Field name
+ * @param string $type , Field type
+ */
 function DM_manipulate($field, $type){
 	switch ($type){
 		case "datetimepicker":
@@ -214,14 +254,18 @@ function DM_manipulate($field, $type){
 			break;
 		case "codeeditor":
 			return safe_slash_html($field);
-			break;
-				
+			break;				
 		default: 
 			return $field;
 	}
 		
 }
 
+/**
+ * When a 4040 error is thrown by GS check and see if we have a route defined.
+ * If so load that rewrite rule file in instead. URI is then passed to the theme
+ * 
+ */
 function doRoute(){
 	global $file,$id,$uri;
 	$myquery = "select route,rewrite from _routes";  
@@ -236,11 +280,17 @@ function doRoute(){
 	}
 }
 
-
-function updateRecord($name,$record,$data=array()){
+/**
+ * Update a Table record from the values provided in teh form
+ * 
+ * @param string $table - table name
+ * @param string $record  - record number to update
+ * @param array $data - array of field / values
+ */
+function updateRecord($table,$record,$data=array()){
 	global $schemaArray;
-	DMdebuglog('updating record:'.$name.'/'.$record);
-	$file=GSSCHEMAPATH.'/'.$name."/".$record.".xml";
+	DMdebuglog('updating record:'.$table.'/'.$record);
+	$file=GSSCHEMAPATH.'/'.$table."/".$record.".xml";
 	$xml = @new SimpleXMLExtended('<channel></channel>');
 	$pages = $xml->addChild('item');
 	$pages->addChild('id',$record);
