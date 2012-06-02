@@ -266,15 +266,20 @@ function DM_manipulate($field, $type){
  * If so load that rewrite rule file in instead. URI is then passed to the theme
  * 
  */
-function doRoute(){
+function DM_doRoute(){
 	global $file,$id,$uri;
 	$myquery = "select route,rewrite from _routes";  
 	$uriRoutes=DM_query($myquery);
 	$uri = trim(str_replace('index.php', '', $_SERVER['REQUEST_URI']), '/#');
 	$parts=explode('/',$uri);
+	echo "<pre>";
+	print_r($parts);
+	print_r($uriRoutes);
+	echo "</pre>";
 	foreach ($uriRoutes as $routes){
-		if ($parts[1]==$routes['route']){
+		if ($parts[0]==$routes['route']){
 			$file=GSDATAPAGESPATH . str_replace('.php','.xml',$routes['rewrite']);
+			echo $file;
 			$id=pathinfo($routes['rewrite'],PATHINFO_FILENAME);
 		}
 	}

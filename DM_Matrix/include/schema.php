@@ -26,8 +26,9 @@
 				echo "<td>".$numRecords." / ".$maxRecords."</td>";
 				echo "<td>".$fieldcnt."</td>";
 				echo "<td>";
-				echo "<a href='load.php?id=DM_Matrix&action=matrix_manager&edit=".$schema."'>";
+				
 				if ($schema!='_routes'){
+					echo "<a href='load.php?id=DM_Matrix&action=matrix_manager&edit=".$schema."'>";
 					echo "<img src='../plugins/DM_Matrix/images/edit.png' title='".i18n_r($thisfile_DM_Matrix.'/DM_EDITTABLE')."' /></a>";
 				} else {
 					echo "<img src='../plugins/DM_Matrix/images/blank.png' title='' />";

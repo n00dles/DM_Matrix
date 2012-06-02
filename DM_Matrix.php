@@ -128,7 +128,7 @@ if (isset($_GET['view'])){
 }
 add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Matrix, "About",'about')); 
 
-add_action('error-404','doRoute',array());
+add_action('error-404','DM_doRoute',array());
 
 
 DM_getSchema();
