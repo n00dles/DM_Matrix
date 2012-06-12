@@ -272,14 +272,9 @@ function DM_doRoute(){
 	$uriRoutes=DM_query($myquery);
 	$uri = trim(str_replace('index.php', '', $_SERVER['REQUEST_URI']), '/#');
 	$parts=explode('/',$uri);
-	echo "<pre>";
-	print_r($parts);
-	print_r($uriRoutes);
-	echo "</pre>";
 	foreach ($uriRoutes as $routes){
 		if ($parts[0]==$routes['route']){
 			$file=GSDATAPAGESPATH . str_replace('.php','.xml',$routes['rewrite']);
-			echo $file;
 			$id=pathinfo($routes['rewrite'],PATHINFO_FILENAME);
 		}
 	}
