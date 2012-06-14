@@ -40,6 +40,9 @@ register_plugin(
 debugLog(''.$TIMEZONE);   
 
 define('GSSCHEMAPATH',GSDATAOTHERPATH.'matrix');
+define('DM_SINGLE',0);
+define('DM_MULTI',1);
+define('DM_COUNT',2);
 
 // check and make sure the base folders are there. 
 if (!is_dir(GSSCHEMAPATH)){

@@ -866,17 +866,27 @@ function displayFieldType($name, $type, $schema,$value=''){
 	}
 }
 
-function DM_query($query,$cache=true){
+function DM_query($query,$type=DM_MULTI,$cache=true){
 	$sql=new sql4array();
 	$sql->createFromGlobals(false);
 	$tables = $sql->get_tablenames($query);
-
+	DMdebuglog('Query:'.$query);
 	foreach($tables as $table){
 		if(!isset($DM_tables_cache[$table]) or $cache==false) $DM_tables_cache[$table] = getSchemaTable($table);
 		$sql->asset($table,$DM_tables_cache[$table]);
 	}
-
-	return $sql->query($query);
+	$results = $sql->query($query);
+	switch ($type){
+		case DM_MULTI:
+			return $results;
+			break;
+		case DM_SINGLE:
+			return $results[0];
+			break;
+		case DM_COUNT:
+			return count($results);
+			break;
+	}
 }
 
 function DMdebuglog($log){
