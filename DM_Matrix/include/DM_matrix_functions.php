@@ -433,28 +433,30 @@ function deleteSchemaField($name,$fields=array(),$save=true){
 function getSchemaTable($name,$query=''){
 	global $returnArray;
 	$table=array();
-	$path = GSSCHEMAPATH.'/'.$name."/";
-	  $dir_handle = @opendir($path) or die("Unable to open $path");
-	  $filenames = array();
-	  while ($filename = readdir($dir_handle)) {
-		$ext = substr($filename, strrpos($filename, '.') + 1);
-		$fname=substr($filename,0, strrpos($filename, '.'));
-		if ($ext=="xml"){
-			$thisfile_DM_Matrix = file_get_contents($path.$filename);
-			$data = simplexml_load_string($thisfile_DM_Matrix);
-			//$count++;   
-			$id=$data->item;
-			$idNum=$id->id;
-			foreach ($id->children() as $opt=>$val) {
-				//$pagesArray[(string)$key][(string)$opt]=(string)$val;
-				$table[(int)$idNum][(string)$opt]=(string)$val;
-			}		
+	if (is_dir(GSSCHEMAPATH.'/'.$name."/")){
+		$path = GSSCHEMAPATH.'/'.$name."/";
+		  $dir_handle = @opendir($path) or die("Unable to open $path");
+		  $filenames = array();
+		  while ($filename = readdir($dir_handle)) {
+			$ext = substr($filename, strrpos($filename, '.') + 1);
+			$fname=substr($filename,0, strrpos($filename, '.'));
+			if ($ext=="xml"){
+				$thisfile_DM_Matrix = file_get_contents($path.$filename);
+				$data = simplexml_load_string($thisfile_DM_Matrix);
+				//$count++;   
+				$id=$data->item;
+				$idNum=$id->id;
+				foreach ($id->children() as $opt=>$val) {
+					//$pagesArray[(string)$key][(string)$opt]=(string)$val;
+					$table[(int)$idNum][(string)$opt]=(string)$val;
+				}		
+			}
+		  }
+		if ($query!=''){
+			$returnArray=$table;
+			$sql=new sql4array();
+			$table = $sql->query($query);
 		}
-	  }
-	if ($query!=''){
-		$returnArray=$table;
-		$sql=new sql4array();
-		$table = $sql->query($query);
 	}
 	return $table;
 }
@@ -881,7 +883,11 @@ function DM_query($query,$type=DM_MULTI,$cache=true){
 			return $results;
 			break;
 		case DM_SINGLE:
-			return $results[0];
+			if (count($results)){
+				return $results[0];
+			} else {
+				return $results;
+			}
 			break;
 		case DM_COUNT:
 			return count($results);

@@ -472,8 +472,9 @@ class sql4array
 					}
 					else
 					{
-						foreach ($this->parse_select_as as $key => $value) $temp[$key] = $row[$value];
-
+						foreach ($this->parse_select_as as $key => $value) {
+							$temp[$key] = array_key_exists($value, $row) ? $row[$value] : '';
+						}
 						if ($this->distinct_query && in_array($temp, $distinct)) continue;
 						else  $this->response[] = $temp;
 
