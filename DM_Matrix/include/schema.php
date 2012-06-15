@@ -41,15 +41,15 @@
 				}
 				if ($numRecords==0 && $schema!='_routes'){
 		  		// todo: add drop table functionality
-					 echo " <a href='load.php?id=DM_Matrix&action=matrix_manager&schema&drop=".$schema."' class='askconfirm' title='Delete Table $schema ?'>";
-					 echo "<img src='../plugins/DM_Matrix/images/delete.png' title='Delete Table $schema' /></a>";
+					 echo " <a href='load.php?id=DM_Matrix&action=matrix_manager&schema&drop=".$schema."' class='askconfirm' title='".i18n_r($thisfile_DM_Matrix.'/DM_DELETE_TABLE')." $schema ?'>";
+					 echo "<img src='../plugins/DM_Matrix/images/delete.png' title='".i18n_r($thisfile_DM_Matrix.'/DM_DELETE_TABLE')." $schema' /></a>";
 				}        
 				echo "</td></tr>";
 		$tables++;
 			//}
 		}
 	if ($tables==0){
-	  echo '<tr><td colspan="4">No Tables defined</td></tr>';	
+	  echo '<tr><td colspan="4">'.i18n_r($thisfile_DM_Matrix.'/DM_NOTABLES').'</td></tr>';	
 	}		
 		?>
 		</tbody>
@@ -78,10 +78,10 @@
 				<p class="description"><?php echo i18n_r($thisfile_DM_Matrix.'/DM_ADDTABLE_DESC') ?></p>
 				<input type="text" class="required" id="post-addtable" name="post-addtable" />	
 				<br/><br/>
-				<p class="description">Max Number of records, leave blank for unlimited</p>
+				<p class="description"><?php echo i18n_r($thisfile_DM_Matrix.'/DM_MAXRECORDS') ?></p>
 				<input type="text" id="post-maxrecords" name="post-maxrecords" />	
 				<br/><br/>
-				<button id="Inputfield_submit" class="mtrx_but_add form_submit" name="addtable" id="addtable" value="Submit" type="button">Add Table</button>
+				<button id="Inputfield_submit" class="mtrx_but_add form_submit" name="addtable" id="addtable" value="Submit" type="button"><?php echo i18n_r($thisfile_DM_Matrix.'/DM_ADD_TABLE_BUTTON') ?></button>
 			</div>
 		</li>
 		</ul>

@@ -24,6 +24,7 @@ $i18n = array (
 	"DM_ADDTABLE_DESC"=>  "Enter a name for your new Table",
 	"DM_ADDRECORD"=>  "Add Record",
 	"DM_EDITTABLE"=>  "Edit table",
+	"DM_ADD_TABLE_BUTTON" => "Add Table",
 // Column Names
 	"DM_NAME" => "Name",
 	"DM_TYPE" => "Type", 
@@ -31,6 +32,9 @@ $i18n = array (
 	"DM_RECORD" => "record",
 	"DM_EDITING" => "Editing ",
 	"DM_ADD_NEW" => "Add New ",
+	"DM_DELETE_TABLE" => "Delete Table",
+	"DM_NOTABLES" => "No Tables defined",
+	"DM_MAXRECORDS" => "Max Number of records, leave blank for unlimited",
 // View Form Fields
 	"DM_MANAGE_ROUTES" => "Manage Routes",
 	"DM_MANAGE_RECORDS" => "Manage Records: ",
