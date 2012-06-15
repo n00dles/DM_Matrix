@@ -205,6 +205,10 @@ function addRecordFromForm($table){
 			{
 				$data=DM_manipulate($_POST["post-".$field], $type); 
 				$tempArray[(string)$field]=$data;
+			} else {
+				if (!isset($_POST["post-".$field]) && $type=='checkbox'){
+					$tempArray[(string)$field]='0';
+				}
 			}
 		}
 
@@ -226,6 +230,10 @@ function updateRecordFromForm($table){
 			{
 				$data=DM_manipulate($_POST["post-".$field], $type); 
 				$tempArray[(string)$field]=$data;
+			} else {
+				if (!isset($_POST["post-".$field]) && $type=='checkbox'){
+					$tempArray[(string)$field]='0';
+				}
 			}
 		}
 
@@ -254,7 +262,10 @@ function DM_manipulate($field, $type){
 			break;
 		case "codeeditor":
 			return safe_slash_html($field);
-			break;				
+			break;	
+		case "checkbox":
+			return "1";
+			break;			
 		default: 
 			return $field;
 	}
@@ -706,7 +717,7 @@ function displayFieldType($name, $type, $schema,$value=''){
 		// Checkbox
 		case "checkbox":
 			$label=$schemaArray[$schema]['label'][$name];
-			echo '<p><input id="post-'.$name.'" class="required" name="post-'.$name.'" type="checkbox" '. ($value=='on' ? 'checked' : '') .'> '.$label.'</p>';
+			echo '<p><input id="post-'.$name.'" class="required" name="post-'.$name.'" type="checkbox" '. ($value=='1' ? 'checked' : '') .'> '.$label.'</p>';
 			break;
 		// Dropdown box of existing pages on the site. Values are skug/url 
 		case "pages":
