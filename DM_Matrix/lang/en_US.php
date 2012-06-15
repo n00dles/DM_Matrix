@@ -28,6 +28,10 @@ $i18n = array (
 	"DM_NAME" => "Name",
 	"DM_TYPE" => "Type", 
 	"DM_OPTIONS" => "Options",
+// View Form Fields
+	"DM_MANAGE_ROUTES" => "Manage Routes",
+	"DM_MANAGE_RECORDS" => "Manage Records: ",
+	"DM_ADD_RECORD_BUTTON" => "Add Record",
 // Edit Form Fields
 	"DM_NAME_DESC" => "Any combination of ASCII letters [a-z], numbers [0-9], or underscores (no dashes or spaces).",
 	"DM_TYPE_DESC" => "After selecting your field type, you may be presented with additional configuration options specific to the field type you selected.",

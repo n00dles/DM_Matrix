@@ -15,13 +15,13 @@
 		  }
 		}
 		if ($table=='_routes'){
-			echo "<h2>Manage Routes</h2>";
+			echo "<h2>".i18n_r($thisfile_DM_Matrix.'/DM_MANAGE_ROUTES')."</h2>";
 		} else {
-			echo "<h2>Manage Records: ".$table."</h2>";
+			echo "<h2>".i18n_r($thisfile_DM_Matrix.'/DM_MANAGE_RECORDS').$table."</h2>";
 		}
 	?>
 		<table id="editpages" class="tablesorter">
-		<thead><tr><?php echo $tableheader; ?><th>Opts</th></tr></thead>
+		<thead><tr><?php echo $tableheader; ?><th><?php echo i18n_r($thisfile_DM_Matrix.'/DM_OPTIONS'); ?></th></tr></thead>
 		<tbody>
 		<?php 
 		getPagesXmlValues();
@@ -65,7 +65,7 @@
 	$maxRecords=$schemaArray[$table]['maxrecords'];
 	
 	if ($maxRecords==0 or $numRecords < $maxRecords){
-		echo "<a class='mtrx_but_add' id='matrix_recordadd' href='load.php?id=DM_Matrix&action=matrix_manager&add=".$table."'>Add Record</a>";
+		echo "<a class='mtrx_but_add' id='matrix_recordadd' href='load.php?id=DM_Matrix&action=matrix_manager&add=".$table."'>".i18n_r($thisfile_DM_Matrix.'/DM_ADD_RECORD_BUTTON')."</a>";
 	} else {
 		echo "<p class='error'>Max Number of Records Reached</p>";
 	}
