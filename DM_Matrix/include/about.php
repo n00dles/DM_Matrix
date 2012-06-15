@@ -5,7 +5,6 @@
 	<p><strong>A big thank you to the following contributers</strong>
 	<br/>shawn_a 
 	<br/>outflux3
-	<br/>alienee
 	<br/>angryboy
 	</p>
 	<p><strong>TheMatrix makes use of the following scripts and code</strong>
