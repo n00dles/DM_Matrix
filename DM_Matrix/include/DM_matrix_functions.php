@@ -464,17 +464,19 @@ function getSchemaTable($name,$query=''){
 
 function DM_getRecord($name, $record){
 	$table=array();
-	$path = GSSCHEMAPATH.'/'.$name."/";
-	$filename=$record.".xml";
-	$thisfile_DM_Matrix = file_get_contents($path.$filename);
-	$data = simplexml_load_string($thisfile_DM_Matrix);
-	 //$count++;   
-	$id=$data->item;
-	$idNum=$id->id;
-	foreach ($id->children() as $opt=>$val) {
-		   //$pagesArray[(string)$key][(string)$opt]=(string)$val;
-		$table[(string)$opt]=(string)$val;
-	}		
+	if (is_dir(GSSCHEMAPATH.'/'.$name."/")){
+		$path = GSSCHEMAPATH.'/'.$name."/";
+		$filename=$record.".xml";
+		$thisfile_DM_Matrix = file_get_contents($path.$filename);
+		$data = simplexml_load_string($thisfile_DM_Matrix);
+		 //$count++;   
+		$id=$data->item;
+		$idNum=$id->id;
+		foreach ($id->children() as $opt=>$val) {
+			   //$pagesArray[(string)$key][(string)$opt]=(string)$val;
+			$table[(string)$opt]=(string)$val;
+		}		
+	}
 	return $table;
 }
 
@@ -482,15 +484,17 @@ function DM_getRecord($name, $record){
 // get the number of records for a given table. 
 function DM_getNumRecords($table){
 	$numRecords=0;
-	  $path = GSSCHEMAPATH.'/'.$table."/";
-	  $dir_handle = @opendir($path) or die("Unable to open $path");
-	  while ($filename = readdir($dir_handle)) {
-		$ext = substr($filename, strrpos($filename, '.') + 1);
-		if ($ext=="xml"){
-			$numRecords++;	
+	if (is_dir(GSSCHEMAPATH.'/'.$table."/")){
+		$path = GSSCHEMAPATH.'/'.$table."/";
+		$dir_handle = @opendir($path) or die("Unable to open $path");
+		while ($filename = readdir($dir_handle)) {
+			$ext = substr($filename, strrpos($filename, '.') + 1);
+			if ($ext=="xml"){
+				$numRecords++;	
+			}
 		}
-	  }		
-	  return $numRecords;
+	}		
+	return $numRecords;
 }
 
 
