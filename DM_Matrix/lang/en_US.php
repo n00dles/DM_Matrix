@@ -28,6 +28,9 @@ $i18n = array (
 	"DM_NAME" => "Name",
 	"DM_TYPE" => "Type", 
 	"DM_OPTIONS" => "Options",
+	"DM_RECORD" => "record",
+	"DM_EDITING" => "Editing ",
+	"DM_ADD_NEW" => "Add New ",
 // View Form Fields
 	"DM_MANAGE_ROUTES" => "Manage Routes",
 	"DM_MANAGE_RECORDS" => "Manage Records: ",
