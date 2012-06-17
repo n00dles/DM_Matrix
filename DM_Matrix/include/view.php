@@ -38,7 +38,17 @@
 				$data= isset($mytable[$key][$field['name']]) ? date(i18n('DATE_FORMAT',false),$mytable[$key][$field['name']]) : '<b>NULL</b>';
 			  } elseif ($field['type']=='datetimepicker') {
 				$data= isset($mytable[$key][$field['name']]) ? date(i18n('DATE_FORMAT',false).' H:i',$mytable[$key][$field['name']]) : '<b>NULL</b>';
-			  } else {
+			  } elseif ($field['type']=='image') {
+			  	if (isset($mytable[$key][$field['name']])){
+			  		$file=$mytable[$key][$field['name']];
+					$file = str_replace('/uploads/','/thumbs/', $file);
+					$path_parts = pathinfo($file);
+					$file = str_replace($path_parts['filename'], 'thumbsm.'.$path_parts['filename'], $file);
+			  		$data='<img src="'.$file.'" alt="'.$mytable[$key][$field['name']].'" title="'.$mytable[$key][$field['name']].'" />';
+			  	} else {
+			  		$data='';
+			  	}
+			  }	else {
 				$data= isset($mytable[$key][$field['name']]) ? $mytable[$key][$field['name']] : '<b>NULL</b>';
 			  }
 			  echo "<td>".$data."</td>"; 
