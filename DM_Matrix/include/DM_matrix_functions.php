@@ -700,28 +700,28 @@ function displayFieldType($name, $type, $schema,$value=''){
 	switch ($type){
 		// int field
 		case "int":
-			echo '<p><input id="post-'.$name.'" class="required" name="post-'.$name.'" type="text" size="50" maxlength="128" value="'.$value.'"></p>';
+			echo '<p><input id="post-'.$name.'" class="required DM_int" name="post-'.$name.'" type="text" size="50" maxlength="128" value="'.$value.'"></p>';
 			break; 		
 	// normal text field
 		case "text":
-			echo '<p><input id="post-'.$name.'" class="required" name="post-'.$name.'" type="text" size="50" maxlength="128" value="'.$value.'"></p>';
+			echo '<p><input id="post-'.$name.'" class="required DM_text" name="post-'.$name.'" type="text" size="50" maxlength="128" value="'.$value.'"></p>';
 			break; 
 		// long text field, full width		
 		case "textlong":
-			echo '<p><input id="post-'.$name.'" class="required" name="post-'.$name.'" type="text" size="115" maxlength="128" value="'.$value.'"></p>';
+			echo '<p><input id="post-'.$name.'" class="required DM_textlong" name="post-'.$name.'" type="text" size="115" maxlength="128" value="'.$value.'"></p>';
 			break;
 		// Slug/Title
 		case "slug":
-			echo '<p><input id="post-'.$name.'" class="required" name="post-'.$name.'" type="text" size="115" onkeyup="makeSlug(\'post-'.$name.'\');" maxlength="128" value="'.$value.'"></p>';
+			echo '<p><input id="post-'.$name.'" class="required DM_slug" name="post-'.$name.'" type="text" size="115" onkeyup="makeSlug(\'post-'.$name.'\');" maxlength="128" value="'.$value.'"></p>';
 			break;
 		// Checkbox
 		case "checkbox":
 			$label=$schemaArray[$schema]['label'][$name];
-			echo '<p><input id="post-'.$name.'" class="required" name="post-'.$name.'" type="checkbox" '. ($value=='1' ? 'checked' : '') .'> '.$label.'</p>';
+			echo '<p><input id="post-'.$name.'" class="required DM_checkbox" name="post-'.$name.'" type="checkbox" '. ($value=='1' ? 'checked' : '') .'> '.$label.'</p>';
 			break;
 		// Dropdown box of existing pages on the site. Values are skug/url 
 		case "pages":
-			echo '<p><select id="post-'.$name.'" name="post-'.$name.'">';
+			echo '<p><select id="post-'.$name.'" name="post-'.$name.'" classs="DM_pages">';
 			echo '<option value=""></option>';
 			foreach ($pagesArray as $page){
 				$page['url']==$value ? $options=' selected ' : $options='';
@@ -746,18 +746,18 @@ function displayFieldType($name, $type, $schema,$value=''){
 				$file==$value ? $options=' selected ' : $options='';			
 				$theme_templates .= '<option value="'.$file.'" '.$options.'>'.$file.'</option>';
 			}
-			echo '<p><select  id="post-'.$name.'" name="post-'.$name.'">';
+			echo '<p><select  id="post-'.$name.'" name="post-'.$name.'" class="DM_templates" >';
 			echo $theme_templates;
 			echo '</select></p>';
 			break;
 		// Datepicker. Use settings page to set the front end date format, saved as Unix timestamp
 		case "datepicker";
-				echo '<p><input id="post-'.$name.'" class="datepicker required" name="post-'.$name.'" type="text" size="50" maxlength="128" value="'. ((isset($value) and  $value!='') ? date(i18n('DATE_FORMAT',false),(int)$value) : '') .'"></p>';
+				echo '<p><input id="post-'.$name.'" class="datepicker required DM_datepicker" name="post-'.$name.'" type="text" size="50" maxlength="128" value="'. ((isset($value) and  $value!='') ? date(i18n('DATE_FORMAT',false),(int)$value) : '') .'"></p>';
        			$datetimepick=true;
 			break;
 		// DateTimepicker. Use settings page to set the front end date format, saved as Unix timestamp
 		case "datetimepicker";
-			echo '<p><input id="post-'.$name.'" class="datetimepicker required" name="post-'.$name.'" type="text" size="50" maxlength="128"  value="'. ((isset($value) and  $value!='') ? date(i18n('DATE_FORMAT',false).' H:i',(int)$value) : '') .'"></p>';  
+			echo '<p><input id="post-'.$name.'" class="datetimepicker required  DM_datetimepicker" name="post-'.$name.'" type="text" size="50" maxlength="128"  value="'. ((isset($value) and  $value!='') ? date(i18n('DATE_FORMAT',false).' H:i',(int)$value) : '') .'"></p>';  
        		$datepick=true;
 			break;
 		// Dropdown from another Table/column 
@@ -765,7 +765,7 @@ function displayFieldType($name, $type, $schema,$value=''){
 			$table=$schemaArray[$schema]['table'][$name];
 			$column=$schemaArray[$schema]['row'][$name];
 			$maintable=getSchemaTable($table);
-			echo '<p><select  id="post-'.$name.'" name="post-'.$name.'">';
+			echo '<p><select  id="post-'.$name.'" name="post-'.$name.'" class="DM_dropdown" >';
 			echo '<option></option>';
 			foreach ($maintable as $row){
 				if(isset($row[$column])){
@@ -776,7 +776,7 @@ function displayFieldType($name, $type, $schema,$value=''){
 			echo '</select></p>';
 			break;
 		case 'image':
-			echo '<p><input class="text imagepicker" type="text" id="post-'.$name.'" name="post-'.$name.'"  value="'.$value.'" />';
+			echo '<p><input class="text imagepicker DM_imagepicker" type="text" id="post-'.$name.'" name="post-'.$name.'"  value="'.$value.'" />';
 			echo ' <span class="edit-nav"><a id="browse-'.$name.'" href="javascript:void(0);">Browse</a></span>';
 			echo '<div id="image-'.$name.'"></div>';
 			echo '</p>'; 
@@ -792,7 +792,7 @@ function displayFieldType($name, $type, $schema,$value=''){
 		<?php
 		break;
 		case 'filepicker':
-			echo '<p><input class="text imagepicker" type="text" id="post-'.$name.'" name="post-'.$name.'"  value="'.$value.'" />';
+			echo '<p><input class="text imagepicker DM_filepicker" type="text" id="post-'.$name.'" name="post-'.$name.'"  value="'.$value.'" />';
 			echo ' <span class="edit-nav"><a id="browse-'.$name.'" href="javascript:void(0);">Browse</a></span>';
 			echo '</p>'; 
 		
@@ -808,17 +808,17 @@ function displayFieldType($name, $type, $schema,$value=''){
 		break;
 		// Textarea converted to a code editor.
 		case "codeeditor":
-			echo '<p><textarea class="codeeditor" id="post-'.$name.'" name="post-'.$name.'" style="width:513px;height:200px;border: 1px solid #AAAAAA;">'.$value.'</textarea></p>';
+			echo '<p><textarea class="codeeditor DM_codeeditor" id="post-'.$name.'" name="post-'.$name.'" style="width:513px;height:200px;border: 1px solid #AAAAAA;">'.$value.'</textarea></p>';
 			$codeedit=true;
 			break;
 		// texteditor converted to CKEditor
 		case "texteditor":
 		case "wysiwyg":
-			echo '<p><textarea class="DMckeditor" id="post-'.$name.'" name="post-'.$name.'" style="width:513px;height:200px;border: 1px solid #AAAAAA;">'.$value.'</textarea></p>';
+			echo '<p><textarea class="DMckeditor  DM_wysiwyg" id="post-'.$name.'" name="post-'.$name.'" style="width:513px;height:200px;border: 1px solid #AAAAAA;">'.$value.'</textarea></p>';
 			break;
 		// Textarea Plain
 		case "textarea":
-			echo '<p><textarea class="textarea" id="post-'.$name.'" name="post-'.$name.'" style="width:513px;height:200px;border: 1px solid #AAAAAA;">'.$value.'</textarea></p>';
+			echo '<p><textarea class=" DM_textarea" id="post-'.$name.'" name="post-'.$name.'" style="width:513px;height:200px;border: 1px solid #AAAAAA;">'.$value.'</textarea></p>';
 			
 			break;
 		default:
