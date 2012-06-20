@@ -721,7 +721,7 @@ function displayFieldType($name, $type, $schema,$value=''){
 			break;
 		// Dropdown box of existing pages on the site. Values are skug/url 
 		case "pages":
-			echo '<p><select id="post-'.$name.'" name="post-'.$name.'" classs="DM_pages">';
+			echo '<p><select id="post-'.$name.'" name="post-'.$name.'" class="DM_pages">';
 			echo '<option value=""></option>';
 			foreach ($pagesArray as $page){
 				$page['url']==$value ? $options=' selected ' : $options='';
