@@ -556,6 +556,7 @@ function DM_editForm($table, $record){
 </ul>
 <?php
 DM_outputCKHeader();	
+
 }
 
 
@@ -587,8 +588,9 @@ function DM_outputCKHeader(){
 			<script type="text/javascript">
 			
 			CKEDITOR.replaceAll(function(textarea,config){
+				
 				// converts all textareas with class of 'DMckeditor' to ckeditor instances.
-				if (textarea.className!="DMckeditor") return false; //for only assign a class
+				if (textarea.className.search("DMckeditor")) return false; //for only assign a class
 				jQuery.extend(config,
 				{
 					forcePasteAsPlainText : true,
@@ -814,11 +816,11 @@ function displayFieldType($name, $type, $schema,$value=''){
 		// texteditor converted to CKEditor
 		case "texteditor":
 		case "wysiwyg":
-			echo '<p><textarea class="DMckeditor  DM_wysiwyg" id="post-'.$name.'" name="post-'.$name.'" style="width:513px;height:200px;border: 1px solid #AAAAAA;">'.$value.'</textarea></p>';
+			echo '<p><textarea class="DMckeditor wysiwyg" id="post-'.$name.'" name="post-'.$name.'" style="width:513px;height:200px;border: 1px solid #AAAAAA;">'.$value.'</textarea></p>';
 			break;
 		// Textarea Plain
 		case "textarea":
-			echo '<p><textarea class=" DM_textarea" id="post-'.$name.'" name="post-'.$name.'" style="width:513px;height:200px;border: 1px solid #AAAAAA;">'.$value.'</textarea></p>';
+			echo '<p><textarea class="DM_textarea textarea" id="post-'.$name.'" name="post-'.$name.'" style="width:513px;height:200px;border: 1px solid #AAAAAA;">'.$value.'</textarea></p>';
 			
 			break;
 		default:
