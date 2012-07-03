@@ -141,13 +141,16 @@ function createRecord($name,$data=array()){
 	$id=getNextRecord($name);
 	DMdebuglog('record:'.$id);
 	$file=GSSCHEMAPATH.'/'.$name."/".$id.".xml";
-	$xml = @new SimpleXMLExtended('<channel></channel>');
+	$xml = new SimpleXMLExtended('<?xml version="1.0" encoding="UTF-8"?><channel></channel>');
 	$pages = $xml->addChild('item');
-	$pages->addChild('id',$id);
+	$pages>addChild('id',$id);
 	foreach ($data as $field=>$txt){
-		$pages->addChild($field,$txt);	
+		//$pages->addChild($field,$txt);	
+		$item = $pages->addChild($field);
+		$item->addCData($txt);
 	}
-	$xml->asXML($file);
+	//$xml->asXML($file);
+	XMLsave($xml, $file);
 	DMdebuglog('file:'.$file);
 	$schemaArray[$name]['id']=$id+1;
 	$ret=DM_saveSchema();
@@ -258,6 +261,9 @@ function DM_manipulate($field, $type){
 			return safe_slash_html($field);
 			break;
 		case "textarea":
+			return safe_slash_html($field);
+			break;
+		case "wysiwyg":
 			return safe_slash_html($field);
 			break;
 		case "codeeditor":
@@ -523,10 +529,10 @@ function DM_editForm($table, $record){
 	?>
 	
 		<li class="InputfieldName Inputfield_name ui-widget" id="wrap_Inputfield_name">
-			<label class="ui-widget-header fieldstateToggle" for="Inputfield_name"><?php echo $field; ?></label>
+			<label class="ui-widget-header fieldstateToggle" for="Inputfield_name"><?php echo $schemaArray[$table]['label'][$field]; ?></label>
 			<div class="ui-widget-content">
 				<p class="description"><?php echo $schemaArray[$table]['desc'][$field]; ?></p>
-				<?php displayFieldType($field, $value,$table,isset($formValues[$field]) ? $formValues[$field]:''); ?>
+				<?php displayFieldType($field, $value,$table,isset($formValues[$field]) ? stripslashes($formValues[$field]):''); ?>
 			</div>
 		</li>
 	
@@ -646,7 +652,7 @@ function DM_createForm($name){
 		?>
 		
 			<li class="InputfieldName Inputfield_name ui-widget" id="wrap_Inputfield_name">
-				<label class="ui-widget-header fieldstateToggle" for="Inputfield_name"><?php echo $field; ?></label>
+				<label class="ui-widget-header fieldstateToggle" for="Inputfield_name"><?php echo $schemaArray[$name]['label'][$field]; ?></label>
 				<div class="ui-widget-content">
 					<p class="description"><?php echo $schemaArray[$name]['desc'][$field]; ?></p>
 					<?php displayFieldType($field, $value,$name); ?>
