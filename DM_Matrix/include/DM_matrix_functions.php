@@ -143,7 +143,7 @@ function createRecord($name,$data=array()){
 	$file=GSSCHEMAPATH.'/'.$name."/".$id.".xml";
 	$xml = new SimpleXMLExtended('<?xml version="1.0" encoding="UTF-8"?><channel></channel>');
 	$pages = $xml->addChild('item');
-	$pages>addChild('id',$id);
+	$item = $pages->addChild('id',$id);
 	foreach ($data as $field=>$txt){
 		//$pages->addChild($field,$txt);	
 		$item = $pages->addChild($field);
