@@ -69,12 +69,24 @@ function DM_getSchema($flag=false){
 					$label=(string)$att['label'];
 					$cacheindex=(string)$att['cacheindex'];
 					$tableview=(string)$att['tableview'];
+					$fieldsize=(string)$att['fieldsize'];
+					$fieldvisibility=(string)$att['fieldvisibility'];
+					
+					// fix for new additions fieldsize & fieldvisibility
+					if ($fieldsize==""){
+						$fieldsize="100";
+					}
+					if ($fieldvisibility==""){
+						$fieldvisibility="1";
+					}
 					
 					$schemaArray[(string)$key]['fields'][(string)$field]=(string)$type;
 					$schemaArray[(string)$key]['desc'][(string)$field]=(string)$desc;
 					$schemaArray[(string)$key]['label'][(string)$field]=(string)$label;
 					$schemaArray[(string)$key]['cacheindex'][(string)$field]=(string)$cacheindex;
 					$schemaArray[(string)$key]['tableview'][(string)$field]=(string)$tableview;
+					$schemaArray[(string)$key]['fieldsize'][(string)$field]=(string)$fieldsize;
+					$schemaArray[(string)$key]['fieldvisibility'][(string)$field]=(string)$fieldvisibility;
 					
 					if ((string)$type=="dropdown"){
 						$schemaArray[(string)$key]['table'][(string)$field]=(string)$att['table'];;
@@ -115,6 +127,8 @@ function DM_saveSchema(){
 				$field->addAttribute('cacheindex',@$schemaArray[$table]['cacheindex'][(string)$field]);
 				$field->addAttribute('description',@$schemaArray[$table]['desc'][(string)$field]);
 				$field->addAttribute('label',@$schemaArray[$table]['label'][(string)$field]);
+				$field->addAttribute('size',@$schemaArray[$table]['fieldsize'][(string)$field]);
+				$field->addAttribute('visibility',@$schemaArray[$table]['fieldvisibility'][(string)$field]);
 				
 				if ($type=='dropdown'){
 					$field->addAttribute('table',@$schemaArray[$table]['table'][(string)$field]);
@@ -138,23 +152,29 @@ function DM_saveSchema(){
 
 function createRecord($name,$data=array()){
 	global $schemaArray;
-	$id=getNextRecord($name);
-	DMdebuglog('record:'.$id);
-	$file=GSSCHEMAPATH.'/'.$name."/".$id.".xml";
-	$xml = new SimpleXMLExtended('<?xml version="1.0" encoding="UTF-8"?><channel></channel>');
-	$pages = $xml->addChild('item');
-	$item = $pages->addChild('id',$id);
-	foreach ($data as $field=>$txt){
-		//$pages->addChild($field,$txt);	
-		$item = $pages->addChild($field);
-		$item->addCData($txt);
+	if (@is_array($schemaArray[$name])){
+		$id=getNextRecord($name);
+		$data['id']=$id;
+		DMdebuglog('record:'.$id);
+		$file=GSSCHEMAPATH.'/'.$name."/".$id.".xml";
+		$xml = new SimpleXMLExtended('<?xml version="1.0" encoding="UTF-8"?><channel></channel>');
+		$pages = $xml->addChild('item');
+		foreach ($schemaArray[$name]['fields'] as $field=>$value){
+			if (array_key_exists($field, $data)){
+				$txt=DM_manipulate($data[$field],$value);
+			} else {
+				$txt="";
+			}
+			$item = $pages->addChild($field,$txt);
+		}
+		XMLsave($xml, $file);
+		DMdebuglog('file:'.$file);
+		$schemaArray[$name]['id']=$id+1;
+		$ret=DM_saveSchema();
+		return $ret;
+	} else {
+		DMdebuglog('Table does not exist: '.$name);
 	}
-	//$xml->asXML($file);
-	XMLsave($xml, $file);
-	DMdebuglog('file:'.$file);
-	$schemaArray[$name]['id']=$id+1;
-	$ret=DM_saveSchema();
-	return $ret;
 }
 
 /**
@@ -269,6 +289,12 @@ function DM_manipulate($field, $type){
 		case "codeeditor":
 			return safe_slash_html($field);
 			break;	
+		case "text":
+			return safe_slash_html($field);
+			break;
+		case "textlong":
+			return safe_slash_html($field);
+			break;
 		case "checkbox":
 			return "1";
 			break;			
@@ -310,7 +336,6 @@ function updateRecord($table,$record,$data=array()){
 	$file=GSSCHEMAPATH.'/'.$table."/".$record.".xml";
 	$xml = @new SimpleXMLExtended('<channel></channel>');
 	$pages = $xml->addChild('item');
-	$pages->addChild('id',$record);
 	foreach ($data as $field=>$txt){
 		$pages->addChild($field,$txt);	
 	}
@@ -406,7 +431,9 @@ function addSchemaField($name,$fields=array(),$save=true){
 	'cacheindex' => 'cacheindex',
 	'tableview' => 'tableview',
 	'table' => 'table',
-	'row' => 'row'	
+	'row' => 'row',
+	'fieldsize' => 'fieldsize',
+	'fieldvisibility' => 'fieldvisibility'
 	);
 	
 	foreach($fields as $key=>$value){

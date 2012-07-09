@@ -35,6 +35,9 @@
 			$formHeading = $schemaArray[$_GET['edit']]['desc'][$_GET['field']];
 			$formCacheIndex = $schemaArray[$_GET['edit']]['cacheindex'][$_GET['field']];
 			$formTableView = $schemaArray[$_GET['edit']]['tableview'][$_GET['field']];
+			$formSize  = $schemaArray[$_GET['edit']]['fieldsize'][$_GET['field']]; 
+			$formVisibility = $schemaArray[$_GET['edit']]['fieldvisibility'][$_GET['field']];
+			
 			if ($formType=='dropdown'){
 				$formTable = $schemaArray[$_GET['edit']]['table'][$_GET['field']];
 				$formTableRow = $schemaArray[$_GET['edit']]['row'][$_GET['field']];
@@ -54,6 +57,8 @@
 			$formTableView = "";
 			$formTable = "";
 			$formTableRow = "";
+			$formSize  = ""; 
+			$formVisibility = "";
 		}
 		?>
 		<ul class="fields">
@@ -62,6 +67,26 @@
 				<div class="ui-widget-content">
 					<p class="description"><?php echo i18n_r($thisfile_DM_Matrix.'/DM_NAME_DESC'); ?></p>
 					<input type="text" id="post-name" name="post-name" class="required" size="25" <?php echo " value='".$formName."'"; ?> >
+				</div>
+			</li>
+			<li class="ui-widget fieldstateCollapsed" id="wrap_Inputfield_name">
+				<label class="ui-widget-header fieldstateToggle " for="Inputfield_name"><?php echo i18n_r($thisfile_DM_Matrix.'/DM_FIELDOPTIONS'); ?></label>
+				<div class="ui-widget-content">
+					<p class="description"><?php echo i18n_r($thisfile_DM_Matrix.'/DM_FIELDSIZE'); ?></p>
+					<select id="post-size" name="post-size">
+						<option value="100">100%</option>
+						<option value="75">75%</option>
+						<option value="50">50%</option>
+						<option value="25">25%</option>
+					</select>
+					
+					<p class="description" style="padding-top:15px;"><?php echo i18n_r($thisfile_DM_Matrix.'/DM_FIELDVIEW'); ?></p>
+					<select  id="post-visibility" name="post-visibility">
+						<option value="1">Always Open (default)</option>
+						<option value="2">Always Closed</option>
+						<option value="3">Closed if Blank</option>
+						<option value="4">Closed if Populated</option>
+					</select>
 				</div>
 			</li>
 			<li class="ui-widget" id="wrap_Inputfield_name">

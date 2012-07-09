@@ -176,8 +176,6 @@ if (isset($_GET['schema']) && isset($_GET['drop'])){
 }
 
 
-
-
 if (!tableExists('_routes')){
 	DMdebuglog('Creating table _routes ');
 	$ret = createSchemaTable('_routes','0',array('route'=>'text','rewrite'=>'text'));
@@ -195,6 +193,17 @@ if (isset($_GET['edit']) && isset($_GET['addfield'])){
 	} else {
 		$tableview=0;
 	}
+	if (isset($_POST['post-size'])){
+		$fieldsize=$_POST['post-size'];
+	} else {
+		$fieldsize=100;
+	}
+	if (isset($_POST['post-visibility'])){
+		$fieldvisibility=$_POST['post-visibility'];
+	} else {
+		$fieldvisibility=1;
+	}
+	
 	
 	$field=array(
 		'name'=>$_POST['post-name'],
@@ -202,7 +211,9 @@ if (isset($_GET['edit']) && isset($_GET['addfield'])){
 		'label'=>$_POST['post-label'],
 		'description'=>$_POST['post-desc'],
 		'cacheindex'=>$cacheindex,
-		'tableview'=>$tableview
+		'tableview'=>$tableview,
+		'fieldsize'=>$fieldsize,
+		'fieldvisibility'=>$fieldvisibility
 	);
 	if ($_POST['post-type']=='dropdown'){
 		$field['table']=$_POST['post-table'];
