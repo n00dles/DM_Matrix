@@ -27,6 +27,9 @@ $("#editpages").tablesorter({
 
 $('.askconfirm').jConfirmAction();
 
+// add table sorting to the edit table form.
+$(".tablereorder").tableDnD();
+
 //$('#nav_DM_Matrix').insertAfter($('#nav_pages'));
 
 $("button.form_submit").on("click", function(){

@@ -116,6 +116,8 @@ if (isset($_GET['id']) && $_GET['id']=="DM_Matrix"){
 	register_script('askconfirm', $SITEURL.'plugins/DM_Matrix/js/jconfirm.jquery.js', '0.2.0', FALSE);
 	queue_script('askconfirm', GSBACK);
 	
+	register_script('tablednd', $SITEURL.'plugins/DM_Matrix/js/tablednd.js', '0.2.0', FALSE);
+	queue_script('tablednd', GSBACK);
 }
 
 add_action('nav-tab','createNavTab',array('DM_Matrix','DM_Matrix','The Matrix','action=matrix_manager&schema'));
