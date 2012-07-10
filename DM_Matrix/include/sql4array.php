@@ -353,15 +353,19 @@ class sql4array
 
 			/**
 			 * Basics SQL operators
+			 *
+			 * (([FUNCTION]+)(\())?([FIELDNAME]+)(\))?(SPACE)+(OPERATOR)(SPACE)+(QUOTES)(VALUE)(QUOTES)(SPACE)* CASE INSENSITIVE
+			 * *see header for functions
 			 */
-			$patterns[] = '/(([a-zA-Z0-9\._]+)(\())?([a-zA-Z0-9\.]+)(\))?(\s)+(=|IS)(\s)+([[:digit:]]+)(\s)*/ie';
-			$patterns[] = '/(([a-zA-Z0-9\._]+)(\())?([a-zA-Z0-9\.]+)(\))?(\s)+(=|IS)(\s)+(\'|\")(.*)(\'|\")(\s)*/ie';
-			$patterns[] = '/(([a-zA-Z0-9\._]+)(\())?([a-zA-Z0-9\.]+)(\))?(\s)+(>|<)(\s)+([[:digit:]]+)(\s)*/ie';
-			$patterns[] = '/(([a-zA-Z0-9\._]+)(\())?([a-zA-Z0-9\.]+)(\))?(\s)+(<=|>=)(\s)+([[:digit:]]+)(\s)*/ie';
-			$patterns[] = '/(([a-zA-Z0-9\._]+)(\())?([a-zA-Z0-9\.]+)(\))?(\s)+(<>|IS NOT|!=)(\s)+([[:digit:]]+)(\s)*/ie';
-			$patterns[] = '/(([a-zA-Z0-9\._]+)(\())?([a-zA-Z0-9\.]+)(\))?(\s)+(<>|IS NOT|!=)(\s)+(\'|\")(.*)(\'|\")(\s)*/ie';
-			$patterns[] = '/(([a-zA-Z0-9\._]+)(\())?([a-zA-Z0-9\.]+)(\))?(\s)+(IS)?(NOT IN)(\s)+\((.*)\)/ie';
-			$patterns[] = '/(([a-zA-Z0-9\._]+)(\())?([a-zA-Z0-9\.]+)(\))?(\s)+(IS)?(IN)(\s)+\((.*)\)/ie';
+			 
+			$patterns[] = '/(([a-zA-Z0-9\._]+)(\())?([a-zA-Z0-9\._]+)(\))?(\s)+(=|IS)(\s)+([[:digit:]]+)(\s)*/ie';
+			$patterns[] = '/(([a-zA-Z0-9\._]+)(\())?([a-zA-Z0-9\._]+)(\))?(\s)+(=|IS)(\s)+(\'|\")(.*)(\'|\")(\s)*/ie';
+			$patterns[] = '/(([a-zA-Z0-9\._]+)(\())?([a-zA-Z0-9\._]+)(\))?(\s)+(>|<)(\s)+([[:digit:]]+)(\s)*/ie';
+			$patterns[] = '/(([a-zA-Z0-9\._]+)(\())?([a-zA-Z0-9\._]+)(\))?(\s)+(<=|>=)(\s)+([[:digit:]]+)(\s)*/ie';
+			$patterns[] = '/(([a-zA-Z0-9\._]+)(\())?([a-zA-Z0-9\._]+)(\))?(\s)+(<>|IS NOT|!=)(\s)+([[:digit:]]+)(\s)*/ie';
+			$patterns[] = '/(([a-zA-Z0-9\._]+)(\())?([a-zA-Z0-9\._]+)(\))?(\s)+(<>|IS NOT|!=)(\s)+(\'|\")(.*)(\'|\")(\s)*/ie';
+			$patterns[] = '/(([a-zA-Z0-9\._]+)(\())?([a-zA-Z0-9\._]+)(\))?(\s)+(IS)?(NOT IN)(\s)+\((.*)\)/ie';
+			$patterns[] = '/(([a-zA-Z0-9\._]+)(\())?([a-zA-Z0-9\._]+)(\))?(\s)+(IS)?(IN)(\s)+\((.*)\)/ie';
 
 			$replacements[] = "'\\1'.\$this->parse_where_key(\"\\4\").'\\5 == \\9 '";
 			$replacements[] = "'\\1'.\$this->parse_where_key(\"\\4\").'\\5 == \"\\10\" '";
@@ -458,7 +462,7 @@ class sql4array
 					$irow++;
 					continue;
 				}
-                
+        
 				if (eval($this->parse_where))
 				{
 					if (isset($this->parse_select_as['*']) and $this->parse_select_as['*'] == '*')
