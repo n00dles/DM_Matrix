@@ -147,6 +147,23 @@ if (isset($_GET['add']) && isset($_POST['post-addtable'])){
 	}
 }
 
+if (isset($_GET['reorder'])){
+	$order=explode(',',substr($_POST['sortorder'],0,-1));
+	$table=$_GET['reorder'];
+	DM_getSchema();
+	$tmpArray=array();
+	foreach ($schemaArray[$table]['fields'] as $field=>$type){
+		$tmpArray[$field]=$type;	
+	}
+	unset($schemaArray[$table]['fields']);
+	$schemaArray[$table]['fields']=array();
+	foreach ($order as $field){
+		$schemaArray[$table]['fields'][$field]=$tmpArray[$field];
+	}
+	$ret=DM_saveSchema();
+	header('Location: load.php?id=DM_Matrix&action=matrix_manager&edit='.$table);
+}
+
 if (isset($_GET['add']) && isset($_GET['addrecord'])){
 	$table=$_GET['add'];
 	addRecordFromForm($table);

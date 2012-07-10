@@ -463,7 +463,7 @@ class sql4array
 					$irow++;
 					continue;
 				}
-        
+
 				if (eval($this->parse_where))
 				{
 					if (isset($this->parse_select_as['*']) and $this->parse_select_as['*'] == '*')

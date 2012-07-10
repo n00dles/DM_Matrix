@@ -2,34 +2,39 @@
 			
 		$schemaname=$_GET['edit'];
 		echo "<h2>".i18n_r($thisfile_DM_Matrix.'/DM_EDIT_TABLE')."".$schemaname."</h2>";
+		$order="";
 		?>
 		<table id="edittable" class="tablesorter tablereorder">
-		<thead><tr>
+		<thead><tr class='nodrag nodrop fieldDragClass'>
 			<th><?php echo i18n_r($thisfile_DM_Matrix.'/DM_NAME'); ?></th>
 			<th><?php echo i18n_r($thisfile_DM_Matrix.'/DM_TYPE'); ?></th>
 			<th style="width:75px;"><?php echo i18n_r($thisfile_DM_Matrix.'/DM_OPTIONS'); ?></th></tr>
 		</thead>
 		<tbody>
-			
-		</tbody>
-		<tbody>
 		<?php 
+		$count=1;
 		if( isset($schemaArray[$schemaname]['fields'])){
 			foreach($schemaArray[$schemaname]['fields'] as $schema=>$key){
 				if ($schema=="id") {$dnd="class='nodrag nodrop'";} else {$dnd="";} 
-				echo "<tr ".$dnd."><td>".$schema."</td><td>".$key."</td>";
+				echo "<tr ".$dnd." id='".$schema."'><td>".$schema."</td><td>".$key."</td>";
 				if ($schema!="id"){
 					echo "<td><a href='load.php?id=DM_Matrix&action=matrix_manager&edit=".$schemaname."&field=".$schema."'><img src='../plugins/DM_Matrix/images/edit.png' title='".i18n_r($thisfile_DM_Matrix.'/DM_EDIT_FIELD')."' /></a></td>";
 				} else {
 					echo "<td></td>";
 				}
 				echo "</tr>";
+				$order.=$schema.',';
+				$count++;
 			}
 		}	
 		?>
 		
 		</tbody>
 		</table>
+		<form name="sortform" id="sortform" style="display:none;padding-bottom:20px;" method="post" action="load.php?id=DM_Matrix&action=matrix_manager&reorder=<?php echo $schemaname; ?>">
+			<input id="sortorder" name="sortorder" type="text" style="display:none;"  value="<?php echo $order; ?>" />
+			<button id="field_submit" class="mtrx_but_add " name="submit" value="Save Field" type="submit"><?php echo i18n_r($thisfile_DM_Matrix.'/DM_SAVE_FIELD_ORDER_BUTTON'); ?></button>
+		</form>
 		<form method="post" action="load.php?id=DM_Matrix&action=matrix_manager&edit=<?php echo $schemaname; ?>&addfield">
 		<?php if (isset($_GET['field'])){
 			$formName = $_GET['field'];

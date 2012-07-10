@@ -56,6 +56,8 @@ $i18n = array (
 	"DM_TABLE_VIEW" => "Show in Table View",
 	"DM_SAVE_FIELD" => "Save this Field",
 	"DM_SAVE_FIELD_BUTTON" => "Save Field",
+	"DM_SAVE_FIELD_ORDER_BUTTON" => "Save Field Order",
+	
 // Errors and Status's
 	"DM_ERROR_CREATEBASEFOLDER"=>  "DM_Matrix: Created Base Folder ",
 	"DM_ERROR_CREATEBASEFOLDERFAIL"=>  "DM_Matrix: Base Folder Already Exists ",

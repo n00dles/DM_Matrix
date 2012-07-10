@@ -276,3 +276,6 @@ border-image: initial;
 	float:left;
 	clear:none;
 }
+.fieldDragClass{
+	border:1px solid #444;
+}

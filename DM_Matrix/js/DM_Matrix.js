@@ -28,7 +28,18 @@ $("#editpages").tablesorter({
 $('.askconfirm').jConfirmAction();
 
 // add table sorting to the edit table form.
-$(".tablereorder").tableDnD();
+$(".tablereorder").tableDnD({
+	onDragClass: "fieldDragClass",
+	onDrop: function(table, row) {
+			$('#sortform').show();
+            var rows = table.tBodies[0].rows;
+            var sortStr='';
+            for (var i=0; i<rows.length; i++) {
+                sortStr +=  rows[i].id+",";
+            }
+            $("#sortorder").val(sortStr);
+        }
+});
 
 //$('#nav_DM_Matrix').insertAfter($('#nav_pages'));
 
