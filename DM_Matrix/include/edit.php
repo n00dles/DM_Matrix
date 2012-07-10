@@ -83,7 +83,6 @@
 				<label class="ui-widget-header fieldstateToggle " for="Inputfield_name"><?php echo i18n_r($thisfile_DM_Matrix.'/DM_FIELDOPTIONS'); ?></label>
 				<div class="ui-widget-content">
 					<p class="description"><?php echo i18n_r($thisfile_DM_Matrix.'/DM_FIELDSIZE'); ?></p>
-					<?php echo $formSize; ?>
 					<select id="post-size" name="post-size">
 						
 						<?php 
