@@ -59,6 +59,7 @@ $schemaArray = array();
 $item_title='Matrix';
 $editing=false; 
 $uri='';
+$formColumns=0;
 
 $sql = new sql4array();
 $mytable=array();

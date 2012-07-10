@@ -29,21 +29,22 @@
 		<form method="post" action="load.php?id=DM_Matrix&action=matrix_manager&edit=<?php echo $schemaname; ?>&addfield">
 		<?php if (isset($_GET['field'])){
 			$formName = $_GET['field'];
-			$formType = $schemaArray[$_GET['edit']]['fields'][$_GET['field']];
-			$formDesc= $schemaArray[$_GET['edit']]['desc'][$_GET['field']];
-			$formLabel = $schemaArray[$_GET['edit']]['label'][$_GET['field']];
-			$formHeading = $schemaArray[$_GET['edit']]['desc'][$_GET['field']];
-			$formCacheIndex = $schemaArray[$_GET['edit']]['cacheindex'][$_GET['field']];
-			$formTableView = $schemaArray[$_GET['edit']]['tableview'][$_GET['field']];
-			$formSize  = $schemaArray[$_GET['edit']]['fieldsize'][$_GET['field']]; 
-			$formVisibility = $schemaArray[$_GET['edit']]['fieldvisibility'][$_GET['field']];
+			$table=$_GET['edit'];
+			$formType = $schemaArray[$table]['fields'][$_GET['field']];
+			$formDesc= $schemaArray[$table]['desc'][$_GET['field']];
+			$formLabel = $schemaArray[$table]['label'][$_GET['field']];
+			$formHeading = $schemaArray[$table]['desc'][$_GET['field']];
+			$formCacheIndex = $schemaArray[$table]['cacheindex'][$_GET['field']];
+			$formTableView = $schemaArray[$table]['tableview'][$_GET['field']];
+			$formSize  = $schemaArray[$table]['fieldsize'][$_GET['field']]; 
+			$formVisibility = $schemaArray[$table]['fieldvisibility'][$_GET['field']];
 			
 			if ($formType=='dropdown'){
-				$formTable = $schemaArray[$_GET['edit']]['table'][$_GET['field']];
-				$formTableRow = $schemaArray[$_GET['edit']]['row'][$_GET['field']];
+				$formTable = $schemaArray[$table]['table'][$_GET['field']];
+				$formTableRow = $schemaArray[$table]['row'][$_GET['field']];
 			}
 			$editing=true;
-			echo '<h3>'.i18n_r($thisfile_DM_Matrix.'/DM_EDITING_FIELD').' : '.$_GET['field'].'</h3>'; 
+			echo '<h3>'.i18n_r($thisfile_DM_Matrix.'/DM_EDITING_FIELD').' : '.$formName.'</h3>'; 
 			$editing=true;
 			
 		} else {
@@ -73,11 +74,21 @@
 				<label class="ui-widget-header fieldstateToggle " for="Inputfield_name"><?php echo i18n_r($thisfile_DM_Matrix.'/DM_FIELDOPTIONS'); ?></label>
 				<div class="ui-widget-content">
 					<p class="description"><?php echo i18n_r($thisfile_DM_Matrix.'/DM_FIELDSIZE'); ?></p>
+					<?php echo $formSize; ?>
 					<select id="post-size" name="post-size">
-						<option value="100">100%</option>
-						<option value="75">75%</option>
-						<option value="50">50%</option>
-						<option value="25">25%</option>
+						
+						<?php 
+						
+						$sizes=array('100','75','50','25');
+						foreach ($sizes as $size){
+							if ($size==$formSize){
+								$sel = " selected "; 
+							} else {
+								$sel = "";
+							}
+							echo "<option value='".$size."' ".$sel.">".$size."%</option>";
+						}
+						?>
 					</select>
 					
 					<p class="description" style="padding-top:15px;"><?php echo i18n_r($thisfile_DM_Matrix.'/DM_FIELDVIEW'); ?></p>

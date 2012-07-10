@@ -69,8 +69,8 @@ function DM_getSchema($flag=false){
 					$label=(string)$att['label'];
 					$cacheindex=(string)$att['cacheindex'];
 					$tableview=(string)$att['tableview'];
-					$fieldsize=(string)$att['fieldsize'];
-					$fieldvisibility=(string)$att['fieldvisibility'];
+					$fieldsize=(string)$att['size'];
+					$fieldvisibility=(string)$att['visibility'];
 					
 					// fix for new additions fieldsize & fieldvisibility
 					if ($fieldsize==""){
@@ -547,15 +547,32 @@ function DM_editForm($table, $record){
 	global $returnArray;
 	global $TEMPLATE;
 	global $SITEURL;
+	global $formColumns;
 	$formValues=DM_getRecord($table,$record);
 
 	echo '<ul class="fields">';
 	foreach ($schemaArray[$table]['fields'] as $field=>$value) {
-
+	$sizeClass="InputfieldMaxWidth";
 	if ($field!="id"){
+	$fieldSize=$schemaArray[$table]['fieldsize'][$field];
+	if ($fieldSize!='100' && $formColumns==0){
+		$sizeClass="InputFieldSizeFirst";
+		$width=$fieldSize;
+		$formColumns+=$fieldSize;
+	} elseif ($fieldSize!='100' && $formColumns<100) {
+		$sizeClass="InputFieldSize";	
+		$formColumns+=$fieldSize;
+		$width=$fieldSize-1;
+	} else {
+		$sizeClass="InputfieldMaxWidth";
+		$formColumns=0;
+		$width=100;
+	}
+	
+	
 	?>
 	
-		<li class="InputfieldName Inputfield_name ui-widget" id="wrap_Inputfield_name">
+		<li class="<?php echo $sizeClass; ?> InputfieldName Inputfield_name ui-widget " style="width:<?php echo $width; ?>%" id="wrap_Inputfield_name">
 			<label class="ui-widget-header fieldstateToggle" for="Inputfield_name"><?php echo $schemaArray[$table]['label'][$field]; ?></label>
 			<div class="ui-widget-content">
 				<p class="description"><?php echo $schemaArray[$table]['desc'][$field]; ?></p>
@@ -671,14 +688,29 @@ function DM_createForm($name){
 	global $schemaArray;	
 	global $TEMPLATE;
 	global $SITEURL;
+	global $formColumns;
 	echo '<ul class="fields">';
 	if(isset($schemaArray[$name])){
 		foreach ($schemaArray[$name]['fields'] as $field=>$value) {
 
 		if ($field!="id"){
+		$fieldSize=$schemaArray[$name]['fieldsize'][$field];
+			if ($fieldSize!='100' && $formColumns==0){
+				$sizeClass="InputFieldSizeFirst";
+				$width=$fieldSize;
+				$formColumns+=$fieldSize;
+			} elseif ($fieldSize!='100' && $formColumns<100) {
+				$sizeClass="InputFieldSize";	
+				$formColumns+=$fieldSize;
+				$width=$fieldSize-1;
+			} else {
+				$sizeClass="InputfieldMaxWidth";
+				$formColumns=0;
+				$width=100;
+			}	
 		?>
 		
-			<li class="InputfieldName Inputfield_name ui-widget" id="wrap_Inputfield_name">
+			<li class="<?php echo $sizeClass; ?> InputfieldName Inputfield_name ui-widget " style="width:<?php echo $width; ?>%" id="wrap_Inputfield_name">
 				<label class="ui-widget-header fieldstateToggle" for="Inputfield_name"><?php echo $schemaArray[$name]['label'][$field]; ?></label>
 				<div class="ui-widget-content">
 					<p class="description"><?php echo $schemaArray[$name]['desc'][$field]; ?></p>
@@ -735,24 +767,24 @@ function displayFieldType($name, $type, $schema,$value=''){
 	switch ($type){
 		// int field
 		case "int":
-			echo '<p><input id="post-'.$name.'" class="required DM_int" name="post-'.$name.'" type="text" size="50" maxlength="128" value="'.$value.'"></p>';
+			echo '<p><input id="post-'.$name.'" class="DM_int" name="post-'.$name.'" type="text" size="50" maxlength="128" value="'.$value.'"></p>';
 			break; 		
 	// normal text field
 		case "text":
-			echo '<p><input id="post-'.$name.'" class="required DM_text" name="post-'.$name.'" type="text" size="50" maxlength="128" value="'.$value.'"></p>';
+			echo '<p><input id="post-'.$name.'" class="DM_text" name="post-'.$name.'" type="text" value="'.$value.'"></p>';
 			break; 
 		// long text field, full width		
 		case "textlong":
-			echo '<p><input id="post-'.$name.'" class="required DM_textlong" name="post-'.$name.'" type="text" size="115" maxlength="128" value="'.$value.'"></p>';
+			echo '<p><input id="post-'.$name.'" class="DM_textlong" name="post-'.$name.'" type="text"  value="'.$value.'"></p>';
 			break;
 		// Slug/Title
 		case "slug":
-			echo '<p><input id="post-'.$name.'" class="required DM_slug" name="post-'.$name.'" type="text" size="115" onkeyup="makeSlug(\'post-'.$name.'\');" maxlength="128" value="'.$value.'"></p>';
+			echo '<p><input id="post-'.$name.'" class="DM_slug" name="post-'.$name.'" type="text" onkeyup="makeSlug(\'post-'.$name.'\');" value="'.$value.'"></p>';
 			break;
 		// Checkbox
 		case "checkbox":
 			$label=$schemaArray[$schema]['label'][$name];
-			echo '<p><input id="post-'.$name.'" class="required DM_checkbox" name="post-'.$name.'" type="checkbox" '. ($value=='1' ? 'checked' : '') .'> '.$label.'</p>';
+			echo '<p><input id="post-'.$name.'" class="DM_checkbox" name="post-'.$name.'" type="checkbox" '. ($value=='1' ? 'checked' : '') .'> '.$label.'</p>';
 			break;
 		// Dropdown box of existing pages on the site. Values are skug/url 
 		case "pages":
@@ -787,12 +819,12 @@ function displayFieldType($name, $type, $schema,$value=''){
 			break;
 		// Datepicker. Use settings page to set the front end date format, saved as Unix timestamp
 		case "datepicker";
-				echo '<p><input id="post-'.$name.'" class="datepicker required DM_datepicker" name="post-'.$name.'" type="text" size="50" maxlength="128" value="'. ((isset($value) and  $value!='') ? date(i18n('DATE_FORMAT',false),(int)$value) : '') .'"></p>';
+				echo '<p><input id="post-'.$name.'" class="datepicker  DM_datepicker" name="post-'.$name.'" type="text" size="50" value="'. ((isset($value) and  $value!='') ? date(i18n('DATE_FORMAT',false),(int)$value) : '') .'"></p>';
        			$datetimepick=true;
 			break;
 		// DateTimepicker. Use settings page to set the front end date format, saved as Unix timestamp
 		case "datetimepicker";
-			echo '<p><input id="post-'.$name.'" class="datetimepicker required  DM_datetimepicker" name="post-'.$name.'" type="text" size="50" maxlength="128"  value="'. ((isset($value) and  $value!='') ? date(i18n('DATE_FORMAT',false).' H:i',(int)$value) : '') .'"></p>';  
+			echo '<p><input id="post-'.$name.'" class="datetimepicker   DM_datetimepicker" name="post-'.$name.'" type="text" size="50" value="'. ((isset($value) and  $value!='') ? date(i18n('DATE_FORMAT',false).' H:i',(int)$value) : '') .'"></p>';  
        		$datepick=true;
 			break;
 		// Dropdown from another Table/column 
