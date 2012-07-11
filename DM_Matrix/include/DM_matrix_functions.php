@@ -582,7 +582,7 @@ function DM_editForm($table, $record){
 			$visClass="InputfieldStateCollapsed";
 			break;
 		case '3':
-			if ($value=""){
+			if ($value==""){
 				$visClass="InputfieldStateCollapsed";
 			} else {
 				$visClass="";
