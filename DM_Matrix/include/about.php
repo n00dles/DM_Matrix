@@ -2,6 +2,7 @@
 	<img src="../plugins/DM_Matrix/images/matrixlogo.jpg" alt="logo" />
 	<p>&nbsp;</p>
 	<p>Designed and developed by n00dles101, <a href="http://www.digimute.com">http://www.digimute.com</a></p>	
+	<p>Schema version <?php echo DM_getSchemaVersion(); ?></p>
 	<p><strong>A big thank you to the following contributers</strong>
 	<br/>shawn_a 
 	<br/>outflux3

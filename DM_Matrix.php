@@ -43,6 +43,7 @@ define('GSSCHEMAPATH',GSDATAOTHERPATH.'matrix');
 define('DM_SINGLE',0);
 define('DM_MULTI',1);
 define('DM_COUNT',2);
+define('DM_MATRIXVER','1.0');
 
 // check and make sure the base folders are there. 
 if (!is_dir(GSSCHEMAPATH)){

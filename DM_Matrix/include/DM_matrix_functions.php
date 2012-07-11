@@ -40,6 +40,19 @@ function tableExists($table){
 	}
 }
 
+function DM_getSchemaVersion(){
+	$file=GSSCHEMAPATH."/schema.xml";
+  	if (file_exists($file)){
+  	DMdebuglog('Schema file loaded...');
+  // load the xml file and setup the array. 
+	$thisfile_DM_Matrix = file_get_contents($file);
+		$data = simplexml_load_string($thisfile_DM_Matrix);
+		$att = $data->attributes();
+		return $att['version'];
+	} else {
+		return '';
+	}
+}
 
 /**
  * Load the main Schema File
@@ -114,7 +127,7 @@ function DM_getSchema($flag=false){
 function DM_saveSchema(){
 	global $schemaArray;	
 	$file=GSSCHEMAPATH."/schema.xml";
-	$xml = @new SimpleXMLExtended('<channel></channel>');
+	$xml = @new SimpleXMLExtended('<channel version="'.DM_MATRIXVER.'"></channel>');
 	foreach ($schemaArray as $table=>$key){
 		$pages = $xml->addChild('item');
 		$pages->addChild('name',$table);
