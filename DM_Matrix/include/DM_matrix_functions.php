@@ -9,7 +9,11 @@
  * @return boolean , whether table was created or not. 
  */
 function createSchemaFolder($name){
-	$ret = mkdir(GSSCHEMAPATH.'/'.$name);
+	if (!is_dir(GSSCHEMAPATH.'/'.$name)){	
+		$ret = mkdir(GSSCHEMAPATH.'/'.$name);
+	} else {
+		$ret=false;
+	}
 	return $ret;
 }
 
@@ -569,12 +573,40 @@ function DM_editForm($table, $record){
 		$width=100;
 	}
 	
+	$fieldVisibility=$schemaArray[$table]['fieldvisibility'][$field];
+	switch ($fieldVisibility) {
+		case '1':
+			$visClass="";
+			break;
+		case '2':
+			$visClass="InputfieldStateCollapsed";
+			break;
+		case '3':
+			if ($value=""){
+				$visClass="InputfieldStateCollapsed";
+			} else {
+				$visClass="";
+			}
+			break;
+		case '4':
+			if ($value!=""){
+				$visClass="InputfieldStateCollapsed";
+			} else {
+				$visClass="";
+			}
+			break;
+		default:
+			$visClass="";
+			break;
+	}
+			
+	
 	
 	?>
 	
-		<li class="<?php echo $sizeClass; ?> InputfieldName Inputfield_name ui-widget " style="width:<?php echo $width; ?>%" id="wrap_Inputfield_name">
+		<li class="<?php echo $sizeClass; ?> InputfieldName Inputfield_name ui-widget <?php echo $visClass; ?>" style="width:<?php echo $width; ?>%" id="wrap_Inputfield_name">
 			<label class="ui-widget-header fieldstateToggle" for="Inputfield_name"><?php echo $schemaArray[$table]['label'][$field]; ?></label>
-			<div class="ui-widget-content">
+			<div class="ui-widget-content" <?php if($visClass!="") echo 'style="display:none;"'; ?>>
 				<p class="description"><?php echo $schemaArray[$table]['desc'][$field]; ?></p>
 				<?php displayFieldType($field, $value,$table,isset($formValues[$field]) ? stripslashes($formValues[$field]):''); ?>
 			</div>

@@ -1,6 +1,7 @@
 <?php
 			
 		$schemaname=$_GET['edit'];
+		$numRecords=DM_getNumRecords($schemaname);
 		echo "<h2>".i18n_r($thisfile_DM_Matrix.'/DM_EDIT_TABLE')."".$schemaname."</h2>";
 		$order="";
 		?>
@@ -76,7 +77,9 @@
 				<label class="ui-widget-header fieldstateToggle" for="Inputfield_name"><?php echo i18n_r($thisfile_DM_Matrix.'/DM_NAME'); ?></label>
 				<div class="ui-widget-content">
 					<p class="description"><?php echo i18n_r($thisfile_DM_Matrix.'/DM_NAME_DESC'); ?></p>
-					<input type="text" id="post-name" name="post-name" class="required" size="25" <?php echo " value='".$formName."'"; ?> >
+					<input type="text" id="post-name" name="post-name" class="required" size="25" <?php 
+					echo " value='".$formName."'";  
+					if ($numRecords>0 && $formName!='') echo "readonly='readonly' "; ?> >
 				</div>
 			</li>
 			<li class="ui-widget fieldstateCollapsed" id="wrap_Inputfield_name">
@@ -84,9 +87,7 @@
 				<div class="ui-widget-content">
 					<p class="description"><?php echo i18n_r($thisfile_DM_Matrix.'/DM_FIELDSIZE'); ?></p>
 					<select id="post-size" name="post-size">
-						
 						<?php 
-						
 						$sizes=array('100','75','50','25');
 						foreach ($sizes as $size){
 							if ($size==$formSize){
@@ -101,10 +102,17 @@
 					
 					<p class="description" style="padding-top:15px;"><?php echo i18n_r($thisfile_DM_Matrix.'/DM_FIELDVIEW'); ?></p>
 					<select  id="post-visibility" name="post-visibility">
-						<option value="1">Always Open (default)</option>
-						<option value="2">Always Closed</option>
-						<option value="3">Closed if Blank</option>
-						<option value="4">Closed if Populated</option>
+						<?php 
+						$visibility=array('1'=>'Always Open (default)','2'=>'Always Closed','3'=>'Closed if Blank','4'=>'Closed if Populated');
+						foreach ($visibility as $visible=>$value){
+							if ($visible==$formVisibility){
+								$sel = " selected "; 
+							} else {
+								$sel = "";
+							}
+							echo "<option value='".$visible."' ".$sel.">".$value."</option>";
+						}
+						?>
 					</select>
 				</div>
 			</li>

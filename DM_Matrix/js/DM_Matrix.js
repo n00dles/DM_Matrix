@@ -22,7 +22,7 @@ $("#editpages").tablesorter({
 		})
 
 	// use different icon for open and closed
-	$(".fields .fieldStateCollapsed > label.ui-widget-header span.ui-icon")
+	$(".fields > li.InputfieldStateCollapsed > label.ui-widget-header > span.ui-icon")
 		.removeClass('ui-icon-triangle-1-s').addClass('ui-icon-triangle-1-e'); 
 
 $('.askconfirm').jConfirmAction();

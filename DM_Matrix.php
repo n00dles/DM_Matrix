@@ -126,7 +126,7 @@ add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Ma
 if (isset($_GET['edit'])){
 	add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Matrix, "Edit Table",'edit')); 
 }
-if (isset($_GET['add'])){
+if (isset($_GET['add']) && $_GET['add']!=''){
 	add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Matrix, "Add Record",'add')); 
 }
 if (isset($_GET['view'])){
