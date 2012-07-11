@@ -18,6 +18,9 @@
 	TableSorter Pager
 	<br/>
 	Timepicker (http://trentrichardson.com) 
+	<br/>
+	Table Drag / Drop (http://www.isocra.com/2008/02/table-drag-and-drop-jquery-plugin/)
 	</p>
+	
 	
 </div>
