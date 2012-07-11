@@ -191,7 +191,7 @@ if (isset($_GET['schema']) && isset($_GET['drop'])){
 	if ($ret){
 		$success="Dropped ".$table.' successfully';
 	} else {
-		$success="Unable to drop  ".$table.' successfully';
+		$error="Unable to drop table: ".$table.'';
 	}
 }
 
