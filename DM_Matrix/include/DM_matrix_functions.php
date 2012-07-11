@@ -572,20 +572,21 @@ function DM_editForm($table, $record){
 	$sizeClass="InputfieldMaxWidth";
 	if ($field!="id"){
 	$fieldSize=$schemaArray[$table]['fieldsize'][$field];
-	if ($fieldSize!='100' && $formColumns==0){
-		$sizeClass="InputFieldSizeFirst";
-		$width=$fieldSize;
-		$formColumns+=$fieldSize;
-	} elseif ($fieldSize!='100' && $formColumns<100) {
-		$sizeClass="InputFieldSize";	
-		$formColumns+=$fieldSize;
-		$width=$fieldSize-1;
-	} else {
-		$sizeClass="InputfieldMaxWidth";
-		$formColumns=0;
-		$width=100;
-	}
-	
+	if ($formColumns>=100) $formColumns=0;
+		if ($fieldSize!='100' && $formColumns==0){
+			$sizeClass="InputFieldSizeFirst";
+			$width=$fieldSize;
+			$formColumns+=$fieldSize;
+		} elseif ($fieldSize!='100' && $formColumns+$fieldSize<=100) {
+			$sizeClass="InputFieldSize";	
+			$formColumns+=$fieldSize;
+			$width=$fieldSize-1;
+		} else {
+			$sizeClass="InputfieldMaxWidth";
+			$formColumns=0;
+			$width=100;
+			$formColumns=0;
+		}
 	$fieldVisibility=$schemaArray[$table]['fieldvisibility'][$field];
 	switch ($fieldVisibility) {
 		case '1':
@@ -737,11 +738,12 @@ function DM_createForm($name){
 
 		if ($field!="id"){
 		$fieldSize=$schemaArray[$name]['fieldsize'][$field];
+			if ($formColumns>=100) $formColumns=0;
 			if ($fieldSize!='100' && $formColumns==0){
 				$sizeClass="InputFieldSizeFirst";
 				$width=$fieldSize;
 				$formColumns+=$fieldSize;
-			} elseif ($fieldSize!='100' && $formColumns<100) {
+			} elseif ($fieldSize!='100' && $formColumns+$fieldSize<=100) {
 				$sizeClass="InputFieldSize";	
 				$formColumns+=$fieldSize;
 				$width=$fieldSize-1;
@@ -749,8 +751,8 @@ function DM_createForm($name){
 				$sizeClass="InputfieldMaxWidth";
 				$formColumns=0;
 				$width=100;
-			}	
-		
+				$formColumns=0;
+			}
 		$fieldVisibility=$schemaArray[$name]['fieldvisibility'][$field];
 		switch ($fieldVisibility) {
 			case '1':
@@ -912,7 +914,7 @@ function displayFieldType($name, $type, $schema,$value=''){
 			echo '</select></p>';
 			break;
 		case 'image':
-			echo '<p><input class="text imagepicker DM_imagepicker" type="text" id="post-'.$name.'" name="post-'.$name.'"  value="'.$value.'" />';
+			echo '<p><input class="text imagepicker DM_imagepicker" type="text" id="post-'.$name.'" name="post-'.$name.'" style="width:98%;" value="'.$value.'" />';
 			echo ' <span class="edit-nav"><a id="browse-'.$name.'" href="javascript:void(0);">Browse</a></span>';
 			echo '<div id="image-'.$name.'"></div>';
 			echo '</p>'; 
@@ -928,7 +930,7 @@ function displayFieldType($name, $type, $schema,$value=''){
 		<?php
 		break;
 		case 'filepicker':
-			echo '<p><input class="text imagepicker DM_filepicker" type="text" id="post-'.$name.'" name="post-'.$name.'"  value="'.$value.'" />';
+			echo '<p><input class="text imagepicker DM_filepicker" type="text" id="post-'.$name.'" name="post-'.$name.'" style="width:98%;" value="'.$value.'" />';
 			echo ' <span class="edit-nav"><a id="browse-'.$name.'" href="javascript:void(0);">Browse</a></span>';
 			echo '</p>'; 
 		
@@ -950,11 +952,11 @@ function displayFieldType($name, $type, $schema,$value=''){
 		// texteditor converted to CKEditor
 		case "texteditor":
 		case "wysiwyg":
-			echo '<p><textarea class="DMckeditor wysiwyg" id="post-'.$name.'" name="post-'.$name.'" style="width:513px;height:200px;border: 1px solid #AAAAAA;">'.$value.'</textarea></p>';
+			echo '<p><textarea class="DMckeditor wysiwyg" id="post-'.$name.'" name="post-'.$name.'" style="width:98%;height:200px;border: 1px solid #AAAAAA;">'.$value.'</textarea></p>';
 			break;
 		// Textarea Plain
 		case "textarea":
-			echo '<p><textarea class="DM_textarea textarea" id="post-'.$name.'" name="post-'.$name.'" style="width:513px;height:200px;border: 1px solid #AAAAAA;">'.$value.'</textarea></p>';
+			echo '<p><textarea class="DM_textarea textarea" id="post-'.$name.'" name="post-'.$name.'" style="width:98%;height:200px;border: 1px solid #AAAAAA;">'.$value.'</textarea></p>';
 			
 			break;
 		default:

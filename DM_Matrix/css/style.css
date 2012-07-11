@@ -252,7 +252,7 @@ border-image: initial;
 	font-style: italic;
 	text-shadow: 0px 2px 0px #fff;
 }
-.DM_text, .DM_textlong, DM_slug{
+.DM_text, .DM_textlong, .DM_slug, .DM_imagepicker, .DM_filepicker {
 	width:100%;
 }
 
