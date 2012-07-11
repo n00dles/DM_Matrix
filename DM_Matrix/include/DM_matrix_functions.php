@@ -599,9 +599,6 @@ function DM_editForm($table, $record){
 			$visClass="";
 			break;
 	}
-			
-	
-	
 	?>
 	
 		<li class="<?php echo $sizeClass; ?> InputfieldName Inputfield_name ui-widget <?php echo $visClass; ?>" style="width:<?php echo $width; ?>%" id="wrap_Inputfield_name">
@@ -740,11 +737,38 @@ function DM_createForm($name){
 				$formColumns=0;
 				$width=100;
 			}	
+		
+		$fieldVisibility=$schemaArray[$name]['fieldvisibility'][$field];
+		switch ($fieldVisibility) {
+			case '1':
+				$visClass="";
+				break;
+			case '2':
+				$visClass="InputfieldStateCollapsed";
+				break;
+			case '3':
+				if ($value=""){
+					$visClass="InputfieldStateCollapsed";
+				} else {
+					$visClass="";
+				}
+				break;
+			case '4':
+				if ($value!=""){
+					$visClass="InputfieldStateCollapsed";
+				} else {
+					$visClass="";
+				}
+				break;
+			default:
+				$visClass="";
+				break;
+		}
 		?>
 		
-			<li class="<?php echo $sizeClass; ?> InputfieldName Inputfield_name ui-widget " style="width:<?php echo $width; ?>%" id="wrap_Inputfield_name">
+			<li class="<?php echo $sizeClass; ?> InputfieldName Inputfield_name ui-widget <?php echo $visClass; ?>" style="width:<?php echo $width; ?>%" id="wrap_Inputfield_name">
 				<label class="ui-widget-header fieldstateToggle" for="Inputfield_name"><?php echo $schemaArray[$name]['label'][$field]; ?></label>
-				<div class="ui-widget-content">
+				<div class="ui-widget-content" <?php if($visClass!="") echo 'style="display:none;"'; ?>>
 					<p class="description"><?php echo $schemaArray[$name]['desc'][$field]; ?></p>
 					<?php displayFieldType($field, $value,$name); ?>
 				</div>
