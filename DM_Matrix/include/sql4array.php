@@ -339,7 +339,7 @@ class sql4array
 		}
 		else
 		{
-
+			
 			/**
 			 * SQL Functions
 			 */
@@ -357,10 +357,14 @@ class sql4array
 			 * (([FUNCTION]+)(\())?([FIELDNAME]+)(\))?(SPACE)+(OPERATOR)(SPACE)+(QUOTES)(VALUE)(QUOTES)(SPACE)* CASE INSENSITIVE
 			 * *see header for functions
 			 */
-			 
+			
+			// Attempt at wrapping all symbolic operators in spaces at once
+			$patterns[] = '/(.[a-zA-z0-9\._]+)(<|>|=|!=|>=|<=|<>)+(\s)*/';
+			$patterns[] = '/(.)(<|>|=|!=|>=|<=|<>)+([a-zA-z0-9\._]+)*/';
+			
 			$patterns[] = '/(([a-zA-Z0-9\._]+)(\())?([a-zA-Z0-9\._]+)(\))?(\s)+(=|IS)(\s)+([[:digit:]]+)(\s)*/ie';
-			# $patterns[] = '/(([a-zA-Z0-9\._]+)(\())?([a-zA-Z0-9\._]+)(\))?(\s)+(=|IS)(\s)+(\'|\")(.*)(\'|\")(\s)*/ie';
-			$patterns[] = '/(([a-zA-Z0-9\._]+)(\())?([a-zA-Z0-9\._]+)(\))?((?:\s+)?(=)(?:\s+)?|(?:\s+)(IS)(?:\s+))(\'|\")(.*)(\'|\")(\s)*/ie'; // test for no spaces
+			$patterns[] = '/(([a-zA-Z0-9\._]+)(\())?([a-zA-Z0-9\._]+)(\))?(\s)+(=|IS)(\s)+(\'|\")(.*)(\'|\")(\s)*/ie';
+			# $patterns[] = '/(([a-zA-Z0-9\._]+)(\())?([a-zA-Z0-9\._]+)(\))?((?:\s+)?(=)(?:\s+)?|(?:\s+)(IS)(?:\s+))(\'|\")(.*)(\'|\")(\s)*/ie'; // test for no spaces
 			$patterns[] = '/(([a-zA-Z0-9\._]+)(\())?([a-zA-Z0-9\._]+)(\))?(\s)+(>|<)(\s)+([[:digit:]]+)(\s)*/ie';
 			$patterns[] = '/(([a-zA-Z0-9\._]+)(\())?([a-zA-Z0-9\._]+)(\))?(\s)+(<=|>=)(\s)+([[:digit:]]+)(\s)*/ie';
 			$patterns[] = '/(([a-zA-Z0-9\._]+)(\())?([a-zA-Z0-9\._]+)(\))?(\s)+(<>|IS NOT|!=)(\s)+([[:digit:]]+)(\s)*/ie';
@@ -368,6 +372,8 @@ class sql4array
 			$patterns[] = '/(([a-zA-Z0-9\._]+)(\())?([a-zA-Z0-9\._]+)(\))?(\s)+(IS)?(NOT IN)(\s)+\((.*)\)/ie';
 			$patterns[] = '/(([a-zA-Z0-9\._]+)(\())?([a-zA-Z0-9\._]+)(\))?(\s)+(IS)?(IN)(\s)+\((.*)\)/ie';
 
+			$replacements[] = "\\1 \\2\\3";
+			$replacements[] = "\\1\\2 \\3 ";
 			$replacements[] = "'\\1'.\$this->parse_where_key(\"\\4\").'\\5 == \\9 '";
 			$replacements[] = "'\\1'.\$this->parse_where_key(\"\\4\").'\\5 == \"\\10\" '";
 			$replacements[] = "'\\1'.\$this->parse_where_key(\"\\4\").'\\5 \\7 \\9 '";
@@ -398,9 +404,33 @@ class sql4array
 		$replacements[] = "'eregi(\"'.strtr(\"\\5\", \$ereg).'\", '.\$this->parse_where_key(\"\\1\").')'";
 		$replacements[] = "'!preg_match(\"'.strtr(\"\\5\", \$ereg).'\", '.\$this->parse_where_key(\"\\1\").')'";
 		$replacements[] = "'!eregi(\"'.strtr(\"\\5\", \$ereg).'\", '.\$this->parse_where_key(\"\\1\").')'";
-
-		$this->parse_where = "return " . stripslashes(trim(preg_replace($patterns, $replacements, $string))) . ";";
-
+		
+		/*
+		 * Change:
+		 * This was returning whatever is in parse_where even if it fails to match a operator pattern.
+		 * this causes eval to eval anything tossed in there, and also throws errors like
+		 * Use of undefined constant id - assumed 'id'
+		 * So I chagned it to check that proper replacements were being sent to eval
+		 * 
+		 * This did previsouly allow some queries to work but for the wrong unexpected reasons 
+		 * eg id > '5' quotes are not allowed and the pattern never matched 
+		 * BUT this was working by php forgiving syntax and 
+		 * parsing it as $id while throwing an undefined notice about it
+		 
+		 * Which was confusing as hell
+		 * 
+		 * So this now returns false as parse where if $row[] isnt found in the string, 
+		 * meaning it didnt hit an operator replacement
+		 * 
+		 * No telling what this might break, theres is no documentation, and I do not know if this fallthrough is by design
+		 */
+		
+		$whereStr = stripslashes(trim(preg_replace($patterns, $replacements, $string)));
+				
+		// force an operator pattern match
+		if($whereStr == $string || strpos($whereStr,'$row') === false) $this->parse_where = 'return false;';
+		else $this->parse_where = "return " . $whereStr . ";";
+		
 		return $this;
 	}
 
@@ -418,7 +448,8 @@ class sql4array
 			$key = $col;
 		}
 
-    $this->parse_select_as[$key] = $key;    
+    $this->parse_select_as[$key] = $key;   
+		
 		return '$row[$this->parse_select_as[\'' . $key . '\']]';
 	}
 
@@ -463,7 +494,7 @@ class sql4array
 					$irow++;
 					continue;
 				}
-        
+								
 				if (eval($this->parse_where))
 				{
 					if (isset($this->parse_select_as['*']) and $this->parse_select_as['*'] == '*')
@@ -517,6 +548,10 @@ class sql4array
 
 		foreach ($arrays as $array)
 		{
+			// TODO: this errors if sort order is missing should deafult to asc
+			// also doesnt check for existance of asc or desc explicitly
+			// there is a space trimmed in pase_query that probably needs adjusting to match variable inclusion
+			
 			list($col, $sort) = preg_split('#((\s)+)#', $array, -1, PREG_SPLIT_NO_EMPTY);
 			$multisort .= "\$this->split_array(\$this->response, '$col'), SORT_" . strtoupper($sort) . ', SORT_STRING, ';
 		}
