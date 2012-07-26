@@ -43,6 +43,7 @@ define('GSSCHEMAPATH',GSDATAOTHERPATH.'matrix');
 define('DM_SINGLE',0);
 define('DM_MULTI',1);
 define('DM_COUNT',2);
+define('DM_MATRIXVER','1.0');
 
 // check and make sure the base folders are there. 
 if (!is_dir(GSSCHEMAPATH)){
@@ -59,6 +60,7 @@ $schemaArray = array();
 $item_title='Matrix';
 $editing=false; 
 $uri='';
+$formColumns=0;
 
 $sql = new sql4array();
 $mytable=array();
@@ -115,6 +117,8 @@ if (isset($_GET['id']) && $_GET['id']=="DM_Matrix"){
 	register_script('askconfirm', $SITEURL.'plugins/DM_Matrix/js/jconfirm.jquery.js', '0.2.0', FALSE);
 	queue_script('askconfirm', GSBACK);
 	
+	register_script('tablednd', $SITEURL.'plugins/DM_Matrix/js/tablednd.js', '0.2.0', FALSE);
+	queue_script('tablednd', GSBACK);
 }
 
 add_action('nav-tab','createNavTab',array('DM_Matrix','DM_Matrix','The Matrix','action=matrix_manager&schema'));
@@ -123,7 +127,7 @@ add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Ma
 if (isset($_GET['edit'])){
 	add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Matrix, "Edit Table",'edit')); 
 }
-if (isset($_GET['add'])){
+if (isset($_GET['add']) && $_GET['add']!=''){
 	add_action($thisfile_DM_Matrix.'-sidebar','createSideMenu',array($thisfile_DM_Matrix, "Add Record",'add')); 
 }
 if (isset($_GET['view'])){
@@ -142,6 +146,23 @@ if (isset($_GET['add']) && isset($_POST['post-addtable'])){
 	if ($ret){
 		$success="Table ".$_POST['post-addtable'].' created successfully';
 	}
+}
+
+if (isset($_GET['reorder'])){
+	$order=explode(',',substr($_POST['sortorder'],0,-1));
+	$table=$_GET['reorder'];
+	DM_getSchema();
+	$tmpArray=array();
+	foreach ($schemaArray[$table]['fields'] as $field=>$type){
+		$tmpArray[$field]=$type;	
+	}
+	unset($schemaArray[$table]['fields']);
+	$schemaArray[$table]['fields']=array();
+	foreach ($order as $field){
+		$schemaArray[$table]['fields'][$field]=$tmpArray[$field];
+	}
+	$ret=DM_saveSchema();
+	header('Location: load.php?id=DM_Matrix&action=matrix_manager&edit='.$table);
 }
 
 if (isset($_GET['add']) && isset($_GET['addrecord'])){
@@ -171,11 +192,9 @@ if (isset($_GET['schema']) && isset($_GET['drop'])){
 	if ($ret){
 		$success="Dropped ".$table.' successfully';
 	} else {
-		$success="Unable to drop  ".$table.' successfully';
+		$error="Unable to drop table: ".$table.'';
 	}
 }
-
-
 
 
 if (!tableExists('_routes')){
@@ -195,6 +214,17 @@ if (isset($_GET['edit']) && isset($_GET['addfield'])){
 	} else {
 		$tableview=0;
 	}
+	if (isset($_POST['post-size'])){
+		$fieldsize=$_POST['post-size'];
+	} else {
+		$fieldsize=100;
+	}
+	if (isset($_POST['post-visibility'])){
+		$fieldvisibility=$_POST['post-visibility'];
+	} else {
+		$fieldvisibility=1;
+	}
+	
 	
 	$field=array(
 		'name'=>$_POST['post-name'],
@@ -202,7 +232,9 @@ if (isset($_GET['edit']) && isset($_GET['addfield'])){
 		'label'=>$_POST['post-label'],
 		'description'=>$_POST['post-desc'],
 		'cacheindex'=>$cacheindex,
-		'tableview'=>$tableview
+		'tableview'=>$tableview,
+		'fieldsize'=>$fieldsize,
+		'fieldvisibility'=>$fieldvisibility
 	);
 	if ($_POST['post-type']=='dropdown'){
 		$field['table']=$_POST['post-table'];

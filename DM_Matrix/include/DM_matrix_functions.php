@@ -9,7 +9,11 @@
  * @return boolean , whether table was created or not. 
  */
 function createSchemaFolder($name){
-	$ret = mkdir(GSSCHEMAPATH.'/'.$name);
+	if (!is_dir(GSSCHEMAPATH.'/'.$name)){	
+		$ret = mkdir(GSSCHEMAPATH.'/'.$name);
+	} else {
+		$ret=false;
+	}
 	return $ret;
 }
 
@@ -36,6 +40,19 @@ function tableExists($table){
 	}
 }
 
+function DM_getSchemaVersion(){
+	$file=GSSCHEMAPATH."/schema.xml";
+  	if (file_exists($file)){
+  	DMdebuglog('Schema file loaded...');
+  // load the xml file and setup the array. 
+	$thisfile_DM_Matrix = file_get_contents($file);
+		$data = simplexml_load_string($thisfile_DM_Matrix);
+		$att = $data->attributes();
+		return $att['version'];
+	} else {
+		return '';
+	}
+}
 
 /**
  * Load the main Schema File
@@ -69,12 +86,24 @@ function DM_getSchema($flag=false){
 					$label=(string)$att['label'];
 					$cacheindex=(string)$att['cacheindex'];
 					$tableview=(string)$att['tableview'];
+					$fieldsize=(string)$att['size'];
+					$fieldvisibility=(string)$att['visibility'];
+					
+					// fix for new additions fieldsize & fieldvisibility
+					if ($fieldsize==""){
+						$fieldsize="100";
+					}
+					if ($fieldvisibility==""){
+						$fieldvisibility="1";
+					}
 					
 					$schemaArray[(string)$key]['fields'][(string)$field]=(string)$type;
 					$schemaArray[(string)$key]['desc'][(string)$field]=(string)$desc;
 					$schemaArray[(string)$key]['label'][(string)$field]=(string)$label;
 					$schemaArray[(string)$key]['cacheindex'][(string)$field]=(string)$cacheindex;
 					$schemaArray[(string)$key]['tableview'][(string)$field]=(string)$tableview;
+					$schemaArray[(string)$key]['fieldsize'][(string)$field]=(string)$fieldsize;
+					$schemaArray[(string)$key]['fieldvisibility'][(string)$field]=(string)$fieldvisibility;
 					
 					if ((string)$type=="dropdown"){
 						$schemaArray[(string)$key]['table'][(string)$field]=(string)$att['table'];;
@@ -98,7 +127,7 @@ function DM_getSchema($flag=false){
 function DM_saveSchema(){
 	global $schemaArray;	
 	$file=GSSCHEMAPATH."/schema.xml";
-	$xml = @new SimpleXMLExtended('<channel></channel>');
+	$xml = @new SimpleXMLExtended('<channel version="'.DM_MATRIXVER.'"></channel>');
 	foreach ($schemaArray as $table=>$key){
 		$pages = $xml->addChild('item');
 		$pages->addChild('name',$table);
@@ -115,6 +144,8 @@ function DM_saveSchema(){
 				$field->addAttribute('cacheindex',@$schemaArray[$table]['cacheindex'][(string)$field]);
 				$field->addAttribute('description',@$schemaArray[$table]['desc'][(string)$field]);
 				$field->addAttribute('label',@$schemaArray[$table]['label'][(string)$field]);
+				$field->addAttribute('size',@$schemaArray[$table]['fieldsize'][(string)$field]);
+				$field->addAttribute('visibility',@$schemaArray[$table]['fieldvisibility'][(string)$field]);
 				
 				if ($type=='dropdown'){
 					$field->addAttribute('table',@$schemaArray[$table]['table'][(string)$field]);
@@ -138,23 +169,29 @@ function DM_saveSchema(){
 
 function createRecord($name,$data=array()){
 	global $schemaArray;
-	$id=getNextRecord($name);
-	DMdebuglog('record:'.$id);
-	$file=GSSCHEMAPATH.'/'.$name."/".$id.".xml";
-	$xml = new SimpleXMLExtended('<?xml version="1.0" encoding="UTF-8"?><channel></channel>');
-	$pages = $xml->addChild('item');
-	$item = $pages->addChild('id',$id);
-	foreach ($data as $field=>$txt){
-		//$pages->addChild($field,$txt);	
-		$item = $pages->addChild($field);
-		$item->addCData($txt);
+	if (@is_array($schemaArray[$name])){
+		$id=getNextRecord($name);
+		$data['id']=$id;
+		DMdebuglog('record:'.$id);
+		$file=GSSCHEMAPATH.'/'.$name."/".$id.".xml";
+		$xml = new SimpleXMLExtended('<?xml version="1.0" encoding="UTF-8"?><channel></channel>');
+		$pages = $xml->addChild('item');
+		foreach ($schemaArray[$name]['fields'] as $field=>$value){
+			if (array_key_exists($field, $data)){
+				$txt=DM_manipulate($data[$field],$value);
+			} else {
+				$txt="";
+			}
+			$item = $pages->addChild($field,$txt);
+		}
+		XMLsave($xml, $file);
+		DMdebuglog('file:'.$file);
+		$schemaArray[$name]['id']=$id+1;
+		$ret=DM_saveSchema();
+		return $ret;
+	} else {
+		DMdebuglog('Table does not exist: '.$name);
 	}
-	//$xml->asXML($file);
-	XMLsave($xml, $file);
-	DMdebuglog('file:'.$file);
-	$schemaArray[$name]['id']=$id+1;
-	$ret=DM_saveSchema();
-	return $ret;
 }
 
 /**
@@ -269,6 +306,12 @@ function DM_manipulate($field, $type){
 		case "codeeditor":
 			return safe_slash_html($field);
 			break;	
+		case "text":
+			return safe_slash_html($field);
+			break;
+		case "textlong":
+			return safe_slash_html($field);
+			break;
 		case "checkbox":
 			return "1";
 			break;			
@@ -310,7 +353,6 @@ function updateRecord($table,$record,$data=array()){
 	$file=GSSCHEMAPATH.'/'.$table."/".$record.".xml";
 	$xml = @new SimpleXMLExtended('<channel></channel>');
 	$pages = $xml->addChild('item');
-	$pages->addChild('id',$record);
 	foreach ($data as $field=>$txt){
 		$pages->addChild($field,$txt);	
 	}
@@ -406,7 +448,9 @@ function addSchemaField($name,$fields=array(),$save=true){
 	'cacheindex' => 'cacheindex',
 	'tableview' => 'tableview',
 	'table' => 'table',
-	'row' => 'row'	
+	'row' => 'row',
+	'fieldsize' => 'fieldsize',
+	'fieldvisibility' => 'fieldvisibility'
 	);
 	
 	foreach($fields as $key=>$value){
@@ -520,17 +564,60 @@ function DM_editForm($table, $record){
 	global $returnArray;
 	global $TEMPLATE;
 	global $SITEURL;
+	global $formColumns;
 	$formValues=DM_getRecord($table,$record);
 
 	echo '<ul class="fields">';
 	foreach ($schemaArray[$table]['fields'] as $field=>$value) {
-
+	$sizeClass="InputfieldMaxWidth";
 	if ($field!="id"){
+	$fieldSize=$schemaArray[$table]['fieldsize'][$field];
+	if ($formColumns>=100) $formColumns=0;
+		if ($fieldSize!='100' && $formColumns==0){
+			$sizeClass="InputFieldSizeFirst";
+			$width=$fieldSize;
+			$formColumns+=$fieldSize;
+		} elseif ($fieldSize!='100' && $formColumns+$fieldSize<=100) {
+			$sizeClass="InputFieldSize";	
+			$formColumns+=$fieldSize;
+			$width=$fieldSize-1;
+		} else {
+			$sizeClass="InputfieldMaxWidth";
+			$formColumns=0;
+			$width=100;
+			$formColumns=0;
+		}
+	$fieldVisibility=$schemaArray[$table]['fieldvisibility'][$field];
+	switch ($fieldVisibility) {
+		case '1':
+			$visClass="";
+			break;
+		case '2':
+			$visClass="InputfieldStateCollapsed";
+			break;
+		case '3':
+			if ($value==""){
+				$visClass="InputfieldStateCollapsed";
+			} else {
+				$visClass="";
+			}
+			break;
+		case '4':
+			if ($value!=""){
+				$visClass="InputfieldStateCollapsed";
+			} else {
+				$visClass="";
+			}
+			break;
+		default:
+			$visClass="";
+			break;
+	}
 	?>
 	
-		<li class="InputfieldName Inputfield_name ui-widget" id="wrap_Inputfield_name">
+		<li class="<?php echo $sizeClass; ?> InputfieldName Inputfield_name ui-widget <?php echo $visClass; ?>" style="width:<?php echo $width; ?>%" id="wrap_Inputfield_name">
 			<label class="ui-widget-header fieldstateToggle" for="Inputfield_name"><?php echo $schemaArray[$table]['label'][$field]; ?></label>
-			<div class="ui-widget-content">
+			<div class="ui-widget-content" <?php if($visClass!="") echo 'style="display:none;"'; ?>>
 				<p class="description"><?php echo $schemaArray[$table]['desc'][$field]; ?></p>
 				<?php displayFieldType($field, $value,$table,isset($formValues[$field]) ? stripslashes($formValues[$field]):''); ?>
 			</div>
@@ -644,16 +731,59 @@ function DM_createForm($name){
 	global $schemaArray;	
 	global $TEMPLATE;
 	global $SITEURL;
+	global $formColumns;
 	echo '<ul class="fields">';
 	if(isset($schemaArray[$name])){
 		foreach ($schemaArray[$name]['fields'] as $field=>$value) {
 
 		if ($field!="id"){
+		$fieldSize=$schemaArray[$name]['fieldsize'][$field];
+			if ($formColumns>=100) $formColumns=0;
+			if ($fieldSize!='100' && $formColumns==0){
+				$sizeClass="InputFieldSizeFirst";
+				$width=$fieldSize;
+				$formColumns+=$fieldSize;
+			} elseif ($fieldSize!='100' && $formColumns+$fieldSize<=100) {
+				$sizeClass="InputFieldSize";	
+				$formColumns+=$fieldSize;
+				$width=$fieldSize-1;
+			} else {
+				$sizeClass="InputfieldMaxWidth";
+				$formColumns=0;
+				$width=100;
+				$formColumns=0;
+			}
+		$fieldVisibility=$schemaArray[$name]['fieldvisibility'][$field];
+		switch ($fieldVisibility) {
+			case '1':
+				$visClass="";
+				break;
+			case '2':
+				$visClass="InputfieldStateCollapsed";
+				break;
+			case '3':
+				if ($value==""){
+					$visClass="InputfieldStateCollapsed";
+				} else {
+					$visClass="";
+				}
+				break;
+			case '4':
+				if ($value!=""){
+					$visClass="InputfieldStateCollapsed";
+				} else {
+					$visClass="";
+				}
+				break;
+			default:
+				$visClass="";
+				break;
+		}
 		?>
 		
-			<li class="InputfieldName Inputfield_name ui-widget" id="wrap_Inputfield_name">
+			<li class="<?php echo $sizeClass; ?> InputfieldName Inputfield_name ui-widget <?php echo $visClass; ?>" style="width:<?php echo $width; ?>%" id="wrap_Inputfield_name">
 				<label class="ui-widget-header fieldstateToggle" for="Inputfield_name"><?php echo $schemaArray[$name]['label'][$field]; ?></label>
-				<div class="ui-widget-content">
+				<div class="ui-widget-content" <?php if($visClass!="") echo 'style="display:none;"'; ?>>
 					<p class="description"><?php echo $schemaArray[$name]['desc'][$field]; ?></p>
 					<?php displayFieldType($field, $value,$name); ?>
 				</div>
@@ -708,24 +838,24 @@ function displayFieldType($name, $type, $schema,$value=''){
 	switch ($type){
 		// int field
 		case "int":
-			echo '<p><input id="post-'.$name.'" class="required DM_int" name="post-'.$name.'" type="text" size="50" maxlength="128" value="'.$value.'"></p>';
+			echo '<p><input id="post-'.$name.'" class="DM_int" name="post-'.$name.'" type="text" size="50" maxlength="128" value="'.$value.'"></p>';
 			break; 		
 	// normal text field
 		case "text":
-			echo '<p><input id="post-'.$name.'" class="required DM_text" name="post-'.$name.'" type="text" size="50" maxlength="128" value="'.$value.'"></p>';
+			echo '<p><input id="post-'.$name.'" class="DM_text" name="post-'.$name.'" type="text" value="'.$value.'"></p>';
 			break; 
 		// long text field, full width		
 		case "textlong":
-			echo '<p><input id="post-'.$name.'" class="required DM_textlong" name="post-'.$name.'" type="text" size="115" maxlength="128" value="'.$value.'"></p>';
+			echo '<p><input id="post-'.$name.'" class="DM_textlong" name="post-'.$name.'" type="text"  value="'.$value.'"></p>';
 			break;
 		// Slug/Title
 		case "slug":
-			echo '<p><input id="post-'.$name.'" class="required DM_slug" name="post-'.$name.'" type="text" size="115" onkeyup="makeSlug(\'post-'.$name.'\');" maxlength="128" value="'.$value.'"></p>';
+			echo '<p><input id="post-'.$name.'" class="DM_slug" name="post-'.$name.'" type="text" onkeyup="makeSlug(\'post-'.$name.'\');" value="'.$value.'"></p>';
 			break;
 		// Checkbox
 		case "checkbox":
 			$label=$schemaArray[$schema]['label'][$name];
-			echo '<p><input id="post-'.$name.'" class="required DM_checkbox" name="post-'.$name.'" type="checkbox" '. ($value=='1' ? 'checked' : '') .'> '.$label.'</p>';
+			echo '<p><input id="post-'.$name.'" class="DM_checkbox" name="post-'.$name.'" type="checkbox" '. ($value=='1' ? 'checked' : '') .'> '.$label.'</p>';
 			break;
 		// Dropdown box of existing pages on the site. Values are skug/url 
 		case "pages":
@@ -760,12 +890,12 @@ function displayFieldType($name, $type, $schema,$value=''){
 			break;
 		// Datepicker. Use settings page to set the front end date format, saved as Unix timestamp
 		case "datepicker";
-				echo '<p><input id="post-'.$name.'" class="datepicker required DM_datepicker" name="post-'.$name.'" type="text" size="50" maxlength="128" value="'. ((isset($value) and  $value!='') ? date(i18n('DATE_FORMAT',false),(int)$value) : '') .'"></p>';
+				echo '<p><input id="post-'.$name.'" class="datepicker  DM_datepicker" name="post-'.$name.'" type="text" size="50" value="'. ((isset($value) and  $value!='') ? date(i18n('DATE_FORMAT',false),(int)$value) : '') .'"></p>';
        			$datetimepick=true;
 			break;
 		// DateTimepicker. Use settings page to set the front end date format, saved as Unix timestamp
 		case "datetimepicker";
-			echo '<p><input id="post-'.$name.'" class="datetimepicker required  DM_datetimepicker" name="post-'.$name.'" type="text" size="50" maxlength="128"  value="'. ((isset($value) and  $value!='') ? date(i18n('DATE_FORMAT',false).' H:i',(int)$value) : '') .'"></p>';  
+			echo '<p><input id="post-'.$name.'" class="datetimepicker   DM_datetimepicker" name="post-'.$name.'" type="text" size="50" value="'. ((isset($value) and  $value!='') ? date(i18n('DATE_FORMAT',false).' H:i',(int)$value) : '') .'"></p>';  
        		$datepick=true;
 			break;
 		// Dropdown from another Table/column 
@@ -784,7 +914,7 @@ function displayFieldType($name, $type, $schema,$value=''){
 			echo '</select></p>';
 			break;
 		case 'image':
-			echo '<p><input class="text imagepicker DM_imagepicker" type="text" id="post-'.$name.'" name="post-'.$name.'"  value="'.$value.'" />';
+			echo '<p><input class="text imagepicker DM_imagepicker" type="text" id="post-'.$name.'" name="post-'.$name.'" style="width:98%;" value="'.$value.'" />';
 			echo ' <span class="edit-nav"><a id="browse-'.$name.'" href="javascript:void(0);">Browse</a></span>';
 			echo '<div id="image-'.$name.'"></div>';
 			echo '</p>'; 
@@ -800,7 +930,7 @@ function displayFieldType($name, $type, $schema,$value=''){
 		<?php
 		break;
 		case 'filepicker':
-			echo '<p><input class="text imagepicker DM_filepicker" type="text" id="post-'.$name.'" name="post-'.$name.'"  value="'.$value.'" />';
+			echo '<p><input class="text imagepicker DM_filepicker" type="text" id="post-'.$name.'" name="post-'.$name.'" style="width:98%;" value="'.$value.'" />';
 			echo ' <span class="edit-nav"><a id="browse-'.$name.'" href="javascript:void(0);">Browse</a></span>';
 			echo '</p>'; 
 		
@@ -822,11 +952,11 @@ function displayFieldType($name, $type, $schema,$value=''){
 		// texteditor converted to CKEditor
 		case "texteditor":
 		case "wysiwyg":
-			echo '<p><textarea class="DMckeditor wysiwyg" id="post-'.$name.'" name="post-'.$name.'" style="width:513px;height:200px;border: 1px solid #AAAAAA;">'.$value.'</textarea></p>';
+			echo '<p><textarea class="DMckeditor wysiwyg" id="post-'.$name.'" name="post-'.$name.'" style="width:98%;height:200px;border: 1px solid #AAAAAA;">'.$value.'</textarea></p>';
 			break;
 		// Textarea Plain
 		case "textarea":
-			echo '<p><textarea class="DM_textarea textarea" id="post-'.$name.'" name="post-'.$name.'" style="width:513px;height:200px;border: 1px solid #AAAAAA;">'.$value.'</textarea></p>';
+			echo '<p><textarea class="DM_textarea textarea" id="post-'.$name.'" name="post-'.$name.'" style="width:98%;height:200px;border: 1px solid #AAAAAA;">'.$value.'</textarea></p>';
 			
 			break;
 		default:

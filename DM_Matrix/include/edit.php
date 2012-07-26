@@ -1,46 +1,60 @@
 <?php
 			
 		$schemaname=$_GET['edit'];
+		$numRecords=DM_getNumRecords($schemaname);
 		echo "<h2>".i18n_r($thisfile_DM_Matrix.'/DM_EDIT_TABLE')."".$schemaname."</h2>";
+		$order="";
 		?>
-		<table id="edittable" class="tablesorter">
-		<thead><tr>
+		<table id="edittable" class="tablesorter tablereorder">
+		<thead><tr class='nodrag nodrop fieldDragClass'>
 			<th><?php echo i18n_r($thisfile_DM_Matrix.'/DM_NAME'); ?></th>
 			<th><?php echo i18n_r($thisfile_DM_Matrix.'/DM_TYPE'); ?></th>
 			<th style="width:75px;"><?php echo i18n_r($thisfile_DM_Matrix.'/DM_OPTIONS'); ?></th></tr>
 		</thead>
 		<tbody>
 		<?php 
+		$count=1;
 		if( isset($schemaArray[$schemaname]['fields'])){
 			foreach($schemaArray[$schemaname]['fields'] as $schema=>$key){
-				echo "<tr><td>".$schema."</td><td>".$key."</td>";
+				if ($schema=="id") {$dnd="class='nodrag nodrop'";} else {$dnd="";} 
+				echo "<tr ".$dnd." id='".$schema."'><td>".$schema."</td><td>".$key."</td>";
 				if ($schema!="id"){
 					echo "<td><a href='load.php?id=DM_Matrix&action=matrix_manager&edit=".$schemaname."&field=".$schema."'><img src='../plugins/DM_Matrix/images/edit.png' title='".i18n_r($thisfile_DM_Matrix.'/DM_EDIT_FIELD')."' /></a></td>";
 				} else {
 					echo "<td></td>";
 				}
 				echo "</tr>";
+				$order.=$schema.',';
+				$count++;
 			}
 		}	
 		?>
 		
 		</tbody>
 		</table>
+		<form name="sortform" id="sortform" style="display:none;padding-bottom:20px;" method="post" action="load.php?id=DM_Matrix&action=matrix_manager&reorder=<?php echo $schemaname; ?>">
+			<input id="sortorder" name="sortorder" type="text" style="display:none;"  value="<?php echo $order; ?>" />
+			<button id="field_submit" class="mtrx_but_add " name="submit" value="Save Field" type="submit"><?php echo i18n_r($thisfile_DM_Matrix.'/DM_SAVE_FIELD_ORDER_BUTTON'); ?></button>
+		</form>
 		<form method="post" action="load.php?id=DM_Matrix&action=matrix_manager&edit=<?php echo $schemaname; ?>&addfield">
 		<?php if (isset($_GET['field'])){
 			$formName = $_GET['field'];
-			$formType = $schemaArray[$_GET['edit']]['fields'][$_GET['field']];
-			$formDesc= $schemaArray[$_GET['edit']]['desc'][$_GET['field']];
-			$formLabel = $schemaArray[$_GET['edit']]['label'][$_GET['field']];
-			$formHeading = $schemaArray[$_GET['edit']]['desc'][$_GET['field']];
-			$formCacheIndex = $schemaArray[$_GET['edit']]['cacheindex'][$_GET['field']];
-			$formTableView = $schemaArray[$_GET['edit']]['tableview'][$_GET['field']];
+			$table=$_GET['edit'];
+			$formType = $schemaArray[$table]['fields'][$_GET['field']];
+			$formDesc= $schemaArray[$table]['desc'][$_GET['field']];
+			$formLabel = $schemaArray[$table]['label'][$_GET['field']];
+			$formHeading = $schemaArray[$table]['desc'][$_GET['field']];
+			$formCacheIndex = $schemaArray[$table]['cacheindex'][$_GET['field']];
+			$formTableView = $schemaArray[$table]['tableview'][$_GET['field']];
+			$formSize  = $schemaArray[$table]['fieldsize'][$_GET['field']]; 
+			$formVisibility = $schemaArray[$table]['fieldvisibility'][$_GET['field']];
+			
 			if ($formType=='dropdown'){
-				$formTable = $schemaArray[$_GET['edit']]['table'][$_GET['field']];
-				$formTableRow = $schemaArray[$_GET['edit']]['row'][$_GET['field']];
+				$formTable = $schemaArray[$table]['table'][$_GET['field']];
+				$formTableRow = $schemaArray[$table]['row'][$_GET['field']];
 			}
 			$editing=true;
-			echo '<h3>'.i18n_r($thisfile_DM_Matrix.'/DM_EDITING_FIELD').' : '.$_GET['field'].'</h3>'; 
+			echo '<h3>'.i18n_r($thisfile_DM_Matrix.'/DM_EDITING_FIELD').' : '.$formName.'</h3>'; 
 			$editing=true;
 			
 		} else {
@@ -54,6 +68,8 @@
 			$formTableView = "";
 			$formTable = "";
 			$formTableRow = "";
+			$formSize  = ""; 
+			$formVisibility = "";
 		}
 		?>
 		<ul class="fields">
@@ -61,7 +77,43 @@
 				<label class="ui-widget-header fieldstateToggle" for="Inputfield_name"><?php echo i18n_r($thisfile_DM_Matrix.'/DM_NAME'); ?></label>
 				<div class="ui-widget-content">
 					<p class="description"><?php echo i18n_r($thisfile_DM_Matrix.'/DM_NAME_DESC'); ?></p>
-					<input type="text" id="post-name" name="post-name" class="required" size="25" <?php echo " value='".$formName."'"; ?> >
+					<input type="text" id="post-name" name="post-name" class="required" size="25" <?php 
+					echo " value='".$formName."'";  
+					if ($numRecords>0 && $formName!='') echo "readonly='readonly' "; ?> >
+				</div>
+			</li>
+			<li class="ui-widget fieldstateCollapsed" id="wrap_Inputfield_name">
+				<label class="ui-widget-header fieldstateToggle " for="Inputfield_name"><?php echo i18n_r($thisfile_DM_Matrix.'/DM_FIELDOPTIONS'); ?></label>
+				<div class="ui-widget-content">
+					<p class="description"><?php echo i18n_r($thisfile_DM_Matrix.'/DM_FIELDSIZE'); ?></p>
+					<select id="post-size" name="post-size">
+						<?php 
+						$sizes=array('100','75','50','25');
+						foreach ($sizes as $size){
+							if ($size==$formSize){
+								$sel = " selected "; 
+							} else {
+								$sel = "";
+							}
+							echo "<option value='".$size."' ".$sel.">".$size."%</option>";
+						}
+						?>
+					</select>
+					
+					<p class="description" style="padding-top:15px;"><?php echo i18n_r($thisfile_DM_Matrix.'/DM_FIELDVIEW'); ?></p>
+					<select  id="post-visibility" name="post-visibility">
+						<?php 
+						$visibility=array('1'=>'Always Open (default)','2'=>'Always Closed','3'=>'Closed if Blank','4'=>'Closed if Populated');
+						foreach ($visibility as $visible=>$value){
+							if ($visible==$formVisibility){
+								$sel = " selected "; 
+							} else {
+								$sel = "";
+							}
+							echo "<option value='".$visible."' ".$sel.">".$value."</option>";
+						}
+						?>
+					</select>
 				</div>
 			</li>
 			<li class="ui-widget" id="wrap_Inputfield_name">

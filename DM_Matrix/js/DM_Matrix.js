@@ -9,8 +9,37 @@ $("#editpages").tablesorter({
 
 .tablesorterPager({container: $("#pager")})
 
+	// setup the toggles for Inputfields and the animations that occur between opening and closing
+	$(".fields > li > label.ui-widget-header").addClass("fieldStateToggle")
+		.prepend("<span class='ui-icon ui-icon-triangle-1-s'></span>")
+		.click(function() {
+			var $li = $(this).parent('li'); 	
+			$li.toggleClass('InputfieldStateCollapsed', 100);
+			$(this).children('span.ui-icon').toggleClass('ui-icon-triangle-1-e ui-icon-triangle-1-s'); 
+			$li.children('.ui-widget-header').effect('highlight', {}, 300);
+			$li.children('.ui-widget-content').toggle(); 
+			return false;
+		})
+
+	// use different icon for open and closed
+	$(".fields > li.InputfieldStateCollapsed > label.ui-widget-header > span.ui-icon")
+		.removeClass('ui-icon-triangle-1-s').addClass('ui-icon-triangle-1-e'); 
 
 $('.askconfirm').jConfirmAction();
+
+// add table sorting to the edit table form.
+$(".tablereorder").tableDnD({
+	onDragClass: "fieldDragClass",
+	onDrop: function(table, row) {
+			$('#sortform').show();
+            var rows = table.tBodies[0].rows;
+            var sortStr='';
+            for (var i=0; i<rows.length; i++) {
+                sortStr +=  rows[i].id+",";
+            }
+            $("#sortorder").val(sortStr);
+        }
+});
 
 //$('#nav_DM_Matrix').insertAfter($('#nav_pages'));
 

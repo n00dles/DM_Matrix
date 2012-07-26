@@ -17,6 +17,9 @@ $i18n = array (
 // add Table screen	
 	"DM_SHOWTABLE"=>  "Show Tables",
 	"DM_TABLENAME"=>  "Table Name",
+	"DM_FIELDOPTIONS"=>  "Field Options",
+	"DM_FIELDSIZE"=>  "Column Width",
+	"DM_FIELDVIEW"=>  "Visibility",
 	"DM_NUMRECORDS"=>  "# Rcds / Max",
 	"DM_NUMFIELDS"=>  "# Fields",
 	"DM_OPTIONS"=>  "Options",
@@ -53,6 +56,8 @@ $i18n = array (
 	"DM_TABLE_VIEW" => "Show in Table View",
 	"DM_SAVE_FIELD" => "Save this Field",
 	"DM_SAVE_FIELD_BUTTON" => "Save Field",
+	"DM_SAVE_FIELD_ORDER_BUTTON" => "Save Field Order",
+	
 // Errors and Status's
 	"DM_ERROR_CREATEBASEFOLDER"=>  "DM_Matrix: Created Base Folder ",
 	"DM_ERROR_CREATEBASEFOLDERFAIL"=>  "DM_Matrix: Base Folder Already Exists ",
