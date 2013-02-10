@@ -47,7 +47,7 @@ define('DM_MATRIXVER','1.0');
 
 // check and make sure the base folders are there. 
 if (!is_dir(GSSCHEMAPATH)){
-	mkdir(GSSCHEMAPATH);
+	mkdir(GSSCHEMAPATH, 0755);
 	DMdebuglog(i18n_r($thisfile_DM_Matrix.'/DM_ERROR_CREATEBASEFOLDER'));
 
 } else {
