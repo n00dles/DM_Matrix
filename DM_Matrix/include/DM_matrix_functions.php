@@ -10,7 +10,7 @@
  */
 function createSchemaFolder($name){
 	if (!is_dir(GSSCHEMAPATH.'/'.$name)){	
-		$ret = mkdir(GSSCHEMAPATH.'/'.$name);
+		$ret = mkdir(GSSCHEMAPATH.'/'.$name,0755);
 	} else {
 		$ret=false;
 	}
