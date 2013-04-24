@@ -69,7 +69,7 @@ $DM_tables_cache = array(); // hold cached schema loads
 
 // only load all our scripts and style if were on the MAtrix Plugin page
 if (isset($_GET['id']) && $_GET['id']=="DM_Matrix"){
-	register_script('DM_Matrix',$SITEURL.$GSADMIN.'plugins/DM_Matrix/js/DM_Matrix.js', '0.1',FALSE);
+	register_script('DM_Matrix',$SITEURL.'plugins/DM_Matrix/js/DM_Matrix.js', '0.1',FALSE);
 	queue_script('DM_Matrix', GSBACK);
 
 	
