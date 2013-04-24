@@ -69,17 +69,17 @@ $DM_tables_cache = array(); // hold cached schema loads
 
 // only load all our scripts and style if were on the MAtrix Plugin page
 if (isset($_GET['id']) && $_GET['id']=="DM_Matrix"){
-	register_script('DM_Matrix',$SITEURL.'plugins/DM_Matrix/js/DM_Matrix.js', '0.1',FALSE);
+	register_script('DM_Matrix',$SITEURL.$GSADMIN.'plugins/DM_Matrix/js/DM_Matrix.js', '0.1',FALSE);
 	queue_script('DM_Matrix', GSBACK);
 
 	
-	register_script('codemirror', $SITEURL.'admin/template/js/codemirror/lib/codemirror-compressed.js', '0.2.0', FALSE);
+	register_script('codemirror', $SITEURL.'/template/js/codemirror/lib/codemirror-compressed.js', '0.2.0', FALSE);
 	queue_script('codemirror', GSBACK);
 	if (file_exists(GSADMINPATH.'/template/js/codemirror/lib/searchcursor.js')){
-		register_script('codemirror-search', $SITEURL.'admin/template/js/codemirror/lib/searchcursor.js', '0.2.0', FALSE);
-		register_script('codemirror-search-cursor', $SITEURL.'admin/template/js/codemirror/lib/search.js', '0.2.0', FALSE);
-		register_script('codemirror-dialog', $SITEURL.'admin/template/js/codemirror/lib/dialog.js', '0.2.0', FALSE);
-		register_script('codemirror-folding', $SITEURL.'admin/template/js/codemirror/lib/foldcode.js', '0.2.0', FALSE);
+		register_script('codemirror-search', $SITEURL.$GSADMIN.'/template/js/codemirror/lib/searchcursor.js', '0.2.0', FALSE);
+		register_script('codemirror-search-cursor',$SITEURL.$GSADMIN.'/template/js/codemirror/lib/search.js', '0.2.0', FALSE);
+		register_script('codemirror-dialog', $SITEURL.$GSADMIN.'/template/js/codemirror/lib/dialog.js', '0.2.0', FALSE);
+		register_script('codemirror-folding', $SITEURL.$GSADMIN.'/template/js/codemirror/lib/foldcode.js', '0.2.0', FALSE);
 
 		queue_script('codemirror-dialog', GSBACK);
 		queue_script('codemirror-search', GSBACK);
@@ -87,8 +87,8 @@ if (isset($_GET['id']) && $_GET['id']=="DM_Matrix"){
 		queue_script('codemirror-folding', GSBACK);
 	} 
 	
-	register_style('codemirror-css',$SITEURL.'admin/template/js/codemirror/lib/codemirror.css','screen',FALSE);
-	register_style('codemirror-theme',$SITEURL.'admin/template/js/codemirror/theme/default.css','screen',FALSE);		
+	register_style('codemirror-css',$SITEURL.$GSADMIN.'/template/js/codemirror/lib/codemirror.css','screen',FALSE);
+	register_style('codemirror-theme',$SITEURL.$GSADMIN.'/template/js/codemirror/theme/default.css','screen',FALSE);		
 	
 	queue_style('codemirror-css', GSBACK);
 	queue_style('codemirror-theme', GSBACK);
@@ -111,7 +111,7 @@ if (isset($_GET['id']) && $_GET['id']=="DM_Matrix"){
 	register_style('DM_Matrix_css',$SITEURL.'plugins/DM_Matrix/css/style.css', '0.1',FALSE);
 	queue_style('DM_Matrix_css', GSBACK);
 	
-	register_script('ckeditor', $SITEURL.'admin/template/js/ckeditor/ckeditor.js', '0.2.0', FALSE);
+	register_script('ckeditor', $SITEURL.$GSADMIN.'/template/js/ckeditor/ckeditor.js', '0.2.0', FALSE);
 	queue_script('ckeditor', GSBACK);
 	
 	register_script('askconfirm', $SITEURL.'plugins/DM_Matrix/js/jconfirm.jquery.js', '0.2.0', FALSE);
