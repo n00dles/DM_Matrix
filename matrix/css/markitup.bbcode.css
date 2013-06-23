@@ -1,0 +1,53 @@
+/* -------------------------------------------------------------------
+// markItUp!
+// By Jay Salvat - http://markitup.jaysalvat.com/
+// ------------------------------------------------------------------*/
+.bbcode .markItUpButton1 a {
+	background-image:url(../img/bold.png);
+}
+.bbcode .markItUpButton2 a {
+	background-image:url(../img/italic.png);
+}
+.bbcode .markItUpButton3 a {
+	background-image:url(../img/underline.png);
+}
+
+.bbcode .markItUpButton4 a {
+	background-image:url(../img/picture.png); 
+}
+.bbcode .markItUpButton5 a {
+	background-image:url(../img/link.png);
+}
+
+.bbcode .markItUpButton6 a {
+	background-image:url(../img/color_swatch.png); 
+}
+.bbcode .markItUpButton7 a {
+	background-image:url(../img/font.png);
+}
+
+.bbcode .markItUpButton8 a {
+	background-image:url(../img/list-bullet.png);
+}
+
+.bbcode .markItUpButton9 a {
+	background-image:url(../img/list-numeric.png);
+}
+.bbcode .markItUpButton10 a {
+	background-image:url(../img/list-item.png);
+}
+.bbcode .markItUpButton11 a {
+	background-image:url(../img/quotes.png);
+}
+.bbcode .markItUpButton12 a {
+	background-image:url(../img/script_code.png);
+}
+.bbcode .markItUpButton13 a {
+	background-image:url(../img/clean.png);
+}
+.bbcode .preview a {
+	background-image:url(../img/preview.png);
+}
+.bbcode .markItUpSeparator {
+  background: #d9d9d9;
+}

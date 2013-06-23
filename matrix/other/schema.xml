@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<channel version="1">
+  <item>
+    <name>_routes</name>
+    <id>0</id>
+    <maxrecords>0</maxrecords>
+    <field type="int" label="ID Field" desc="" default="" cacheindex="1" tableview="" table="" row="id" options="" path="" size="100" visibility="1" class="">id</field>
+    <field type="text" desc="" label="" default="" cacheindex="1" tableview="" table="" row="id" options="" path="" size="100" visibility="1" class="">route</field>
+    <field type="text" desc="" label="" default="" cacheindex="1" tableview="" table="" row="id" options="" path="" size="100" visibility="1" class="">rewrite</field>
+  </item>
+</channel>
