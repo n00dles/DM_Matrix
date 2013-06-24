@@ -905,7 +905,8 @@ class TheMatrix {
     // css
     echo '  <!--css-->'."\n";
     foreach (glob(GSPLUGINPATH.$plugin.'/css/*.css') as $css) {
-      echo '    <link rel="stylesheet" href="'.$SITEURL.'plugins/'.$plugin.'/css/'.$prefix.end(explode('/', $css)).'"/>'."\n";
+      $tmp = explode('/', $css);
+      echo '    <link rel="stylesheet" href="'.$SITEURL.'plugins/'.$plugin.'/css/'.$prefix.end($tmp).'"/>'."\n";
     }
     echo '  <!--/css-->'."\n";
     
@@ -915,7 +916,8 @@ class TheMatrix {
     sort($javascript);
     $javascript = array_reverse($javascript);
     foreach ($javascript as $js) {
-      echo '    <script src="'.$SITEURL.'plugins/'.$plugin.'/js/'.$prefix.end(explode('/', $js)).'"></script>'."\n";
+      $tmp = explode('/', $js);
+      echo '    <script src="'.$SITEURL.'plugins/'.$plugin.'/js/'.$prefix.end($tmp).'"></script>'."\n";
     }
     echo '  <!--/js-->'."\n";
     echo '<!--/'.$plugin.' files-->'."\n";
