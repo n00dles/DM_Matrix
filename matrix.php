@@ -37,7 +37,7 @@
   register_plugin(
     $thisfile,
     'The Matrix',
-    '1.0',
+    '1.0.1',
     'Mike Swan',
     'http://digimute.com/',
     'The Matrix',
