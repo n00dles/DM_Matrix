@@ -14,6 +14,7 @@ class TheMatrix {
     const VERSION = 1.0;
   
   # properties
+    private $salt;
     private $matrixPath;
     private $debug;
     private $defaultDebug = true;
@@ -30,10 +31,11 @@ class TheMatrix {
     private $globals;
   
   # initialization
-  public function __construct() {
+  public function __construct($salt='') {
     global $SITEURL, $TEMPLATE, $pagesArray;
     
     // initialize properties
+    $this->salt = $salt; // used for salting passwords
     $this->matrixPath = $SITEURL.'plugins/matrix/';
     $this->debug = true; // turn debugging on
     $this->defaultDebug = true;
@@ -98,9 +100,25 @@ class TheMatrix {
         'default' => '',
         'key'     => 'class',
       ),
+      'required'      => array(
+        'default' => '',
+        'key'     => 'required',
+      ),
+      'maxlength'      => array(
+        'default' => '',
+        'key'     => 'maxlength',
+      ),
+      'validation'      => array(
+        'default' => '',
+        'key'     => 'validation',
+      ),
       'readonly'      => array(
         'default' => '',
         'key'     => 'readonly',
+      ),
+      'rows'      => array(
+        'default' => 1,
+        'key'     => 'rows',
       ),
       'other'      => array(
         'default' => '',
@@ -117,6 +135,8 @@ class TheMatrix {
       'url'               =>  array('validate' => FILTER_VALIDATE_URL),
       'textlong'          =>  array(),
       'textarea'          =>  array('cdata' => true),
+      'textmulti'         =>  array('cdata' => true),
+      'intmulti'          =>  array(),
       'tags'              =>  array(),
       'slug'              =>  array(),
       'pages'             =>  array(),
@@ -127,6 +147,7 @@ class TheMatrix {
       'datetimelocal'     =>  array('manipulate' => 'strtotime'),
       'dropdown'          =>  array(),
       'dropdowncustom'    =>  array(),
+      'dropdownhierarchy' =>  array(),
       'checkbox'          =>  array('manipulate'=>'1'),
       'bbcodeeditor'      =>  array('cdata' => true),
       'wikieditor'        =>  array('cdata' => true),
@@ -134,6 +155,7 @@ class TheMatrix {
       'wysiwyg'           =>  array('cdata' => true),
       'codeeditor'        =>  array('cdata' => true),
       'imagepicker'       =>  array(),
+      'imageuploadadmin'  =>  array(),
       'filepicker'        =>  array(),
     );
     
@@ -250,6 +272,27 @@ class TheMatrix {
     }
     else return false;
   }
+  
+  public function explodeTrim($delim="\n", $string) {
+    if (is_string($string)) {
+      $string = explode($delim, $string);
+      $string = array_map('trim', $string);
+    }
+    return $string;
+  }
+  
+  public function implodeTrim($delim="\n", $array) {
+    if (is_array($array)) {
+      $array = array_map('trim', $array);
+      $array = implode("\n", $array);
+    }
+    return $array;
+  }
+
+  public function getHierarcalOptions($string, $delimiter=">") {
+    $options = new TheMatrixOptions($string);
+    return $options->output($delimiter);
+  }
 
   /* TheMatrix::renameKey($key, $rename, $array)
    * @param $key:    existing key
@@ -293,8 +336,34 @@ class TheMatrix {
    * @param $string: string to be slugified
    */
   public function str2Slug($string) {
-    return strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $string)));
+    if (is_string($string)) {
+      return strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $string)));
+    }
+    else return false;
   }
+
+  /* TheMatrix::getExcerpt($string, $length)
+   * Help from 'http://www.internoetics.com/2010/01/04/php-function-to-truncate-text-into-a-preview-or-excerpt-with-trailing-dots/'
+   * @param $string: string to parse
+   * @param $type:   type of excerpt; e.g. characters or paragraph
+   * @param $length: length of excerpt
+   */
+  public function getExcerpt($string, $length=50) {
+    if (is_string($string)) { 
+      $excerpt = '';
+      $string = strip_tags($string);
+      if (strlen($string)>$length) {
+        $excerpt = substr($string, 0, $length);
+        $excerpt = substr($excerpt, 0, strrpos($excerpt,' '));
+        $excerpt .= ' ...'; 
+      }
+      else $excerpt = $string;
+
+      // return
+      return $excerpt; 
+    }
+    else return false;
+  } 
 
   /* TheMatrix::outputFunction($array, $depth, $tab)
    * @param $array: input array
@@ -418,6 +487,19 @@ class TheMatrix {
       else {
         return $schemaArray;
       }
+    }
+    else return false;
+  }
+  
+  /* TheMatrix::modSchema()
+   * @param $table: 
+   * @param $array: 
+   */
+  public function modSchema($table, $array) {
+    if ($this->tableExists($table)) {
+      $this->schemaArray[$table] = $array;
+      $this->saveSchema();
+      return true;
     }
     else return false;
   }
@@ -672,7 +754,8 @@ class TheMatrix {
     // fills in the backups array and sorts it accordingly (latest first)
     $backups = array();
     foreach ($getBackups as $backup) {
-      $filename = end(explode('/', $backup));
+      $tmp = explode('/', $backup);
+      $filename = end($tmp);
       $file = $filename;
       $filename = substr($filename, 0, strlen($filename)-4);
       $date = filemtime($backup);
@@ -716,7 +799,8 @@ class TheMatrix {
         
         // adds files to folder
         foreach(glob(GSROOTPATH.'data/other/matrix/'.$table.'/*') as $xml) {
-          $zip->addFile($xml, $table.'/'.end(explode('/', $xml)));
+          $tmp = explode('/', $xml);
+          $zip->addFile($xml, $table.'/'.end($tmp));
         }
         
         // adds a schema of the table to the backup file
@@ -731,7 +815,8 @@ class TheMatrix {
         $backupFile = GSROOTPATH.'data/other/matrix/'.$table.'/'.$table.'_schema.xml';
         $array2XML = Array2XML::createXML('channel', $newSchema);
         $array2XML->save($backupFile);
-        $zip->addFile($backupFile, end(explode('/', $backupFile)));
+        $tmp = explode('/', $backupFile);
+        $zip->addFile($backupFile, end($tmp));
         
         // closes zip file
         $zip->close();
@@ -835,7 +920,7 @@ class TheMatrix {
    * @param $delim:   url structure of paginated links ($1 is the placeholderfor the page number)
    * @param $display: array for labels of of output links (keys are 'first', 'prev', 'next', 'last')
    */
-  public function paginateQuery($query, $key='page', $max=5, $range=2, $url='', $delim='&page=$1', $display=array('first'=>'&lt;&lt;', 'prev'=>'&lt;', 'next'=>'&gt;', 'last'=>'&gt;&gt;')) {
+  public function paginateQuery($query, $key='page', $max=5, $range=2, $url='', $delim='&page=$1', $display=array('first'=>'|&lt;&lt;', 'prev'=>'&lt;', 'next'=>'&gt;', 'last'=>'&gt;&gt;|')) {
     // initialisation
     $paginatedQuery = array();
     if(!isset($_GET[$key])) {
@@ -891,6 +976,25 @@ class TheMatrix {
       
     // return array
     return $paginatedQuery;
+  }
+  
+  // paginate i18n search results
+  public function paginateI18nResults($table, $searchid, $query, $key='page', $max=5, $range=2, $url='', $delim='&page=$1', $display=array('first'=>'|&lt;&lt;', 'prev'=>'&lt;', 'next'=>'&gt;', 'last'=>'&gt;&gt;|')) {
+    if ($this->tableExists($table)) {
+      if (isset($query['results'])) $query = $query['results'];
+      $results = $this->paginateQuery($query, $key, $max, $range, $url, $delim, $display);
+      $newarray = array();
+      foreach ($results['results'] as $result) {
+        $record = array();
+        foreach ($this->schemaArray[$table]['fields'] as $field) {
+          $record[$field['name']] = $result->{$field['name']};
+        }
+        $record['id'] = substr($result->id, strlen($searchid));
+        $newarray[] = $record;
+      }
+      $results['results'] = $newarray;
+      return $results;
+    }
   }
 
   # ======= ADMIN FUNCTIONS ======= #
@@ -1069,7 +1173,7 @@ class TheMatrix {
       }
       
       foreach ($array as $key => $value) {
-        if ($key!='tableName' && $key!='fields' && $key!='maxrecords') {
+        if ($key!='tableName' && $key!='fields' && $key!='maxrecords' && is_array($value)) {
           foreach ($value as $fieldKey => $fieldValue) {
             $array['fields'][$fieldKey][$key] = $fieldValue;
           }
@@ -1110,59 +1214,136 @@ class TheMatrix {
       }
       if ($schema['type']=='password') $value = '';
       
+      // maxlength
+      if (empty($schema['maxlength'])) {
+        $maxlength = '';
+      }
+      else {
+        $maxlength = 'maxlength="'.$schema['maxlength'].'"';
+      }
+      
       // text
       if ($schema['type']=='text') {
         ?>
-        <input type="text" name="post-<?php echo $field; ?>" class="text" value="<?php echo $value; ?>" placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?>/>
+        <input type="text" name="post-<?php echo $field; ?>" class="text" value="<?php echo $value; ?>" placeholder="<?php echo $schema['desc']; ?>" <?php echo $maxlength;?> <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/>
         <?php
       }
       // password
       elseif ($schema['type']=='password') {
         ?>
-        <input type="password" name="post-<?php echo $field; ?>" class="text" value="<?php echo $value; ?>" required pattern=".{6,}" placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?>/>
+        <input type="password" name="post-<?php echo $field; ?>" class="text" value="<?php echo $value; ?>" pattern=".{6,}" placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/>
         <?php
       }
       // int
       elseif ($schema['type']=='int') {
         ?>
-        <input type="number" name="post-<?php echo $field; ?>" class="text int" value="<?php echo $value; ?>" required placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?>/>
+        <input type="number" name="post-<?php echo $field; ?>" class="text int" value="<?php echo $value; ?>" placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/>
         <?php
       }
       // email
       elseif ($schema['type']=='email') {
         ?>
-        <input type="email" name="post-<?php echo $field; ?>" class="MatrixEmail text email" value="<?php echo $value; ?>" required placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?>/>
+        <input type="email" name="post-<?php echo $field; ?>" class="MatrixEmail text email" value="<?php echo $value; ?>" placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/>
         <?php
       }
       // url
       elseif ($schema['type']=='url') {
         ?>
-        <input type="url" name="post-<?php echo $field; ?>" class="MatrixURL text url" value="<?php echo $value; ?>" required placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?>/>
+        <input type="url" name="post-<?php echo $field; ?>" class="MatrixURL text url" value="<?php echo $value; ?>" placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/>
         <?php
       }
       // textlong
       elseif ($schema['type']=='textlong') {
         ?>
-        <input type="text" name="post-<?php echo $field; ?>" class="text textlong title" value="<?php echo $value; ?>" placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?>/> 
+        <input type="text" name="post-<?php echo $field; ?>" class="text textlong title" value="<?php echo $value; ?>" placeholder="<?php echo $schema['desc']; ?>"  <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/> 
         <?php
       }
       // textarea
       elseif ($schema['type']=='textarea') {
         ?>
-        <textarea name="post-<?php echo $field; ?>" id="post-<?php echo $field; ?>" class="MatrixTextarea textarea text" placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?>><?php echo $value; ?></textarea>
+        <textarea name="post-<?php echo $field; ?>" id="post-<?php echo $field; ?>" class="MatrixTextarea textarea text" placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>><?php echo $value; ?></textarea>
+        <?php
+      }
+      // textmulti
+      elseif ($schema['type']=='textmulti') {
+        ?>
+        <div class="textmultiWrap">
+          <?php
+            $schema['desc'] = explode("\n", $schema['desc']);
+            $schema['desc'] = array_map('trim', $schema['desc']);
+            $options = explode("\n", $value);
+            $options = array_map('trim', $options);
+            for ($i=0; $i<$schema['rows']; $i++) {
+          ?>
+            <input type="text" style="margin-bottom: 4px;" name="post-<?php echo $field; ?>[]" class="text textmulti" value="<?php if (isset($options[$i])) echo $options[$i]; ?>" placeholder="<?php if (isset($schema['desc'][$i])) echo $schema['desc'][$i]; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/>
+          <?php
+            }?>
+        </div>
+        <?php
+      }
+      // intmulti
+      elseif ($schema['type']=='intmulti') {
+        ?>
+        <div class="intmultiWrap">
+          <?php
+            // label
+            $schema['other'] = explode("\n", $schema['other']);
+            $schema['other'] = array_map('trim', $schema['other']);
+            
+            // description
+            $schema['desc'] = explode("\n", $schema['desc']);
+            $schema['desc'] = array_map('trim', $schema['desc']);
+            
+            // value
+            $options = explode("\n", $value);
+            $options = array_map('trim', $options);
+            for ($i=0; $i<$schema['rows']; $i++) {
+          ?>
+            <?php if (isset($schema['other'][$i])) echo '<span style="display: block; overflow: hidden;"><label style="display: block; padding: 5px 0 5px 0; float: left; width: 40%;">'.$schema['other'][$i].' : </label>'; ?><input type="number" style="margin-bottom: 4px; <?php if (isset($schema['other'][$i])) echo 'width: 50%; float: right;'; ?>" name="post-<?php echo $field; ?>[]" class="text intmulti" value="<?php if (isset($options[$i])) echo $options[$i]; ?>" placeholder="<?php if (isset($schema['desc'][$i])) echo $schema['desc'][$i]; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/><?php if (isset($schema['other'][$i])) echo '</span>'; ?>
+          <?php
+            }?>
+        </div>
+        <?php
+      }
+      // textmulticustom
+      elseif ($schema['type']=='textmulticustom') {
+        ?>
+        <span class="textmultiSpan">
+          <a href="#" class="add">+</a><br>
+          <?php
+            $options = explode("\n", $value);
+            $options = array_map('trim', $options);
+            foreach ($options as $option) {
+          ?>
+            <span><input type="text" name="post-<?php echo $field; ?>[]" class="text textmulti" value="<?php echo $option; ?>" placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/> <a href="#" class="remove">-</a></span>
+          <?php
+            }
+            if (empty($options)) {
+          ?>
+            <span><input type="text" name="post-<?php echo $field; ?>[]" class="text textmulti" placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/> <a href="#" class="remove">-</a></span>
+          <?php } ?>
+        </span>
+        <script>
+          $(document).ready(function(){
+            $('.textmultiSpan a').click(function(){
+              $(this).parent().append('<span><input type="text" name="post-<?php echo $field; ?>[]" class="text textmulti" value="<?php echo $option; ?>" placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/> <a href="#" class="remove">-</a></span>');
+              return false;
+            }); // click
+          }); // ready
+        </script>
         <?php
       }
       // tags
       elseif ($schema['type']=='tags') {
         ?>
-        <textarea name="post-<?php echo $field; ?>" id="post-<?php echo $field; ?>" class="MatrixTags tags" placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?>><?php echo $value; ?></textarea>
+        <textarea name="post-<?php echo $field; ?>" id="post-<?php echo $field; ?>" class="MatrixTags tags" placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>><?php echo $value; ?></textarea>
         <?php
         $this->initialiseTagsInput($id='.MatrixTags');
       }
       // slug
       elseif ($schema['type']=='slug') {
         ?>
-        <input type="text" name="post-<?php echo $field; ?>" class="MatrixSlug text slug" value="<?php echo $value; ?>" placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?>/>
+        <input type="text" name="post-<?php echo $field; ?>" class="MatrixSlug text slug" value="<?php echo $value; ?>" placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/>
         <?php
       }
       // dropdown
@@ -1172,7 +1353,7 @@ class TheMatrix {
         }
         else $query = array();
         ?>
-          <select name="post-<?php echo $field; ?>" class="text dropdown" <?php echo $schema['readonly']; ?>>
+          <select name="post-<?php echo $field; ?>" class="text dropdown" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>>
             <?php foreach ($query as $record) { ?>
               <option value="<?php echo $record[$schema['row']]; ?>" <?php if ($record[$schema['row']]==$value) echo 'selected="selected"'; ?> ><?php echo $record[$schema['row']]; ?></option>
             <?php } ?>
@@ -1186,7 +1367,7 @@ class TheMatrix {
         global $pagesArray;
         $pages = $pagesArray;
         ?>
-          <select name="post-<?php echo $field; ?>" class="text dropdown" <?php echo $schema['readonly']; ?>>
+          <select name="post-<?php echo $field; ?>" class="text dropdown" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>>
             <?php foreach ($pages as $slug => $properties) { ?>
               <option value="<?php echo $slug; ?>" <?php if ($slug==$value) echo 'selected="selected"'; ?> ><?php echo $properties['title']; ?></option>
             <?php } ?>
@@ -1197,9 +1378,9 @@ class TheMatrix {
       elseif ($schema['type']=='users') {
         $users = $this->getUsers();
         ?>
-          <select name="post-<?php echo $field; ?>" class="text dropdown" <?php echo $schema['readonly']; ?>>
+          <select name="post-<?php echo $field; ?>" class="text dropdown" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>>
             <?php foreach ($users as $user => $details) { ?>
-              <option value="<?php echo $user; ?>" <?php if ($user==$value) echo 'selected="selected"'; ?> ><?php if (empty($details['NAME'])) echo $user; else echo $details['NAME']; ?></option>
+              <option value="<?php echo $user; ?>" <?php if ($user==$value || (empty($value) && $user==$_COOKIE['GS_ADMIN_USERNAME'])) echo 'selected="selected"'; ?> ><?php if (empty($details['NAME'])) echo $user; else echo $details['NAME']; ?></option>
             <?php } ?>
           </select>
         <?php
@@ -1208,7 +1389,7 @@ class TheMatrix {
       elseif ($schema['type']=='components') {
         $components = $this->getComponents();
         ?>
-          <select name="post-<?php echo $field; ?>" class="text dropdown" <?php echo $schema['readonly']; ?>>
+          <select name="post-<?php echo $field; ?>" class="text dropdown" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>>
             <?php foreach ($components as $slug => $component) { ?>
               <option value="<?php echo $slug; ?>" <?php if ($slug==$value) echo 'selected="selected"'; ?> ><?php echo $component['title']; ?></option>
             <?php } ?>
@@ -1219,7 +1400,7 @@ class TheMatrix {
       elseif ($schema['type']=='themes') {
         $themes = $this->getThemes();
         ?>
-          <select name="post-<?php echo $field; ?>" class="text dropdown" <?php echo $schema['readonly']; ?>>
+          <select name="post-<?php echo $field; ?>" class="text dropdown" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>>
             <?php foreach ($themes as $theme) { ?>
               <option value="<?php echo $theme; ?>" <?php if ($theme==$value || (empty($value)) && $theme==$this->globals['template']) echo 'selected="selected"'; ?> ><?php echo $theme; ?></option>
             <?php } ?>
@@ -1233,7 +1414,8 @@ class TheMatrix {
         
         // unset 'functions.php' and '*.inc.php'
         foreach ($templates as $key => $template) {
-          $templates[$key] = $template = end(explode('/', $template));
+          $tmp = explode('/', $template);
+          $templates[$key] = $template = end($tmp);
           if (
             strtolower($template) == 'functions.php' ||
             substr($template, -7, 7) == 'inc.php'
@@ -1243,7 +1425,7 @@ class TheMatrix {
         }
         sort($templates);
         ?>
-          <select name="post-<?php echo $field; ?>" class="text dropdown" <?php echo $schema['readonly']; ?>>
+          <select name="post-<?php echo $field; ?>" class="text dropdown" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>>
             <?php foreach ($templates as $template) { ?>
               <option value="<?php echo $template; ?>" <?php if ($template==$value) echo 'selected="selected"'; ?> ><?php echo $template; ?></option>
             <?php } ?>
@@ -1253,10 +1435,22 @@ class TheMatrix {
       // dropdowncustom
       elseif ($schema['type']=='dropdowncustom') {
         $options = explode("\n", $schema['options']);
+        $options = array_map('trim', $options);
         ?>
-          <select name="post-<?php echo $field; ?>" class="text dropdown" <?php echo $schema['readonly']; ?>>
+          <select name="post-<?php echo $field; ?>" class="text dropdown" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>>
             <?php foreach ($options as $option) { ?>
               <option value="<?php echo $option; ?>" <?php if ($option==$value) echo 'selected="selected"'; ?> ><?php echo $option; ?></option>
+            <?php } ?>
+          </select>
+        <?php
+      }
+      // dropdownhierarchy
+      elseif ($schema['type']=='dropdownhierarchy') {
+        $options = $this->getHierarcalOptions($schema['options']);
+        ?>
+          <select name="post-<?php echo $field; ?>" class="text dropdown" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>>
+            <?php foreach ($options as $option) { ?>
+              <option value="<?php echo $option['value']; ?>" <?php if ($option['value']==$value) echo 'selected="selected"'; ?> ><?php echo $option['option']; ?></option>
             <?php } ?>
           </select>
         <?php
@@ -1271,7 +1465,10 @@ class TheMatrix {
         foreach ($options as $key => $option) {
           $option = filter_var($option, FILTER_SANITIZE_STRING);
         ?>
-          <input type="checkbox" name="post-<?php echo $field; ?>[<?php echo $key; ?>]" <?php if (in_array($option, $selected)) echo 'checked="checked"'; ?> class="input"  <?php echo $schema['readonly']; ?>/> <span class="option"><?php echo $option; ?></span><br />
+          <p class="inline post-menu clearfix">
+            <input type="checkbox" name="post-<?php echo $field; ?>[<?php echo $key; ?>]" <?php if (in_array($option, $selected)) echo 'checked="checked"'; ?> class="input"  <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/>
+            &nbsp;&nbsp;&nbsp;<label><?php echo $option; ?></label>
+          </p>
         <?php
         }
       ?>
@@ -1286,13 +1483,13 @@ class TheMatrix {
       ) {
         if (!is_numeric($value)) $value = time();
         ?>
-        <input type="datetime-local" class="text datetimelocal" name="post-<?php echo $field; ?>" value="<?php echo date('Y-m-d\TH:i', $value); ?>"  placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?>/>
+        <input type="datetime-local" class="text datetimelocal" name="post-<?php echo $field; ?>" value="<?php echo date('Y-m-d\TH:i', $value); ?>" placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/>
         <?php
       }
       // imagepicker
       elseif ($schema['type']=='imagepicker') {
         ?>
-        <input class="text imagepicker DM_filepicker " name="post-<?php echo $field; ?>" type="text" id="post-<?php echo $field; ?>" name="post-<?php echo $field; ?>" style="width:98%;" value="<?php echo $value; ?>" <?php echo $schema['readonly']; ?>/>
+        <input class="text imagepicker DM_filepicker " type="text" id="post-<?php echo $field; ?>" name="post-<?php echo $field; ?>" style="width:98%;" placeholder="<?php echo $schema['desc']; ?>" value="<?php echo $value; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/>
         <span class="edit-nav"><a id="browse-<?php echo $field; ?>" href="javascript:void(0);">Browse</a></span>
         <script type="text/javascript">
           $(function() { 
@@ -1303,10 +1500,42 @@ class TheMatrix {
         </script>
         <?php
       }
+      // imageuploadadmin
+      elseif ($schema['type']=='imageuploadadmin') {
+        ?>
+        <input type="file" class="text imageuploadadmin DM_imageuploadadmin" style="margin: 0 0 10px 0 !important;" name="post-<?php echo $field; ?>" disabled/>
+        <select class="text imageuploadadmin DM_imageuploadadmin " name="post-<?php echo $field; ?>">
+          <option value="">--no file--</option>
+          <option value="upload">--upload--</option>
+          <?php
+            $images = glob(GSDATAUPLOADPATH.$schema['path'].'*.*');
+            $thumbs = glob(GSTHUMBNAILPATH.$schema['path'].'*.*');
+            foreach ($images as $image) {
+              $tmp = explode('/', $image);
+              $file = end($tmp);
+          ?>
+          <option value="<?php echo $file; ?>" <?php if ($file==$value) echo 'selected="selected"'; ?>><?php echo $file; ?></option>
+          <?php } ?>
+        </select>
+        <script>
+          $(document).ready(function(){
+            $('input.imageuploadadmin').hide();
+            $('select.imageuploadadmin').change(function(){
+              if ($(this).val() == 'upload') {
+                $(this).prev('input.imageuploadadmin').slideDown().prop('disabled', false);
+              }
+              else {
+                $(this).prev('input.imageuploadadmin').slideUp().prop('disabled', true);
+              }
+            }); // change
+          }); // ready
+        </script>
+        <?php
+      }
       // filepicker
       elseif ($schema['type']=='filepicker') {
         ?>
-        <input class="MatrixFilepicker text filepicker" name="post-<?php echo $field; ?>" type="text" id="post-<?php echo $field; ?>" name="post-<?php echo $field; ?>" style="width:98%;" value="<?php echo $value; ?>" <?php echo $schema['readonly']; ?>/>
+        <input class="MatrixFilepicker text filepicker" name="post-<?php echo $field; ?>" type="text" id="post-<?php echo $field; ?>" name="post-<?php echo $field; ?>" style="width:98%;" placeholder="<?php echo $schema['desc']; ?>" value="<?php echo $value; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/>
         <span class="edit-nav"><a id="browse-<?php echo $field; ?>" href="javascript:void(0);">Browse</a></span>
         <script type="text/javascript">
           $(function() { 
@@ -1320,7 +1549,7 @@ class TheMatrix {
       // bbcodeeditor
       elseif ($schema['type']=='bbcodeeditor') {
         ?>
-        <textarea id="post-<?php echo $field; ?>" name="post-<?php echo $field; ?>" class="MatrixBBCode bbcodeeditor" placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?>><?php echo $value; ?></textarea>
+        <textarea id="post-<?php echo $field; ?>" name="post-<?php echo $field; ?>" class="MatrixBBCode bbcodeeditor" placeholder="<?php echo $schema['desc']; ?>" <?php echo $maxlength;?> <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>><?php echo $value; ?></textarea>
         <script language="javascript">
           $(document).ready(function()	{
             $('.MatrixBBCode').markItUp(GSBBCodeSettings);
@@ -1331,7 +1560,7 @@ class TheMatrix {
       // wikieditor
       elseif ($schema['type']=='wikieditor') {
         ?>
-        <textarea id="post-<?php echo $field; ?>" name="post-<?php echo $field; ?>" class="MatrixWiki wikieditor" placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?>><?php echo $value; ?></textarea>
+        <textarea id="post-<?php echo $field; ?>" name="post-<?php echo $field; ?>" class="MatrixWiki wikieditor" placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>><?php echo $value; ?></textarea>
         <script language="javascript">
           $(document).ready(function()	{
             $('.MatrixWiki').markItUp(GSWikiSettings);
@@ -1342,7 +1571,7 @@ class TheMatrix {
       // markdowneditor
       elseif ($schema['type']=='markdowneditor') {
         ?>
-        <textarea id="post-<?php echo $field; ?>" name="post-<?php echo $field; ?>" class="MatrixMarkDown markdown" placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?>><?php echo $value; ?></textarea>
+        <textarea id="post-<?php echo $field; ?>" name="post-<?php echo $field; ?>" class="MatrixMarkDown markdown" placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>><?php echo $value; ?></textarea>
         <script language="javascript">
           $(document).ready(function()	{
             $('.MatrixMarkDown').markItUp(GSMarkDownSettings);
@@ -1353,14 +1582,14 @@ class TheMatrix {
       // wysiwyg
       elseif ($schema['type']=='wysiwyg') {
         ?>
-        <textarea id="post-<?php echo $field; ?>" name="post-<?php echo $field; ?>" class="DMckeditor text wysiwyg" style="width:513px; height:200px; border: 1px solid #AAAAAA;" placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?>><?php echo $value; ?></textarea>
+        <textarea id="post-<?php echo $field; ?>" name="post-<?php echo $field; ?>" class="DMckeditor text wysiwyg" style="width:513px; height:200px; border: 1px solid #AAAAAA;" placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>><?php echo $value; ?></textarea>
         <?php
         if ($ckeditor) $this->initialiseCKEditor();
       }
       // codeeditor
       elseif ($schema['type']=='codeeditor') {
         ?>
-        <textarea id="post-<?php echo $field; ?>" name="post-<?php echo $field; ?>" class="codeeditor DM_codeeditor text" placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?>><?php echo $value; ?></textarea>
+        <textarea id="post-<?php echo $field; ?>" name="post-<?php echo $field; ?>" class="codeeditor DM_codeeditor text" placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>><?php echo $value; ?></textarea>
         <?php
         $this->initialiseCodeMirror();
         $this->instantiateCodeMirror($field);
@@ -1408,6 +1637,7 @@ class TheMatrix {
         }
       }
       
+      // invisible fields
       foreach ($array as $key => $value) {
 
           if ($key == 'metadata_window' && isset($value['window'])) {
@@ -1486,38 +1716,86 @@ class TheMatrix {
    */
   public function manipulateData($table, $query) {
     if ($this->tableExists($table)) {
-      $query = $this->stripPost($query); // removes 'post-' prefix
-      #$fields = $this->getSchema($table, true);
+      // removes 'post-' prefix
+      $query = $this->stripPost($query); 
+      
+      // load fields schema
       $fields = $this->schemaArray[$table]['fields'];
+      
+      // remove unnecessary fields
+      foreach ($query as $field=>$value) {
+        if (!array_key_exists($field, $fields)) unset($query[$field]);
+      }
+      
       foreach ($query as $field=>$value) {
         if ($field!='id') {
           if ($fields[$field]['type']=='checkbox') {
             $options = explode("\n", $fields[$field]['options']);
             $end = '';
-            foreach ($value as $key => $selected) {
-              if (array_key_exists($key, $options)) $end .= $options[$key]."\n";
+            if (is_array($value)) {
+              foreach ($value as $key => $selected) {
+                if (array_key_exists($key, $options)) $end .= $options[$key]."\n";
+              }
             }
             $query[$field] = $end;
           }
           // password (sha1 encoding)
           if ($fields[$field]['type']=='password') {
-            $query[$field] = sha1($value);
+            $query[$field] = $this->salt.sha1($value);
+          }
+          // dropdown (for trimming)
+          if ($fields[$field]['type']=='dropdowncustom') {
+            $query[$field] = trim($value);
+          }
+          // slug
+          if ($fields[$field]['type']=='slug') {
+            $query[$field] = $this->str2slug($value);
           }
           // datetimelocal
           if ($fields[$field]['type']=='datetimelocal' && !is_numeric($value)) {
             $query[$field] = strtotime($value);
           }
-
+          // imageuploadadmin
+          if ($fields[$field]['type']=='imageuploadadmin') {
+            // get settings
+            $op = explode("\n", $fields[$field]['options']);
+            $op = array_map('trim', $op);
+            
+            // defaults
+            if (!isset($op[0])) $op[0] = 5*10*10*10*1024; // default max size set to 5mb
+            if (!isset($op[1])) $op[1] = 900; // max width
+            if (!isset($op[2])) $op[2] = 900; // max height
+            if (!isset($op[3])) $op[3] = 100; // thumb width
+            if (!isset($op[4])) $op[4] = 100; // thumb height
+            if (!isset($op[5])) $op[5] = 'auto'; // thumb resize method
+            
+            if ($op[1]==0 && $op[2]==0) {
+              $resize = false;
+            }
+            else {
+              $resize = array('width' => $op[1], 'height' => $op[2]);
+            }
+            if (!empty($_FILES)) {
+              $upload = new SimpleImageUpload('post-'.$field);
+              $success = $upload->upload($maxSize=(int)$op[0], $path=GSDATAUPLOADPATH.$fields[$field]['path'], $thumb=GSTHUMBNAILPATH.$fields[$field]['path'], $filename=false, $enableThumbnail=array('maxwidth'=>$op[3], 'maxheight'=>$op[4], 'method'=>$op[5]), $resize);
+              if ($success['status']==true) {
+                $query[$field] = $success['file'];
+              }
+              else {
+                $query[$field] = '';
+              }
+            }
+          }
+          // textmulti
+          if (($fields[$field]['type']=='textmulti' || $fields[$field]['type']=='intmulti') && is_array($value)) {
+            $value = array_map('trim', $value);
+            $query[$field] = implode("\n", ($value));
+          }
           // corrects cdata tags
           if (isset($this->fieldTypes[$fields[$field]['type']]['cdata'])) {
             $query[$field] = array('@cdata'=>$query[$field]);
           }
         }
-      }
-      
-      // remove unnecessary fields
-      foreach ($query as $field=>$value) {
-        if (!array_key_exists($field, $fields)) unset($query[$field]);
       }
       
       // fill in unspecified fields
@@ -1640,15 +1918,18 @@ class TheMatrix {
       // pull the original data and manipulate the query data
       $oldXML = file_get_contents($file);
       $array = XML2Array::createArray($oldXML); 
-      $query = $this->manipulateData($table, $query);
       $query['id'] = $id;
       $old = $array['channel']['item'];
       
       // to overwrite or not to overwrite
       if ($overwrite==false) {
-        $array['channel']['item'] = array_merge($array['channel']['item'], $query);
+        $newarray = $this->recordExists($table, $id);
+        $newarray = array_merge($newarray, $query);
+        $newarray = $this->manipulateData($table, $newarray);
+        $array['channel']['item'] = $newarray;
       }
       else {
+        $query = $this->manipulateData($table, $query);
         $array['channel']['item'] = $query;
       }
       
@@ -1748,6 +2029,9 @@ class TheMatrix {
       }
     }
     
+    // fix cache
+    if ($cache==false) unset($this->tablesCache[$table]);
+    
     // single
     if ($type=='SINGLE' || $type=='DM_SINGLE') {
       if (count($results)){
@@ -1767,6 +2051,18 @@ class TheMatrix {
     else {
       return $results;
     }
+  }
+  
+  // format tags for i18n
+  public function formatTags($tags=array()) {
+    if (is_array($tags)) {
+      foreach ($tags as $key => $tag) {
+        $tag = strtolower($tag);
+        $tags[$key] = preg_replace('/[\W]+/', '_', $tag);
+      }
+      return $tags;
+    }
+    else return false;
   }
   
   // formats query output according to field type
@@ -1967,6 +2263,24 @@ class TheMatrix {
     </script>
   <?php
   }
+
+  /* TheMatrix::doRoute($key)
+   * @param $key: key in the uri to look for (e.g. for uri 'blog/slug', 0 refers to 'blog'
+   */
+  public function doRoute($key=0) {
+	  global $file, $id, $uri;
+	  $uriRoutes= $this->query("SELECT * FROM _routes");
+	  $uri = trim(str_replace('index.php', '', $_SERVER['REQUEST_URI']), '/#');
+    #echo strstr($uri, '?id=');
+    #echo $uri;
+	  $parts = explode('/',$uri);
+	  foreach ($uriRoutes as $routes) {
+		  if ($parts[$key]==$routes['route']) {
+			  $file=GSDATAPAGESPATH . str_replace('.php','.xml',$routes['rewrite']);
+			  $id = pathinfo($routes['rewrite'],PATHINFO_FILENAME);
+		  }
+	  }
+  }
    
   public function getAdminHeader($header, $nav=array()) {
     global $SITEURL;
@@ -2054,9 +2368,17 @@ class TheMatrix {
     else {
     }
   }
-  
+
   public function sessionStart() {
     if(session_id() == '') session_start();
+  }
+  
+  public function refreshIndex() {
+    if(function_exists('delete_i18n_search_index')){
+      delete_i18n_search_index();
+      return true;
+    }
+    else return false;
   }
 }
  

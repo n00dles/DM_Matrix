@@ -1,5 +1,4 @@
 <?php
-
 /*
  * TheMatrix, a plugin for GetSimple CMS 3.1
  * 
@@ -22,7 +21,11 @@
   require_once(MATRIXPATH.'include/array2xml.class.php');
   require_once(MATRIXPATH.'include/xml2array.class.php');
   require_once(MATRIXPATH.'include/parser.class.php');
+  require_once(MATRIXPATH.'include/options.class.php');
+  require_once(MATRIXPATH.'include/imageresize.class.php');
+  require_once(MATRIXPATH.'include/imageupload.class.php');
   require_once(MATRIXPATH.'include/matrix.class.php');
+  require_once(MATRIXPATH.'include/search.class.php');
   require_once(MATRIXPATH.'include/extended.class.php');
   require_once(MATRIXPATH.'include/global.php');
   
@@ -44,14 +47,15 @@
 
 # actions & filters
   # front-end
-    queue_script('jquery', GSFRONT); 
+    queue_script('jquery', GSFRONT);
+    add_action('error-404', array($matrix, 'doRoute'), array(0));
   
   # back-end
     # lang
     i18n_merge(MATRIX) || i18n_merge(MATRIX, 'en_US');
     
     # tab
-    add_action('nav-tab', 'createNavTab', array('matrix', MATRIX, 'The Matrix', 'tables'));
+    add_action('nav-tab', 'createNavTab', array(MATRIX, MATRIX, 'The Matrix', 'tables'));
     
     # sidebar
     add_action(MATRIX.'-sidebar','createSideMenu', array(MATRIX, "View All Tables", 'tables')); 

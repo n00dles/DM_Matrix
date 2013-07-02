@@ -14,6 +14,22 @@ div.tagsinput {
   overflow-y:auto;
 }
 
+.leftsec div.tagsinput, .rightsec div.tagsinput {
+  width:95% !important;
+}
+
+.rightsec textarea.text, .leftsec textarea.text {
+	width: 92% !important;
+  height: 100px;
+}
+
+.leftsec div.textmultiWrap, .leftsec div.intmultiWrap {
+  width: 96% !important;
+}
+.rightsec div.textmultiWrap, .rightsec div.intmultiWrap {
+  width: 96% !important;
+}
+
 div.tagsinput:focus {
   outline:none;
   border:1px solid #666!important;

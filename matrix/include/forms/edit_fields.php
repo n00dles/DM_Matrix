@@ -23,9 +23,14 @@
   <div class="advanced">
     <div class="leftopt">
       <p><input class="text" name="label[]" placeholder="Label" value="<?php echo $field['label']; ?>"/></p>
-      <p><input class="text" name="desc[]" placeholder="<?php echo i18n_r('PLUGIN_DESC'); ?>" value="<?php echo $field['desc']; ?>"/></p>
-      <p><input class="text" name="default[]" placeholder="Default" value="<?php echo $field['default']; ?>"/></p>
+      <p>
+        <textarea class="text" name="desc[]" placeholder="<?php echo i18n_r('PLUGIN_DESC'); ?>"><?php echo $field['desc']; ?></textarea>
+      </p>
+      <p>
+        <textarea class="text" name="default[]" placeholder="Default"><?php echo $field['default']; ?></textarea>
+      </p>
       <p><textarea class="text" name="other[]" placeholder="Other settings (custom)"/><?php echo $field['other']; ?></textarea></p>
+      <p><input class="text" name="maxlength[]" placeholder="Max length" value="<?php echo $field['maxlength']; ?>"/></p>
     </div>
     <div class="rightopt">
       <div class="showOptions dropdown">
@@ -39,14 +44,18 @@
       <p><input class="text tableRow" name="row[]" value="<?php echo $field['row']; ?>" placeholder="Column name"/></p>
       </div>
       
-      <div class="showOptions dropdowncustom checkbox">
+      <div class="showOptions dropdowncustom checkbox dropdownhierarchy imageuploadadmin">
       <p>
         <textarea class="text" name="options[]"><?php echo $field['options']; ?></textarea>
       </p>
       </div>
       
-      <div class="showOptions imageupload">
-        <p><input class="text uploadpath" name="path[]" placeholder="data/uploads/<?php echo $_GET['table']; ?>/" value="<?php echo $field['path']; ?>"/></p>
+      <div class="showOptions imageuploadadmin">
+        <p><input class="text uploadpath" name="path[]" placeholder="<?php echo $_GET['table']; ?>/" value="<?php echo $field['path']; ?>"/></p>
+      </div>
+      
+      <div class="showOptions textmulti intmulti">
+        <p><input class="text rows" name="rows[]" placeholder="Number of fields to show" value="<?php echo $field['rows']; ?>"/></p>
       </div>
       
       <p><input class="text" name="size[]" placeholder="Field size" value="<?php echo $field['size']; ?>"/></p>
@@ -82,6 +91,15 @@
           <option value="readonly" <?php if ($field['readonly']=='readonly') echo 'selected="selected"'; ?>>Read Only</option>
           <option value="" <?php if ($field['readonly']=='') echo 'selected="selected"'; ?>>Writetable</option>
         </select>
+      </p>
+      <p>
+        <select class="text" name="required[]">
+          <option value="required" <?php if ($field['required']=='required') echo 'selected="selected"'; ?>>Required</option>
+          <option value="" <?php if ($field['required']=='') echo 'selected="selected"'; ?>>Not Required</option>
+        </select>
+      </p>
+      <p>
+        <input type="text" class="text" name="validation[]" value="<?php echo $field['validation']; ?>" placeholder="<?php echo i18n_r(MATRIX.'/DM_VALIDATION'); ?>"/>
       </p>
     </div>
     <div class="clear"></div>

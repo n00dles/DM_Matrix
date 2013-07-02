@@ -169,7 +169,7 @@
     <form method="post" id="createTable" action="load.php?id=<?php echo MATRIX;?>&tables">
       <p id="table">
         <label style="display: none;"><?php echo i18n_r("matrix/DM_TABLENAME"); ?>: </label>
-        <input name="tableName" class="text title" placeholder="<?php echo i18n_r("matrix/DM_TABLENAME"); ?>" required pattern="\w*"/>
+        <input name="tableName" class="text title" placeholder="<?php echo i18n_r("matrix/DM_TABLENAME"); ?>" required pattern="[a-z0-9-]+"/>
         <input name="fields[]" type="hidden"/>
       </p>
       <p>
