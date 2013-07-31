@@ -1,1 +1,0 @@
-<?php $this->getAdminHeader('Edit Table', $nav); ?>

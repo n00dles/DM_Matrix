@@ -1,24 +1,24 @@
 <?php
-/**
- * TheMatrix: A class for all of the core functions for manipulating queries.
- *
- * Usage:
- *      GIVE USAGE
- */
- 
+
 class TheMatrix {
   # constants
+    const FILE    = 'matrix';
     const SINGLE  = 0;
     const MULTI   = 1;
     const COUNT   = 2;
-    const VERSION = 1.0;
+    const VERSION = '1.02';
+    const AUTHOR  = 'Mike Swan';
+    const URL     = 'http://digimute.com/';
+    const WIKI    = 'https://github.com/n00dles/DM_Matrix/wiki/';
   
   # properties
     private $salt;
-    private $matrixPath;
+    private $directories;
+    private $fields;
+    private $plugin;
     private $debug;
     private $defaultDebug = true;
-    private $schemaArray = array();
+    private $schema = array();
     private $itemTitle;
     private $editing; 
     private $uri;
@@ -26,167 +26,111 @@ class TheMatrix {
     private $sql;
     private $mytable;
     private $tablesCache; // hold cached schema loads
-    private $fieldProperties; // default properties for fields (used to check during field creation)
-    private $fieldTypes;
     private $globals;
   
   # initialization
   public function __construct($salt='') {
-    global $SITEURL, $TEMPLATE, $pagesArray;
+    // initialize plugin properties
+    $this->plugin = array();
+    $this->plugin['id']          = self::FILE;
+    $this->plugin['name']        = i18n_r(self::FILE.'/PLUGIN_TITLE');
+    $this->plugin['version']     = self::VERSION;
+    $this->plugin['author']      = self::AUTHOR;
+    $this->plugin['url']         = self::URL;
+    $this->plugin['wiki']        = self::WIKI;
+    $this->plugin['description'] = i18n_r(self::FILE.'/PLUGIN_DESC');
+    $this->plugin['page']        = self::FILE;
+    $this->plugin['sidebar']     = i18n_r(self::FILE.'/PLUGIN_SIDEBAR');
     
-    // initialize properties
-    $this->salt = $salt; // used for salting passwords
-    $this->matrixPath = $SITEURL.'plugins/matrix/';
-    $this->debug = true; // turn debugging on
-    $this->defaultDebug = true;
-    $this->schemaArray = array();
-    $this->itemTitle = 'Matrix';
-    $this->editing = false; 
-    $this->uri = '';
-    $this->formColumns = 0;
-    $this->sql = new sql4array();
-    $this->myTable = array();
-    $this->tablesCache = array();
-    $this->fieldProperties = array(
-      'type'            => array(
-        'default' => 'text',
-        'key'     => 'type',
-      ),
-      'desc'            => array(
-        'default' => '',
-        'key'     => 'desc',
-      ),
-      'label'           => array(
-        'default' => '',
-        'key'     => 'label',
-      ),
-      'default'         => array(
-        'default' => '',
-        'key'     => 'default',
-      ),
-      'cacheindex'      => array(
-        'default' => 1,
-        'key'     => 'cacheindex',
-      ),
-      'tableview'       => array(
-        'default' => 1,
-        'key'     => 'tableview',
-      ),
-      'table'           => array(
-        'default' => '',
-        'key'     => 'table',
-      ),
-      'row'             => array(
-        'default' => 'id',
-        'key'     => 'row',
-      ),
-      'options' => array(
-        'default' =>  '',
-        'key'     =>  'options',
-      ),
-      'path'      => array(
-        'default' => '',
-        'key'     => 'path',
-      ),
-      'size'       => array(
-        'default' => 100,
-        'key'     => 'size',
-      ),
-      'visibility' => array(
-        'default' => 1,
-        'key'     => 'visibility',
-      ),
-      'class'      => array(
-        'default' => '',
-        'key'     => 'class',
-      ),
-      'required'      => array(
-        'default' => '',
-        'key'     => 'required',
-      ),
-      'maxlength'      => array(
-        'default' => '',
-        'key'     => 'maxlength',
-      ),
-      'validation'      => array(
-        'default' => '',
-        'key'     => 'validation',
-      ),
-      'readonly'      => array(
-        'default' => '',
-        'key'     => 'readonly',
-      ),
-      'rows'      => array(
-        'default' => 1,
-        'key'     => 'rows',
-      ),
-      'other'      => array(
-        'default' => '',
-        'key'     => 'other',
-      ),
-    );
+    // if the core dependencies exist, continue
+    if ($this->checkDependencies()) {
+      $this->salt = $salt;          // used for salting passwords
+      $this->debug = true;          // turn debugging on
+      $this->defaultDebug = true;
+      $this->schema = array();
+      $this->itemTitle = 'Matrix';
+      $this->editing = false; 
+      $this->uri = '';
+      $this->formColumns = 0;
+      $this->sql = new sql4array();
+      $this->myTable = array();
+      $this->tablesCache = array();
+      $this->directories = $this->getDirs();
+      $this->fields = $this->fields();
+      $this->globals = $this->globals();
+      
+      // loads schema
+      $this->getSchema();
+      
+      // initialize (create folders, core schema, etc...)
+      $this->initialize();
+    }
+  }
+  
+  # check plugin dependencies (really something for later, if TheMatrix expands to require other plugins)
+  private function checkDependencies() {
+    return true;
+  }
+  
+  # output missing dependencies array
+  private function missingDependencies() {
+  }
+  
+  # get defined directories
+  private function getDirs() {
+    $dirs = array();
     
-    // field types
-    $this->fieldTypes = array(
-      'text'              =>  array('cdata' => true),
-      'password'          =>  array(),
-      'int'               =>  array('validate' => FILTER_SANITIZE_NUMBER_INT),
-      'email'             =>  array('validate' => FILTER_VALIDATE_EMAIL),
-      'url'               =>  array('validate' => FILTER_VALIDATE_URL),
-      'textlong'          =>  array(),
-      'textarea'          =>  array('cdata' => true),
-      'textmulti'         =>  array('cdata' => true),
-      'intmulti'          =>  array(),
-      'tags'              =>  array(),
-      'slug'              =>  array(),
-      'pages'             =>  array(),
-      'users'             =>  array(),
-      'template'          =>  array(),
-      'themes'            =>  array(),
-      'components'        =>  array(),
-      'datetimelocal'     =>  array('manipulate' => 'strtotime'),
-      'dropdown'          =>  array(),
-      'dropdowncustom'    =>  array(),
-      'dropdownhierarchy' =>  array(),
-      'checkbox'          =>  array('manipulate'=>'1'),
-      'bbcodeeditor'      =>  array('cdata' => true),
-      'wikieditor'        =>  array('cdata' => true),
-      'markdowneditor'    =>  array('cdata' => true),
-      'wysiwyg'           =>  array('cdata' => true),
-      'codeeditor'        =>  array('cdata' => true),
-      'imagepicker'       =>  array(),
-      'imageuploadadmin'  =>  array(),
-      'filepicker'        =>  array(),
-    );
+    // plugin folder
+    $dirs['plugin']['core']   = array('dir' => GSPLUGINPATH.self::FILE.'/');
+    $dirs['plugin']['php']    = array('dir' => $dirs['plugin']['core']['dir'].'/php/');
+    $dirs['plugin']['var']    = array('dir' => $dirs['plugin']['php']['dir'].'/var/');
+    $dirs['plugin']['admin']  = array('dir' => $dirs['plugin']['php']['dir'].'/admin/');
+    $dirs['plugin']['forms']  = array('dir' => $dirs['plugin']['php']['dir'].'/forms/');
     
-    // global variables
-    $this->globals = array(
-      'siteurl'     => $SITEURL,
-      'template'    => $TEMPLATE,
-      'pages'       => $pagesArray,
-    );
+    // data folder
+    $dirs['data']['core']    = array('dir' => GSDATAOTHERPATH.self::FILE.'/');
     
-    // loads schema
-    $this->getSchema();
+    return $dirs;
+  }
+  
+  # creates base folders
+  private function initialize() {
+    // array used to indicate success of processes
+    $return = array();
+    $dataDir = $this->directories['data']['core']['dir'];
     
-    // check and make sure the base folders exist
-    if (!is_dir(MATRIXDATAPATH)) {
-      mkdir(MATRIXDATAPATH, 0755);
-      $this->debugLog(i18n_r(MATRIX.'/DM_ERROR_CREATEBASEFOLDER'));
+    // create main data folder
+    if (!is_dir($dataDir)) {
+      $return[] = mkdir($this->directories['data']['core']['dir'], 0755);
+      $this->debugLog(i18n_r(self::FILE.'/BASEFOLDER_CREATESUCCESS'));
     }
     else {
-      $this->debugLog(i18n_r(MATRIX.'/DM_ERROR_CREATEBASEFOLDERFAIL'));
+      $this->debugLog(i18n_r(self::FILE.'/BASEFOLDER_CREATESUCCESS'));
     }
     
-    // creates _routes table
-    if (!file_exists(MATRIXDATAPATH.'schema.xml')) {
-      copy (MATRIXPATH.'other/schema.xml', MATRIXDATAPATH.'schema.xml');
+    // create core schema file
+    if (!file_exists($dataDir.'schema.xml')) {
+      $schema = <<<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<channel version="1">
+  <item>
+    <name>_routes</name>
+    <id>0</id>
+    <maxrecords>0</maxrecords>
+    <field type="int" label="ID Field" desc="" default="" cacheindex="1" tableview="" table="" row="id" options="" path="" size="100" visibility="1" class="">id</field>
+    <field type="text" desc="" label="" default="" cacheindex="1" tableview="" table="" row="id" options="" path="" size="100" visibility="1" class="">route</field>
+    <field type="text" desc="" label="" default="" cacheindex="1" tableview="" table="" row="id" options="" path="" size="100" visibility="1" class="">rewrite</field>
+  </item>
+</channel>
+EOF;
+      $return[] = file_put_contents($dataDir.'schema.xml', $schema);
     }
     
+    // create _routes table
     if (!$this->tableExists('_routes')) {
       $this->debugLog('Creating table "_routes"');
       
-      $this->createTable(
+      $return[] = $this->createTable(
         '_routes',
         array(
           array(
@@ -198,15 +142,49 @@ class TheMatrix {
             'type' => 'text',
           ),
         ),
-        0,
-        0
-      );
-    } 
+        0, 0);
+    }
+    if (!in_array(false, $return) || count($return) == 0) {
+      return true;
+    }
+    else return false;
+  }
+  
+  # loads global variables directly from XML file
+  private function globals() {
+    global $pagesArray;
     
+    $xml = XML2Array::createArray(file_get_contents(GSDATAOTHERPATH.'website.xml'));
+    
+    // turn PRETTYURLS into boolean
+      if ($xml['item']['PRETTYURLS']=='') $xml['item']['PRETTYURLS'] = false;
+      else $xml['item']['PRETTYURLS'] = true;
+    
+    // globals array
+    $globals = array(
+      'sitename'    => $xml['item']['SITENAME']['@cdata'],
+      'siteurl'     => $xml['item']['SITEURL']['@cdata'],
+      'template'    => $xml['item']['TEMPLATE']['@cdata'],
+      'pages'       => $pagesArray,
+      'permalink'   => $xml['item']['PERMALINK'],
+      'prettyurls'  => $xml['item']['PRETTYURLS'],
+    );
+    return $globals;
+  }
+  
+  # loads large array for field properties
+  private function fields() {
+    $fields = array();
+    include($this->directories['plugin']['var']['dir'].'/fields.php');
+    return $fields;
   }
 
   # ======= GENERAL FUNCTIONS ======= #
 
+  public function pluginInfo($info) {
+    if (isset($this->plugin[$info])) return $this->plugin[$info];
+  }
+  
   /* TheMatrix::debugLog($log)
    * @param $log: message to be logged
    */
@@ -259,6 +237,22 @@ class TheMatrix {
     }
     return $themes;
   }
+  
+  public function getSiteName() {
+    return $this->globals['sitename'];
+  }
+  
+  public function getSiteURL() {
+    return $this->globals['siteurl'];
+  }
+  
+  public function getPrettyURLS() {
+    return $this->globals['prettyurls'];
+  }
+  
+  public function getFieldTypes() {
+    return $this->fieldTypes;
+  }
 
   /* TheMatrix:getOptions($string, $delimiter)
    * @param $string:    string to explode into options array
@@ -287,6 +281,11 @@ class TheMatrix {
       $array = implode("\n", $array);
     }
     return $array;
+  }
+  
+  public function salt($salt) {
+    $this->salt = $salt;
+    return true;
   }
 
   public function getHierarcalOptions($string, $delimiter=">") {
@@ -405,8 +404,8 @@ class TheMatrix {
    * @param $name: name of the folder to be created (corresponds to the table name)
    */
   public function createSchemaFolder($name) {
-    if (!is_dir(MATRIXDATAPATH.$name)) {	
-      $ret = mkdir(MATRIXDATAPATH.$name, 0755);
+    if (!is_dir($this->directories['data']['core']['dir'].$name)) {  
+      $ret = mkdir($this->directories['data']['core']['dir'].$name, 0755);
       return $ret;
     }
     else return false;
@@ -415,7 +414,7 @@ class TheMatrix {
   /* TheMatrix::getSchemaVersion()
    */
   public function getSchemaVersion() {
-    $file = MATRIXDATAPATH.'schema.xml';
+    $file = $this->directories['data']['core']['dir'].'schema.xml';
     if (file_exists($file)) {
       $this->debugLog('Schema file loaded...');
       
@@ -434,13 +433,13 @@ class TheMatrix {
    */
   public function getSchema($tableName=false, $fields=false) {
     // initialize
-    $file = MATRIXDATAPATH.'schema.xml';
+    $file = $this->directories['data']['core']['dir'].'schema.xml';
     if (file_exists($file)) {
       $this->debugLog('Schema file loaded...');
       $schemaXML = XML2Array::createArray(file_get_contents($file));
       
       // reconditions the array into a workable one for the rest of the plugin
-      $schemaArray = array();
+      $schema = array();
       
       // fixes array structure if there is only one table
       if (!isset($schemaXML['channel']['item'][0])) {
@@ -457,7 +456,7 @@ class TheMatrix {
             if (is_array($field['@attributes'])) $array = array_merge($array, $field['@attributes']);
             $table['fields'][$field['@value']] = $array;
             
-            foreach ($this->fieldProperties as $key=>$properties) {
+            foreach ($this->fields['properties'] as $key => $properties) {
               if (!isset($table['fields'][$field['@value']][$key])) $table['fields'][$field['@value']][$properties['key']] = $properties['default'];
             }
           }
@@ -468,24 +467,26 @@ class TheMatrix {
         // ensures ID field exists
         if (!isset($table['fields']) || !array_key_exists('id', $table['fields'])) {
           $table['fields']['id'] = array('name'=>'id');
-          foreach ($this->fieldProperties as $key=>$properties) {
+          foreach ($this->fields['properties'] as $key=>$properties) {
             $table['fields']['id'][$properties['key']] = $properties['default'];
           }
         }
         unset($table['field']);
-        $schemaArray[$name] = $table;
+        
+        // only add to the schema if the folder exists
+        if (file_exists($this->directories['data']['core']['dir'].$name)) $schema[$name] = $table;
       }
 
       // alters the current schema array
-      $this->schemaArray = $schemaArray;
+      $this->schema = $schema;
       
       // return conditions (either full schema, table's schema or table field's schema
-      if ($tableName && isset($schemaArray[$tableName])) {
-        if (!$fields) return $schemaArray[$tableName];
-        else          return $schemaArray[$tableName]['fields'];
+      if ($tableName && isset($schema[$tableName])) {
+        if (!$fields) return $schema[$tableName];
+        else          return $schema[$tableName]['fields'];
       }
       else {
-        return $schemaArray;
+        return $schema;
       }
     }
     else return false;
@@ -497,7 +498,7 @@ class TheMatrix {
    */
   public function modSchema($table, $array) {
     if ($this->tableExists($table)) {
-      $this->schemaArray[$table] = $array;
+      $this->schema[$table] = $array;
       $this->saveSchema();
       return true;
     }
@@ -516,12 +517,14 @@ class TheMatrix {
   
     $newSchema = array();
     
-    foreach ($this->schemaArray as $key=>$table) {
+    foreach ($this->schema as $key=>$table) {
       $table = array_merge(array('name'=>$key), $table);
       $table['field'] = array();
       foreach ($table['fields'] as $field) {
-        $array = array('@value'=>$field['name']);
-        unset($field['name']);
+        if (isset($field['name'])) {
+          $array = array('@value'=>$field['name']);
+          unset($field['name']);
+        }
         $array['@attributes'] = $field;
         $table['field'][] = $array;
       }
@@ -531,7 +534,7 @@ class TheMatrix {
     
     $schema['item'] = $newSchema;
     $xml = Array2XML::createXML('channel', $schema);
-    $xml->save(MATRIXDATAPATH.'schema.xml');
+    $xml->save($this->directories['data']['core']['dir'].'schema.xml');
     return $this->getSchema();
   }
 
@@ -541,7 +544,7 @@ class TheMatrix {
    * @param $table: table name (e.g. 'foo')
    */
   public function tableExists($table) {
-    if (array_key_exists($table, $this->schemaArray) && is_writable(MATRIXDATAPATH.$table)) {
+    if (array_key_exists($table, $this->schema) && is_writable($this->directories['data']['core']['dir'].$table)) {
       return true;
     }
     else return false;
@@ -554,8 +557,8 @@ class TheMatrix {
   public function getSchemaTable($name, $query='') {
     $returnArray = array();
     $table = array();
-    if (is_dir(MATRIXDATAPATH.'/'.$name."/")) {
-      $path = MATRIXDATAPATH.'/'.$name."/";
+    if (is_dir($this->directories['data']['core']['dir'].'/'.$name."/")) {
+      $path = $this->directories['data']['core']['dir'].'/'.$name."/";
       $dir_handle = @opendir($path) or die('Unable to open '.$path);
       $filenames = array();
       while ($filename = readdir($dir_handle)) {
@@ -591,8 +594,8 @@ class TheMatrix {
    * @param $id:         initial id for the next record to be created (default is 0; used for restoring tables)
    */
   public function createTable($name, $fields=array(), $maxrecords=0, $id=0) {
-    if (array_key_exists($name, $this->schemaArray)){
-      $this->debugLog(i18n_r(MATRIX.'/DM_ERROR_CREATETABLEFAIL'));
+    if (array_key_exists($name, $this->schema)){
+      $this->debugLog(i18n_r(self::FILE.'/TABLE_CREATEERROR'));
       return false;
     }
     
@@ -602,9 +605,9 @@ class TheMatrix {
     if (!is_numeric($id) || empty($id)) $id = 0;
     
     // start building new schema for table
-    $this->schemaArray[(string)$name] = array();
-    $this->schemaArray[(string)$name]['id']= $id;
-    $this->schemaArray[(string)$name]['maxrecords'] = $maxrecords;
+    $this->schema[(string)$name] = array();
+    $this->schema[(string)$name]['id']= $id;
+    $this->schema[(string)$name]['maxrecords'] = $maxrecords;
 
     // ensure ID field exists
     if (!array_key_exists('id', $fields)) {
@@ -619,7 +622,7 @@ class TheMatrix {
     
     // formats the array key for the field schema to be created and fills in defaults
     foreach ($fields as $key=>$field) {
-      foreach ($this->fieldProperties as $fieldKey=>$fieldProperty) {
+      foreach ($this->fields['properties'] as $fieldKey=>$fieldProperty) {
         if (!isset($fields[$key][$fieldKey])) {
           $field[$fieldKey] = $fieldProperty['default'];
         }
@@ -628,22 +631,22 @@ class TheMatrix {
       unset($fields[$key]);
     }
     
-    $this->schemaArray[(string)$name]['fields'] = $fields;
+    $this->schema[(string)$name]['fields'] = $fields;
     
     // create the folder and save the schema
     $this->createSchemaFolder($name);
     $this->saveSchema();
-    $this->debugLog(i18n_r(MATRIX.'/DM_ERROR_CREATETABLESUCCESS'));
+    $this->debugLog(i18n_r(self::FILE.'/TABLE_CREATESUCCESS'));
     
     // uncomment for debugging
     #var_dump($name);
     #var_dump($fields);
     #var_dump($maxrecords);
     #var_dump($id);
-    #var_dump($this->schemaArray);
-    #var_dump($this->schemaArray[$name]);
+    #var_dump($this->schema);
+    #var_dump($this->schema[$name]);
     
-    if ($this->tableExists($name) && file_exists(MATRIXDATAPATH.$name.'/')) {
+    if ($this->tableExists($name) && file_exists($this->directories['data']['core']['dir'].$name.'/')) {
       return true;
     }
     else return false;
@@ -664,7 +667,7 @@ class TheMatrix {
       }
       
       // duplicate schema, save then copy files
-      $this->schemaArray[$name] = $this->schemaArray[$table];
+      $this->schema[$name] = $this->schema[$table];
       $this->saveSchema();
       $this->recurseCopy(GSDATAOTHERPATH.'matrix/'.$table, GSDATAOTHERPATH.'matrix/'.$name);
         
@@ -682,12 +685,12 @@ class TheMatrix {
    * @param $table: name of table to flush of its records
    */
   public function emptyTable($table) {
-    $records = glob(MATRIXDATAPATH.'/'.$table.'/*.xml');
+    $records = glob($this->directories['data']['core']['dir'].'/'.$table.'/*.xml');
     if ($this->tableExists($table)) {
       foreach ($records as $record) {
         unlink($record);
       }
-      $records = glob(MATRIXDATAPATH.'/'.$table.'/*.xml');
+      $records = glob($this->directories['data']['core']['dir'].'/'.$table.'/*.xml');
       if (empty($records)) return true;
       else return false;
     }
@@ -701,8 +704,8 @@ class TheMatrix {
     if ($this->tableExists($table)) {
       // empty table, remove table from schema, delete the directory
       $this->emptyTable($table);
-      unset($this->schemaArray[$table]);
-      rmdir(MATRIXDATAPATH.'/'.$table);
+      unset($this->schema[$table]);
+      rmdir($this->directories['data']['core']['dir'].'/'.$table);
       $this->saveSchema(true);
       
       if (!$this->tableExists($table)) {
@@ -720,9 +723,9 @@ class TheMatrix {
   public function renameTable($table, $newName) {
     if ($this->tableExists($table) && !$this->tableExists($newName)) {
       // renaming
-      $this->schemaArray[$newName] = $this->schemaArray[$table];
-      unset($this->schemaArray[$table]);
-      rename(MATRIXDATAPATH.'/'.$table.'/', MATRIXDATAPATH.'/'.$newName.'/');
+      $this->schema[$newName] = $this->schema[$table];
+      unset($this->schema[$table]);
+      rename($this->directories['data']['core']['dir'].'/'.$table.'/', $this->directories['data']['core']['dir'].'/'.$newName.'/');
       $this->saveSchema(true);
       
       if ($this->tableExists($newName)) {
@@ -742,7 +745,7 @@ class TheMatrix {
     // fixes root path and filename then prepares the backups array
     if ($directory==false) {
       $reldir = 'data/other/matrix/';
-      $directory = MATRIXDATAPATH;
+      $directory = $this->directories['data']['core']['dir'];
     }
     else {
       $reldir = $directory.'/';
@@ -804,7 +807,7 @@ class TheMatrix {
         }
         
         // adds a schema of the table to the backup file
-        $originalSchema = XML2Array::createArray(file_get_contents(MATRIXDATAPATH.'schema.xml'));
+        $originalSchema = XML2Array::createArray(file_get_contents($this->directories['data']['core']['dir'].'schema.xml'));
         
         $newSchema = array('item'=>array());
         
@@ -823,7 +826,7 @@ class TheMatrix {
         
         // deletes backup.xml
         if (file_exists($backupFile)) unlink($backupFile);
-        return true;
+        return $filename;
       }
       else return false;
     }
@@ -848,12 +851,12 @@ class TheMatrix {
       $zip = new ZipArchive();
       if ($zip->open($backups['path'])===TRUE) {
         // unzips files
-        $zip->extractTo(MATRIXDATAPATH);
+        $zip->extractTo($this->directories['data']['core']['dir']);
         
         // ensures table is in the schema
-        $schemaFile  = MATRIXDATAPATH.$table.'_schema.xml';
+        $schemaFile  = $this->directories['data']['core']['dir'].$table.'_schema.xml';
         $schemaTable = XML2Array::createArray(file_get_contents($schemaFile));
-        $schemaFull  = XML2Array::createArray(file_get_contents(MATRIXDATAPATH.'schema.xml'));
+        $schemaFull  = XML2Array::createArray(file_get_contents($this->directories['data']['core']['dir'].'schema.xml'));
         
         // pull the schema from the backup file, add it to the existing full schema and save the xml file
         $schemaTable = $schemaTable['channel']['item'];
@@ -866,7 +869,7 @@ class TheMatrix {
         // adds to the schema, saves file and removes the backup schema xml
         $schemaFull['channel']['item'][] = $schemaTable;
         $xml = Array2XML::createXML('channel', $schemaFull['channel']);
-        $xml->save(MATRIXDATAPATH.'schema.xml');
+        $xml->save($this->directories['data']['core']['dir'].'schema.xml');
         $zip->close();
         unlink($schemaFile);
         
@@ -893,7 +896,7 @@ class TheMatrix {
    * @param $id:    record id
    */
   public function recordExists($table, $id) {
-    $file = MATRIXDATAPATH.'/'.$table.'/'.$id.'.xml';
+    $file = $this->directories['data']['core']['dir'].'/'.$table.'/'.$id.'.xml';
     if ($this->tableExists($table) && file_exists($file)) {
       $record = XML2Array::createArray(file_get_contents($file));
       if (isset ($record['channel']['item'])) {
@@ -986,7 +989,7 @@ class TheMatrix {
       $newarray = array();
       foreach ($results['results'] as $result) {
         $record = array();
-        foreach ($this->schemaArray[$table]['fields'] as $field) {
+        foreach ($this->schema[$table]['fields'] as $field) {
           $record[$field['name']] = $result->{$field['name']};
         }
         $record['id'] = substr($result->id, strlen($searchid));
@@ -1004,13 +1007,12 @@ class TheMatrix {
    * @param $prefix: prefix if you only want to show certain on a particular end (e.g. 'front_' to load all front-end scripts, 'back_' to load all back-end scripts)
    */
   public function themeHeader($plugin, $prefix='') {
-    global $SITEURL;
     echo "\n".'<!--'.$plugin.' files-->'."\n";
     // css
     echo '  <!--css-->'."\n";
     foreach (glob(GSPLUGINPATH.$plugin.'/css/*.css') as $css) {
       $tmp = explode('/', $css);
-      echo '    <link rel="stylesheet" href="'.$SITEURL.'plugins/'.$plugin.'/css/'.$prefix.end($tmp).'"/>'."\n";
+      echo '    <link rel="stylesheet" href="'.$this->globals['siteurl'].'plugins/'.$plugin.'/css/'.$prefix.end($tmp).'"/>'."\n";
     }
     echo '  <!--/css-->'."\n";
     
@@ -1021,7 +1023,7 @@ class TheMatrix {
     $javascript = array_reverse($javascript);
     foreach ($javascript as $js) {
       $tmp = explode('/', $js);
-      echo '    <script src="'.$SITEURL.'plugins/'.$plugin.'/js/'.$prefix.end($tmp).'"></script>'."\n";
+      echo '    <script src="'.$this->globals['siteurl'].'plugins/'.$plugin.'/js/'.$prefix.end($tmp).'"></script>'."\n";
     }
     echo '  <!--/js-->'."\n";
     echo '<!--/'.$plugin.' files-->'."\n";
@@ -1032,7 +1034,7 @@ class TheMatrix {
    * @param $route: redirection url
    */
   public function addRoute($url, $route) {
-    $this->createRecord('_routes', array('route'=>$url,'rewrite'=>$route));	
+    $this->createRecord('_routes', array('route'=>$url,'rewrite'=>$route));  
   }
   
   /* ===== TABLE FUNCTIONS ===== */
@@ -1069,24 +1071,24 @@ class TheMatrix {
   public function createField($table, $field) {
     if ($this->tableExists($table) && isset($field['name'])) {
       // fill in defaults
-      foreach ($this->fieldProperties as $fieldKey=>$fieldProperty) {
+      foreach ($this->fields['properties'] as $fieldKey=>$fieldProperty) {
         if (!isset($field[$fieldKey])) {
           $field[$fieldKey] = $fieldProperty['default'];
         }
       }
 
       // save schema
-      $this->schemaArray[$table]['fields'][$field['name']] = $field;
+      $this->schema[$table]['fields'][$field['name']] = $field;
       $this->saveSchema();
       
       // uncomment for debugging
-      #$schema = $this->schemaArray;
+      #$schema = $this->schema;
       #var_dump($table);
       #var_dump($field);
       #var_dump($schema[$table]);
       
       // return status
-      if (isset($this->schemaArray[$table]['fields'][$field['name']]) && is_array($this->schemaArray[$table]['fields'][$field['name']])) {
+      if (isset($this->schema[$table]['fields'][$field['name']]) && is_array($this->schema[$table]['fields'][$field['name']])) {
         return true;
       }
       else return false;
@@ -1096,7 +1098,7 @@ class TheMatrix {
   
   // checks that a field exists
   public function fieldExists($table, $field) {
-    if ($this->tableExists($table) && isset($this->schemaArray[$table]['fields'][$field])) {
+    if ($this->tableExists($table) && isset($this->schema[$table]['fields'][$field])) {
       return true;
     }
     else return false;
@@ -1107,12 +1109,12 @@ class TheMatrix {
   public function renameField($table, $field, $name) {
     if ($this->fieldExists($table, $field) && !$this->fieldExists($table, $name)) {
       // first rename the field in the schema and save it
-      $this->schemaArray[$table]['fields'] = $this->renameKey($field, $name, $this->schemaArray[$table]['fields']);
-      $this->schemaArray[$table]['fields'][$name]['name'] = $name;
+      $this->schema[$table]['fields'] = $this->renameKey($field, $name, $this->schema[$table]['fields']);
+      $this->schema[$table]['fields'][$name]['name'] = $name;
       $this->saveSchema();
       
       // rename the fields in the dataset
-      $data = glob(MATRIXDATAPATH.$table.'/*.xml');
+      $data = glob($this->directories['data']['core']['dir'].$table.'/*.xml');
       foreach ($data as $record) {
         // pull the array, rename the field, save the xml file
         $array = XML2Array::createArray(file_get_contents($record)); 
@@ -1131,9 +1133,9 @@ class TheMatrix {
   // remove field
   public function deleteField($table, $field) {
     if ($this->fieldExists($table, $field)) {
-      unset($this->schemaArray[$table]['fields'][$field]);
+      unset($this->schema[$table]['fields'][$field]);
       $this->saveSchema();
-      if (!isset($this->schemaArray[$table]['fields'][$field])) {
+      if (!isset($this->schema[$table]['fields'][$field])) {
         return true;
       }
       else return false;
@@ -1146,15 +1148,15 @@ class TheMatrix {
     if ($this->tableExists($table)) {
       // check that the fields array provided covers all of the existing fields
       $i = 1; // 1 because the id field is part of the total
-      $total = count($this->schemaArray[$table]['fields']);
+      $total = count($this->schema[$table]['fields']);
       foreach ($fields as $field) {
-        if (array_key_exists($field, $this->schemaArray[$table]['fields'])) $i++;
+        if (array_key_exists($field, $this->schema[$table]['fields'])) $i++;
       }
       if ($i==$total) {
         foreach ($fields as $field) {
-          $array = $this->schemaArray[$table]['fields'][$field];
-          unset($this->schemaArray[$table]['fields'][$field]);
-          $this->schemaArray[$table]['fields'][$field] = $array;
+          $array = $this->schema[$table]['fields'][$field];
+          unset($this->schema[$table]['fields'][$field]);
+          $this->schema[$table]['fields'][$field] = $array;
         }
         $this->saveSchema();
         return true;
@@ -1184,19 +1186,19 @@ class TheMatrix {
       foreach ($array['fields'] as $key => $field) {
         
         if ($field['oldname']!=$field['name']) {
-          $this->renameField($_GET['table'], $field['oldname'], $field['name']);
+          $this->renameField($table, $field['oldname'], $field['name']);
         }
-        $this->createField($_GET['table'], $field);
+        $this->createField($table, $field);
         
       }
-      foreach ($this->schemaArray[$_GET['table']]['fields'] as $field => $details) {
+      foreach ($this->schema[$table]['fields'] as $field => $details) {
         if ($field!='id' && !in_array($field, $array['name'])) {
-          $this->deleteField($_GET['table'], $field);
+          $this->deleteField($table, $field);
         }
       }
       
       // reorder fields
-      $this->reorderFields($_GET['table'], $array['name']);
+      $this->reorderFields($table, $array['name']);
       
       // final return
       return true;
@@ -1206,10 +1208,11 @@ class TheMatrix {
 
   public function displayField($table, $field, $value='', $ckeditor=false) {
     if ($this->fieldExists($table, $field)) {
-      $schema = $this->schemaArray[$table]['fields'][$field];
+      $schema = $this->schema[$table]['fields'][$field];
       // quick formatting
-      if (empty($value)) {
-        if ($schema['type']=='datetimelocal') $value = time();
+      if (empty($value) && strlen($schema['default']) == 0) {
+        if ($schema['type'] == 'datetimelocal') $value = time();
+        elseif ($schema['type'] == 'int') $value = 0;
         else $value = $schema['default'];
       }
       if ($schema['type']=='password') $value = '';
@@ -1267,7 +1270,7 @@ class TheMatrix {
       // textmulti
       elseif ($schema['type']=='textmulti') {
         ?>
-        <div class="textmultiWrap">
+        <span class="textmultiSpan">
           <?php
             $schema['desc'] = explode("\n", $schema['desc']);
             $schema['desc'] = array_map('trim', $schema['desc']);
@@ -1278,13 +1281,13 @@ class TheMatrix {
             <input type="text" style="margin-bottom: 4px;" name="post-<?php echo $field; ?>[]" class="text textmulti" value="<?php if (isset($options[$i])) echo $options[$i]; ?>" placeholder="<?php if (isset($schema['desc'][$i])) echo $schema['desc'][$i]; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/>
           <?php
             }?>
-        </div>
+        </span>
         <?php
       }
       // intmulti
       elseif ($schema['type']=='intmulti') {
         ?>
-        <div class="intmultiWrap">
+        <span class="intmultiSpan">
           <?php
             // label
             $schema['other'] = explode("\n", $schema['other']);
@@ -1302,7 +1305,7 @@ class TheMatrix {
             <?php if (isset($schema['other'][$i])) echo '<span style="display: block; overflow: hidden;"><label style="display: block; padding: 5px 0 5px 0; float: left; width: 40%;">'.$schema['other'][$i].' : </label>'; ?><input type="number" style="margin-bottom: 4px; <?php if (isset($schema['other'][$i])) echo 'width: 50%; float: right;'; ?>" name="post-<?php echo $field; ?>[]" class="text intmulti" value="<?php if (isset($options[$i])) echo $options[$i]; ?>" placeholder="<?php if (isset($schema['desc'][$i])) echo $schema['desc'][$i]; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/><?php if (isset($schema['other'][$i])) echo '</span>'; ?>
           <?php
             }?>
-        </div>
+        </span>
         <?php
       }
       // textmulticustom
@@ -1402,7 +1405,7 @@ class TheMatrix {
         ?>
           <select name="post-<?php echo $field; ?>" class="text dropdown" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>>
             <?php foreach ($themes as $theme) { ?>
-              <option value="<?php echo $theme; ?>" <?php if ($theme==$value || (empty($value)) && $theme==$this->globals['template']) echo 'selected="selected"'; ?> ><?php echo $theme; ?></option>
+              <option value="<?php echo $theme; ?>" <?php if ($theme==$value || (empty($value)) && $theme == $this->globals['template']) echo 'selected="selected"'; ?> ><?php echo $theme; ?></option>
             <?php } ?>
           </select>
         <?php
@@ -1427,7 +1430,7 @@ class TheMatrix {
         ?>
           <select name="post-<?php echo $field; ?>" class="text dropdown" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>>
             <?php foreach ($templates as $template) { ?>
-              <option value="<?php echo $template; ?>" <?php if ($template==$value) echo 'selected="selected"'; ?> ><?php echo $template; ?></option>
+              <option value="<?php echo $template; ?>" <?php if ($template == $value) echo 'selected="selected"'; ?> ><?php echo $template; ?></option>
             <?php } ?>
           </select>
         <?php
@@ -1440,6 +1443,18 @@ class TheMatrix {
           <select name="post-<?php echo $field; ?>" class="text dropdown" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>>
             <?php foreach ($options as $option) { ?>
               <option value="<?php echo $option; ?>" <?php if ($option==$value) echo 'selected="selected"'; ?> ><?php echo $option; ?></option>
+            <?php } ?>
+          </select>
+        <?php
+      }
+      // dropdowncustomkey
+      elseif ($schema['type']=='dropdowncustomkey') {
+        $options = explode("\n", $schema['options']);
+        $options = array_map('trim', $options);
+        ?>
+          <select name="post-<?php echo $field; ?>" class="text dropdown" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>>
+            <?php foreach ($options as $key => $option) { ?>
+              <option value="<?php echo $key; ?>" <?php if ($key==$value) echo 'selected="selected"'; ?> ><?php echo $option; ?></option>
             <?php } ?>
           </select>
         <?php
@@ -1465,10 +1480,7 @@ class TheMatrix {
         foreach ($options as $key => $option) {
           $option = filter_var($option, FILTER_SANITIZE_STRING);
         ?>
-          <p class="inline post-menu clearfix">
-            <input type="checkbox" name="post-<?php echo $field; ?>[<?php echo $key; ?>]" <?php if (in_array($option, $selected)) echo 'checked="checked"'; ?> class="input"  <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/>
-            &nbsp;&nbsp;&nbsp;<label><?php echo $option; ?></label>
-          </p>
+          <input type="checkbox" name="post-<?php echo $field; ?>[<?php echo $key; ?>]" <?php if (in_array($option, $selected)) echo 'checked="checked"'; ?> class="input"  <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/> <span class="option"><?php echo $option; ?></span><br />
         <?php
         }
       ?>
@@ -1551,7 +1563,7 @@ class TheMatrix {
         ?>
         <textarea id="post-<?php echo $field; ?>" name="post-<?php echo $field; ?>" class="MatrixBBCode bbcodeeditor" placeholder="<?php echo $schema['desc']; ?>" <?php echo $maxlength;?> <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>><?php echo $value; ?></textarea>
         <script language="javascript">
-          $(document).ready(function()	{
+          $(document).ready(function()  {
             $('.MatrixBBCode').markItUp(GSBBCodeSettings);
           });
         </script>
@@ -1562,7 +1574,7 @@ class TheMatrix {
         ?>
         <textarea id="post-<?php echo $field; ?>" name="post-<?php echo $field; ?>" class="MatrixWiki wikieditor" placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>><?php echo $value; ?></textarea>
         <script language="javascript">
-          $(document).ready(function()	{
+          $(document).ready(function()  {
             $('.MatrixWiki').markItUp(GSWikiSettings);
           });
         </script>
@@ -1573,7 +1585,7 @@ class TheMatrix {
         ?>
         <textarea id="post-<?php echo $field; ?>" name="post-<?php echo $field; ?>" class="MatrixMarkDown markdown" placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>><?php echo $value; ?></textarea>
         <script language="javascript">
-          $(document).ready(function()	{
+          $(document).ready(function()  {
             $('.MatrixMarkDown').markItUp(GSMarkDownSettings);
           });
         </script>
@@ -1603,7 +1615,7 @@ class TheMatrix {
 
   public function displayForm($table, $id=null) {
     if ($this->tableExists($table)) {
-      $fields = $this->schemaArray[$table]['fields'];
+      $fields = $this->schema[$table]['fields'];
       
       // used for updating a record
       if (isset($id) && is_numeric($id)) {
@@ -1706,24 +1718,24 @@ class TheMatrix {
    * @param $table: name of table (e.g. 'foo')
    */
   public function getNextRecord($table) {
-    $this->debugLog($table.':returned:'.$this->schemaArray[$table]['id']);
-    return $this->schemaArray[$table]['id'];
+    $this->debugLog($table.':returned:'.$this->schema[$table]['id']);
+    return $this->schema[$table]['id'];
   }
   
   /* TheMatrix::manipulateData($table, $query)
    * @param $table: name of table (e.g. 'foo')
    * @param $query: array of data to be manipulated prior to record creation/updating
    */
-  public function manipulateData($table, $query) {
+  public function manipulateData($table, $query, $type='create') {
     if ($this->tableExists($table)) {
       // removes 'post-' prefix
       $query = $this->stripPost($query); 
       
       // load fields schema
-      $fields = $this->schemaArray[$table]['fields'];
+      $fields = $this->schema[$table]['fields'];
       
       // remove unnecessary fields
-      foreach ($query as $field=>$value) {
+      foreach ($query as $field => $value) {
         if (!array_key_exists($field, $fields)) unset($query[$field]);
       }
       
@@ -1741,7 +1753,11 @@ class TheMatrix {
           }
           // password (sha1 encoding)
           if ($fields[$field]['type']=='password') {
-            $query[$field] = $this->salt.sha1($value);
+            $removeSalt = trim(str_replace($this->salt, '', $value));
+            // only encode it if it hasn't already been sha1ed
+            if (!(ctype_xdigit($removeSalt) && strlen($removeSalt) == 40)) {
+              $query[$field] = $this->salt.sha1($value);
+            }
           }
           // dropdown (for trimming)
           if ($fields[$field]['type']=='dropdowncustom') {
@@ -1832,7 +1848,7 @@ class TheMatrix {
    */
   public function validateData($table, $query) {
     if ($this->tableExists($table)) {
-      $fields = $this->schemaArray[$table]['fields'];
+      $fields = $this->schema[$table]['fields'];
       foreach ($fields as $field => $properties) {
         if (isset($this->fieldTypes[$properties['type']]['validate'])) {
           
@@ -1870,8 +1886,8 @@ class TheMatrix {
    */
   public function createRecord($table, $query) {
     if ($this->tableExists($table)) {
-      $maxRecords = (int)$this->schemaArray[$table]['maxrecords'];
-      $totalRecords = count(glob(MATRIXDATAPATH.'/'.$table.'/*.xml'));
+      $maxRecords = (int)$this->schema[$table]['maxrecords'];
+      $totalRecords = count(glob($this->directories['data']['core']['dir'].'/'.$table.'/*.xml'));
       
       // ensures max record count is not exceeded
       if ($maxRecords==0 || $totalRecords<$maxRecords) {
@@ -1881,7 +1897,7 @@ class TheMatrix {
         
         // prepare xml file and debugging log
         $this->debugLog('record:'.$id);
-        $file = MATRIXDATAPATH.$table.'/'.$id.'.xml';
+        $file = $this->directories['data']['core']['dir'].$table.'/'.$id.'.xml';
         
         // format the query appropriately and create the xml file
         $query = $this->manipulateData($table, $query);
@@ -1892,7 +1908,7 @@ class TheMatrix {
         // increase the id count and save the schema
         $xml->save($file);
         $this->debugLog('file:'.$file);
-        $this->schemaArray[$table]['id']= $id+1;
+        $this->schema[$table]['id']= $id+1;
         $this->saveSchema();
         return true;
       }
@@ -1911,7 +1927,7 @@ class TheMatrix {
    * @param $overwrite: overwrite mode - any missing keys from $query are overwritten if set to true
    */
   public function updateRecord($table, $id, $query, $overwrite=false) {
-    $file = MATRIXDATAPATH.'/'.$table.'/'.$id.'.xml';
+    $file = $this->directories['data']['core']['dir'].'/'.$table.'/'.$id.'.xml';
     if ($this->tableExists($table) && file_exists($file)) {
       $this->debugLog('updating record:'.$table.'/'.$id);
       
@@ -1958,7 +1974,7 @@ class TheMatrix {
    */
   public function undoRecord($table, $id) {
     if (isset($_SESSION['matrix'][$table]['records'][$id])) {
-      $file = MATRIXDATAPATH.'/'.$table.'/'.$id.'.xml';
+      $file = $this->directories['data']['core']['dir'].'/'.$table.'/'.$id.'.xml';
       file_put_contents($file, $_SESSION['matrix'][$table]['records'][$id]);
       if (file_exists($file)) {
         unset($_SESSION['matrix'][$table]['records'][$id]);
@@ -1974,7 +1990,7 @@ class TheMatrix {
    * @param $id:    record id
    */
   public function deleteRecord($table, $id) {
-    $file = MATRIXDATAPATH.'/'.$table.'/'.$id.'.xml';
+    $file = $this->directories['data']['core']['dir'].'/'.$table.'/'.$id.'.xml';
     if (file_exists($file)) {
       $_SESSION['matrix'][$table]['records'][$id] = file_get_contents($file);
       unlink($file);
@@ -1988,7 +2004,7 @@ class TheMatrix {
    */
   public function getNumRecords($table) {
     if ($this->tableExists($table)) {
-      return (count(glob(MATRIXDATAPATH.$table.'/*.xml')));
+      return (count(glob($this->directories['data']['core']['dir'].$table.'/*.xml')));
     }
     else return false;
   }
@@ -1998,7 +2014,7 @@ class TheMatrix {
    * @param $type:  'SINGLE' (one record), 'MULTI' (all records), 'COUNT' (number of records), or a number (number of records to show).
    * @param $cache: true to cache the result, false to not
    */
-  public function query($query, $type='MULTI', $cache=true) {
+  public function query($query, $type='MULTI', $cache=true, $idKey=false) {
     $type = strtoupper($type);
     $this->sql->createFromGlobals(false);
     $tables = $this->sql->get_tablenames($query);
@@ -2010,6 +2026,11 @@ class TheMatrix {
       $fieldSchema = $this->getSchema($table, true);
       foreach ($this->tablesCache[$table] as $key=>$record) {
         foreach ($record as $field=>$value) {
+          // fix missing fields (fill with defaults)
+          foreach ($fieldSchema as $fieldname) {
+            if (!isset($record[$fieldname['name']])) $this->tablesCache[$table][$key][$fieldname['name']] = $fieldname['default'];
+          }
+          // fix field padding for int
           if (isset($fieldSchema[$field]['type']) && $fieldSchema[$field]['type']=='int') {
             $this->tablesCache[$table][$key][$field] = str_pad($value, 8, 0, STR_PAD_LEFT);
           }
@@ -2020,17 +2041,29 @@ class TheMatrix {
     $results = $this->sql->query($query);
     
     // removes leading zeroes on formatted array
-    foreach ($results as $key=>$record) {
+    $newresults = array();
+    foreach ($results as $key => $record) {
       foreach ($record as $field=>$value) {
-        if (is_numeric($value)) {
+        if (is_numeric($value) || is_numeric(ltrim($value, '0'))) {
           if (ltrim($value, '0') == '') $results[$key][$field] = 0;
-          else $results[$key][$field] = ltrim($value, '0');
+          else $results[$key][$field] = (int)ltrim($value, '0');
         }
+      }
+      
+      // fix $record variable
+      $record = $results[$key];
+      
+      // change key
+      if ($idKey && isset($record[$idKey])) {
+        $newresults[$record[$idKey]] = $record;
       }
     }
     
+    // fix results array with newly ordered results
+    if ($idKey && !empty($newresults)) $results = $newresults;
+    
     // fix cache
-    if ($cache==false) unset($this->tablesCache[$table]);
+    if ($cache == false) unset($this->tablesCache[$table]);
     
     // single
     if ($type=='SINGLE' || $type=='DM_SINGLE') {
@@ -2069,7 +2102,6 @@ class TheMatrix {
   public function formatQuery($query, $table, $tags=array('url'=>'', 'separator'=>', ')) {
     foreach ($query as $key=>$record) {
       // get fields
-      #$fields = $this->getSchemaFields($table);
       $fields = $this->getSchema($table, true);
       
       // format record according to field
@@ -2078,6 +2110,10 @@ class TheMatrix {
         if (isset($record[$properties['name']])) {
           // text
           // textlong
+          // email
+          if ($properties['type'] == 'email') {
+            $query[$key][$properties['name']] = '<a href="mailto:'.$query[$key][$properties['name']].'" class="email">'.$query[$key][$properties['name']].'</a>';
+          }
           // tags
           if ($properties['type']=='tags') {
             $query[$key][$properties['name']] = $parser->getTags($query[$key][$properties['name']], $tags['separator'], $tags['url']);
@@ -2113,145 +2149,149 @@ class TheMatrix {
   /* TheMatrix::initialiseCKEditor()
    */
   public function initialiseCKEditor() {
-      global $SITEURL;
-      echo '<script src="'.$SITEURL.'admin/template/js/ckeditor/ckeditor.js?v=0.2.0"></script>';
-      	global $TEMPLATE;
-	global $SITEURL;
-	$dateformat=i18n('DATE_FORMAT',false);
-	$dateformat = str_replace('Y', 'yy', $dateformat);
-	$dateformat = str_replace('j', 'd', $dateformat);
-	
-	if (defined('GSEDITORHEIGHT')) { $EDHEIGHT = GSEDITORHEIGHT .'px'; } else {	$EDHEIGHT = '500px'; }
-		if (defined('GSEDITORLANG')) { $EDLANG = GSEDITORLANG; } else {	$EDLANG = i18n_r('CKEDITOR_LANG'); }
-		if (defined('GSEDITORTOOL')) { $EDTOOL = GSEDITORTOOL; } else {	$EDTOOL = 'basic'; }
-		if (defined('GSEDITOROPTIONS') && trim(GSEDITOROPTIONS)!="") { $EDOPTIONS = ", ".GSEDITOROPTIONS; } else {	$EDOPTIONS = ''; }
-			
-		if ($EDTOOL == 'advanced') {
-			$toolbar = "
-					['Bold', 'Italic', 'Underline', 'NumberedList', 'BulletedList', 'JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock', 'Table', 'TextColor', 'BGColor', 'Link', 'Unlink', 'Image', 'RemoveFormat', 'Source'],
-			 '/',
-			 ['Styles','Format','Font','FontSize']
-		 ";
-			} elseif ($EDTOOL == 'basic') {
-			$toolbar = "['Bold', 'Italic', 'Underline', 'NumberedList', 'BulletedList', 'JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock', 'Link', 'Unlink', 'Image', 'RemoveFormat', 'Source']";
-		} else {
-			$toolbar = GSEDITORTOOL;
-		}
-		?>
-		
-			<script type="text/javascript">
-			
-			CKEDITOR.replaceAll(function(textarea,config){
-				
-				// converts all textareas with class of 'DMckeditor' to ckeditor instances.
-				if (textarea.className.search("DMckeditor")) return false; //for only assign a class
-				jQuery.extend(config,
-				{
-					forcePasteAsPlainText : true,
-					language : '<?php echo $EDLANG; ?>',
-					defaultLanguage : 'en',
-					<?php if (file_exists(GSTHEMESPATH .$TEMPLATE."/editor.css")) { 
-						$fullpath = suggest_site_path();
-					?>
-					contentsCss : '<?php echo $fullpath; ?>theme/<?php echo $TEMPLATE; ?>/editor.css',
-					<?php } ?>
-					entities : false,
-					uiColor : '#FFFFFF',
-					height : '<?php echo $EDHEIGHT; ?>',
-					baseHref : '<?php echo $SITEURL; ?>',
-					toolbar : 
-					[
-					<?php echo $toolbar; ?>
-					]
-					<?php echo $EDOPTIONS; ?>,
-					tabSpaces : 10,
-					filebrowserBrowseUrl : 'filebrowser.php?type=all',
-					filebrowserImageBrowseUrl : 'filebrowser.php?type=images',
-					filebrowserWindowWidth : '730',
-					filebrowserWindowHeight : '500',
-					skin : 'getsimple'
-				});				
-			});
-			
-			$('.datepicker').each(function(){
-			    $(this).datepicker({ dateFormat: '<?php echo $dateformat; ?>' });
-			});
-			
-			$('.datetimepicker').each(function(){
-				$(this).datetimepicker({ 
-					dateFormat: '<?php echo $dateformat; ?>',
-					timeFormat: 'hh:mm'
-				})
-			})
-			</script>
-<?php	
-      return true;
+    echo '<script src="'.$this->globals['siteurl'].'admin/template/js/ckeditor/ckeditor.js?v=0.2.0"></script>';
+    $dateformat=i18n('DATE_FORMAT',false);
+    $dateformat = str_replace('Y', 'yy', $dateformat);
+    $dateformat = str_replace('j', 'd', $dateformat);
+  
+  if (defined('GSEDITORHEIGHT')) { $EDHEIGHT = GSEDITORHEIGHT .'px'; } else {  $EDHEIGHT = '500px'; }
+    if (defined('GSEDITORLANG')) { $EDLANG = GSEDITORLANG; } else {  $EDLANG = i18n_r('CKEDITOR_LANG'); }
+    if (defined('GSEDITORTOOL')) { $EDTOOL = GSEDITORTOOL; } else {  $EDTOOL = 'basic'; }
+    if (defined('GSEDITOROPTIONS') && trim(GSEDITOROPTIONS)!="") { $EDOPTIONS = ", ".GSEDITOROPTIONS; } else {  $EDOPTIONS = ''; }
+      
+    if ($EDTOOL == 'advanced') {
+      $toolbar = "
+          ['Bold', 'Italic', 'Underline', 'NumberedList', 'BulletedList', 'JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock', 'Table', 'TextColor', 'BGColor', 'Link', 'Unlink', 'Image', 'RemoveFormat', 'Source'],
+       '/',
+       ['Styles','Format','Font','FontSize']
+     ";
+      } elseif ($EDTOOL == 'basic') {
+      $toolbar = "['Bold', 'Italic', 'Underline', 'NumberedList', 'BulletedList', 'JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock', 'Link', 'Unlink', 'Image', 'RemoveFormat', 'Source']";
+    } else {
+      $toolbar = GSEDITORTOOL;
     }
+    ?>
+    
+      <script type="text/javascript">
+      
+      CKEDITOR.replaceAll(function(textarea,config){
+        
+        // converts all textareas with class of 'DMckeditor' to ckeditor instances.
+        if (textarea.className.search("DMckeditor")) return false; //for only assign a class
+        jQuery.extend(config,
+        {
+          forcePasteAsPlainText : true,
+          language : '<?php echo $EDLANG; ?>',
+          defaultLanguage : 'en',
+          <?php if (file_exists(GSTHEMESPATH .$this->globals['template']."/editor.css")) { 
+            $fullpath = suggest_site_path();
+          ?>
+          contentsCss : '<?php echo $fullpath; ?>theme/<?php echo $this->globals['template']; ?>/editor.css',
+          <?php } ?>
+          entities : false,
+          uiColor : '#FFFFFF',
+          height : '<?php echo $EDHEIGHT; ?>',
+          baseHref : '<?php echo $this->globals['siteurl']; ?>',
+          toolbar : 
+          [
+          <?php echo $toolbar; ?>
+          ]
+          <?php echo $EDOPTIONS; ?>,
+          tabSpaces : 10,
+          filebrowserBrowseUrl : 'filebrowser.php?type=all',
+          filebrowserImageBrowseUrl : 'filebrowser.php?type=images',
+          filebrowserWindowWidth : '730',
+          filebrowserWindowHeight : '500',
+          skin : 'getsimple'
+        });        
+      });
+      
+      $('.datepicker').each(function(){
+          $(this).datepicker({ dateFormat: '<?php echo $dateformat; ?>' });
+      });
+      
+      $('.datetimepicker').each(function(){
+        $(this).datetimepicker({ 
+          dateFormat: '<?php echo $dateformat; ?>',
+          timeFormat: 'hh:mm'
+        })
+      })
+      </script>
+  <?php  
+      return true;
+  }
+  
+  // just fixing the method name
+  public function initializeCKEditor() {
+    return initialiseCKEditor();
+  }
     
   // initialises codemirror (gets CSS and JS)
   public function initialiseCodeMirror() {
-    global $SITEURL;
     $codemirrorCSS = file_get_contents(GSADMINPATH.'template/js/codemirror/lib/codemirror.css');
     $codemirrorTheme = file_get_contents(GSADMINPATH.'template/js/codemirror/theme/default.css');
     echo '<style>'.$codemirrorCSS."\n\n".$codemirrorTheme.'</style>';
-    echo '<script src="'.$SITEURL.'admin/template/js/codemirror/lib/codemirror-compressed.js?v=0.2.0"></script>';
+    echo '<script src="'.$this->globals['siteurl'].'admin/template/js/codemirror/lib/codemirror-compressed.js?v=0.2.0"></script>';
     return true;
+  }
+  public function initializeCodeMirror() {
+    return initialiseCodeMirror();
   }
     
   // instantiates codemirror onto a textarea
   public function instantiateCodeMirror($name) {
   ?>
     <script type="text/javascript">
-		jQuery(document).ready(function() { 
-				var foldFunc = CodeMirror.newFoldFunction(CodeMirror.braceRangeFinder);
-				function keyEvent(cm, e) {
-				if (e.keyCode == 81 && e.ctrlKey) {
-					if (e.type == "keydown") {
-					e.stop();
-					setTimeout(function() {foldFunc(cm, cm.getCursor().line);}, 50);
-					}
-					return true;
-				}
-				}
-				function toggleFullscreenEditing()
-				{
-					var editorDiv = $('.CodeMirror-scroll');
-					if (!editorDiv.hasClass('fullscreen')) {
-						toggleFullscreenEditing.beforeFullscreen = { height: editorDiv.height(), width: editorDiv.width() }
-						editorDiv.addClass('fullscreen');
-						editorDiv.height('100%');
-						editorDiv.width('100%');
-						editor.refresh();
-					}
-					else {
-						editorDiv.removeClass('fullscreen');
-						editorDiv.height(toggleFullscreenEditing.beforeFullscreen.height);
-						editorDiv.width(toggleFullscreenEditing.beforeFullscreen.width);
-						editor.refresh();
-					}
-				}
-				var editor = CodeMirror.fromTextArea(document.getElementById("post-<?php echo $name; ?>"), {
-				lineNumbers: true,
-				matchBrackets: true,
-				indentUnit: 4,
-				indentWithTabs: true,
-				enterMode: "keep",
-				tabMode: "shift",
-				theme:'default',
-				mode: "text/html",
-				onGutterClick: foldFunc,
-				extraKeys: {"Ctrl-Q": function(cm){foldFunc(cm, cm.getCursor().line);},
-							"F11": toggleFullscreenEditing, "Esc": toggleFullscreenEditing},
-				onCursorActivity: function() {
-					editor.setLineClass(hlLine, null);
-					hlLine = editor.setLineClass(editor.getCursor().line, "activeline");
-				}
-				});
-				var hlLine = editor.setLineClass(0, "activeline");
-				
-			})
-				 
-		</script>
+    jQuery(document).ready(function() { 
+        var foldFunc = CodeMirror.newFoldFunction(CodeMirror.braceRangeFinder);
+        function keyEvent(cm, e) {
+        if (e.keyCode == 81 && e.ctrlKey) {
+          if (e.type == "keydown") {
+          e.stop();
+          setTimeout(function() {foldFunc(cm, cm.getCursor().line);}, 50);
+          }
+          return true;
+        }
+        }
+        function toggleFullscreenEditing()
+        {
+          var editorDiv = $('.CodeMirror-scroll');
+          if (!editorDiv.hasClass('fullscreen')) {
+            toggleFullscreenEditing.beforeFullscreen = { height: editorDiv.height(), width: editorDiv.width() }
+            editorDiv.addClass('fullscreen');
+            editorDiv.height('100%');
+            editorDiv.width('100%');
+            editor.refresh();
+          }
+          else {
+            editorDiv.removeClass('fullscreen');
+            editorDiv.height(toggleFullscreenEditing.beforeFullscreen.height);
+            editorDiv.width(toggleFullscreenEditing.beforeFullscreen.width);
+            editor.refresh();
+          }
+        }
+        var editor = CodeMirror.fromTextArea(document.getElementById("post-<?php echo $name; ?>"), {
+        lineNumbers: true,
+        matchBrackets: true,
+        indentUnit: 4,
+        indentWithTabs: true,
+        enterMode: "keep",
+        tabMode: "shift",
+        theme:'default',
+        mode: "text/html",
+        onGutterClick: foldFunc,
+        extraKeys: {"Ctrl-Q": function(cm){foldFunc(cm, cm.getCursor().line);},
+              "F11": toggleFullscreenEditing, "Esc": toggleFullscreenEditing},
+        onCursorActivity: function() {
+          editor.setLineClass(hlLine, null);
+          hlLine = editor.setLineClass(editor.getCursor().line, "activeline");
+        }
+        });
+        var hlLine = editor.setLineClass(0, "activeline");
+        
+      })
+         
+    </script>
   <?php
   }
     
@@ -2263,27 +2303,30 @@ class TheMatrix {
     </script>
   <?php
   }
+  
+  public function initializeTagsInput($id='.DM_tags') {
+    initialiseTagsInput($id);
+  }
 
   /* TheMatrix::doRoute($key)
    * @param $key: key in the uri to look for (e.g. for uri 'blog/slug', 0 refers to 'blog'
    */
   public function doRoute($key=0) {
-	  global $file, $id, $uri;
-	  $uriRoutes= $this->query("SELECT * FROM _routes");
-	  $uri = trim(str_replace('index.php', '', $_SERVER['REQUEST_URI']), '/#');
+    global $file, $id, $uri;
+    $uriRoutes= $this->query("SELECT * FROM _routes");
+    $uri = trim(str_replace('index.php', '', $_SERVER['REQUEST_URI']), '/#');
     #echo strstr($uri, '?id=');
     #echo $uri;
-	  $parts = explode('/',$uri);
-	  foreach ($uriRoutes as $routes) {
-		  if ($parts[$key]==$routes['route']) {
-			  $file=GSDATAPAGESPATH . str_replace('.php','.xml',$routes['rewrite']);
-			  $id = pathinfo($routes['rewrite'],PATHINFO_FILENAME);
-		  }
-	  }
+    $parts = explode('/',$uri);
+    foreach ($uriRoutes as $routes) {
+      if ($parts[$key]==$routes['route']) {
+        $file=GSDATAPAGESPATH . str_replace('.php','.xml',$routes['rewrite']);
+        $id = pathinfo($routes['rewrite'],PATHINFO_FILENAME);
+      }
+    }
   }
    
   public function getAdminHeader($header, $nav=array()) {
-    global $SITEURL;
     if (!empty($nav)) {
       // header
       echo '<h3 class="floated">'.$header.'</h3>';
@@ -2292,7 +2335,7 @@ class TheMatrix {
       $nav = array_reverse($nav); // ensures array is in the right order
       $navigation = '<div class="edit-nav">';
       foreach ($nav as $label=>$properties) {
-        $navigation .= '<a href="'.$SITEURL.'admin/load.php?id='.$properties['link'].'" class="'.$properties['key'];
+        $navigation .= '<a href="'.$this->globals['siteurl'].'admin/load.php?id='.$properties['link'].'" class="'.$properties['key'];
         if (isset($_GET[$properties['key']]) || $_GET['id']==$properties['key']) $navigation .= ' current '; // applies 'current' class to active page;
         $navigation .= '">'.$label.'</a>';
       }
@@ -2318,63 +2361,45 @@ class TheMatrix {
     } 
   }
 
-  public function adminBody() {
+  // admin panel
+  public function admin() {
+    $url = 'load.php?id='.self::FILE;
+    $dir = $this->directories['plugin']['admin']['dir'];
     end($_GET);
     if (isset($_GET['tables'])) {
-      include(MATRIXPATH.'/include/schema.php');
+      include($dir.'/tables.php');
     }
-    if (isset($_GET['table'])) {
-      // navigation menu for the whole table section
-      $nav = array(
-        'View'      => array('key'=> 'view',     'link'=> MATRIX.'&table='.$_GET['table'].'&view'),
-        'Fields'    => array('key'=> 'fields',   'link'=> MATRIX.'&table='.$_GET['table'].'&fields'),
-        'Form'      => array('key'=> 'form',     'link'=> MATRIX.'&table='.$_GET['table'].'&form'),
-        'Backup'    => array('key'=> 'backup',   'link'=> MATRIX.'&table='.$_GET['table'].'&backup'),
-        'Auto'      => array('key'=> 'auto',     'link'=> MATRIX.'&table='.$_GET['table'].'&auto'),
-      );
-      if (key($_GET)=='table')    include(MATRIXPATH.'/include/view.php');
-      if (key($_GET)=='view')     include(MATRIXPATH.'/include/table/view.php');
-      if (key($_GET)=='fields')   include(MATRIXPATH.'/include/table/fields.php');
-      if (key($_GET)=='form')     include(MATRIXPATH.'/include/table/form.php');
-      if (key($_GET)=='backup')   include(MATRIXPATH.'/include/table/backup.php');
-      if (key($_GET)=='auto')     include(MATRIXPATH.'/include/table/auto.php');
-      if (key($_GET)=='add')      include(MATRIXPATH.'/include/table/add.php');
-      if (key($_GET)=='edit')     include(MATRIXPATH.'/include/table/edit.php');
+    elseif (isset($_GET['table']) && $this->tableExists($_GET['table'])) {
+      if (key($_GET)=='view')     include($dir.'table.php');
+      if (key($_GET)=='fields')   include($dir.'fields.php');
+      if (key($_GET)=='form')     include($dir.'form.php');
+      if (key($_GET)=='backup')   include($dir.'backup.php');
+      if (key($_GET)=='auto')     include($dir.'auto.php');
+      if (key($_GET)=='add')      include($dir.'add.php');
+      if (key($_GET)=='edit')     include($dir.'edit.php');
     } 
-    elseif (isset($_GET['add']))	
-    {
-      $this->getAdminHeader('Add');
-      include(MATRIXPATH.'/include/add.php');
+    elseif (isset($_GET['add'])) {
+      include($dir.'add.php');
     }
-    elseif (isset($_GET['edit']))
-    {
-      $this->getAdminHeader('Edit');
-      include(MATRIXPATH.'/include/edit.php');
+    elseif (isset($_GET['edit'])) {
+      include($dir.'edit.php');
     } 
-    elseif (isset($_GET['about']))
-    {
-      $nav = array(
-        'Credit'   => array('key'=> 'credit',     'link'=> MATRIX.'&about&credit'),
-        'Usage'    => array('key'=> 'usage',      'link'=> MATRIX.'&about&usage'),
-      );
-      if (key($_GET)=='credit')    include(MATRIXPATH.'/include/about/credit.php');
-      if (key($_GET)=='usage')     include(MATRIXPATH.'/include/about/usage.php');
-    } 
-    elseif (isset($_GET['view']))
-    {
-      $this->getAdminHeader('View');
-      include(MATRIXPATH.'/include/view.php');
-    } 
+    elseif (isset($_GET['about'])) {
+      include($dir.'about.php');
+    }
     else {
+      include($dir.'/tables.php');
     }
   }
 
+  // start the session
   public function sessionStart() {
     if(session_id() == '') session_start();
   }
   
+  // refresh search index
   public function refreshIndex() {
-    if(function_exists('delete_i18n_search_index')){
+    if (function_exists('delete_i18n_search_index')) {
       delete_i18n_search_index();
       return true;
     }

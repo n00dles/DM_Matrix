@@ -1,19 +1,31 @@
 <?php
-  $this->getAdminHeader(i18n_r('matrix/DM_EDITING_FIELD'), $nav);
-
   if ($_SERVER['REQUEST_METHOD']=='POST') {
     $update    = $this->buildFields($_GET['table'], $_POST);
     if ($update) $this->getAdminError('Fields updated successfully', true);
     else         $this->getAdminError('Fields not updated successfully', false);
   } 
     
-  $fields = $this->schemaArray[$_GET['table']]['fields'];
+  $fields = $this->schema[$_GET['table']]['fields'];
   unset($fields['id']); 
 ?>
-  
+
+<!--header-->
+  <h3 class="floated"><?php echo $_GET['table']; ?></h3>
+  <div class="edit-nav">
+    <a href="<?php echo $url; ?>&table=<?php echo $_GET['table']; ?>&auto"><?php echo i18n_r(self::FILE.'/AUTO'); ?></a>
+    <a href="<?php echo $url; ?>&table=<?php echo $_GET['table']; ?>&backup"><?php echo i18n_r(self::FILE.'/BACKUP'); ?></a>
+    <a href="<?php echo $url; ?>&table=<?php echo $_GET['table']; ?>&form"><?php echo i18n_r(self::FILE.'/FORM'); ?></a>
+    <a href="<?php echo $url; ?>&table=<?php echo $_GET['table']; ?>&fields" class="current"><?php echo i18n_r(self::FILE.'/FIELDS'); ?></a>
+    <a href="<?php echo $url; ?>&table=<?php echo $_GET['table']; ?>&view"><?php echo i18n_r(self::FILE.'/VIEW'); ?></a>
+    <div class="clear"></div>
+  </div>
+
+<!--css-->
   <style>
     .advanced, .dropdown, .dropdowncustom, .imageupload { display: none; }
   </style>
+  
+<!--javascript-->
   <script>
     $('.sortable').sortable();
     $(document).ready(function() {
@@ -26,10 +38,10 @@
       ob_start(); // output buffering
       $field = array('name'=>'');
       
-      foreach ($this->fieldProperties as $key=>$property) {
+      foreach ($this->fields['properties'] as $key=>$property) {
         $field[$key] = $property['default'];
       }
-      include(MATRIXPATH.'/include/forms/edit_fields.php');
+      include($this->directories['plugin']['forms']['dir'].'/edit_fields.php');
       $content = ob_get_contents(); // loads content from buffer
       ob_end_clean(); // ends output buffering
       
@@ -73,6 +85,7 @@
     });
   </script>
   
+<!--fields-->
   <form method="post">
     <table id="editFields">
       <thead>
@@ -81,10 +94,10 @@
         </tr>
       </thead>
       <tbody class="fieldList sortable">
-        <?php foreach ($fields as $fieldname=>$field) { ?>
+        <?php foreach ($fields as $fieldname => $field) { ?>
         <tr>
           <td>
-            <?php include(MATRIXPATH.'/include/forms/edit_fields.php'); ?>
+            <?php include($this->directories['plugin']['forms']['dir'].'/edit_fields.php'); ?>
           </td>
         </tr>
         <?php } ?>

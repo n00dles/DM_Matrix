@@ -21,14 +21,7 @@ div.tagsinput {
 .rightsec textarea.text, .leftsec textarea.text {
 	width: 92% !important;
   height: 100px;
-}
-
-.leftsec div.textmultiWrap, .leftsec div.intmultiWrap {
-  width: 96% !important;
-}
-.rightsec div.textmultiWrap, .rightsec div.intmultiWrap {
-  width: 96% !important;
-}
+}	
 
 div.tagsinput:focus {
   outline:none;

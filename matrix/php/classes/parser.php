@@ -8,7 +8,7 @@ class TheMatrixParser {
   /*
    * parse bbcode markup (e.g. [b], [i], [u]...)
    */
-  public function bbcode($content) {
+  public function bbcode($content, $smilies=array('codes' => array(), 'urls' => array())) {
     if (is_string($content)) {
       // code replacements edited from 'http://thesinkfiles.hubpages.com/hub/Regex-for-BBCode-in-PHP'
       
@@ -57,6 +57,10 @@ class TheMatrixParser {
 
       // returns
       $content = preg_replace('#(\s*\n)+#iUs', '<br />', $content);
+      
+      // smilies
+      $content = str_replace($smilies['codes'], $smilies['urls'], $content);
+      
       return $content;
     }
     else return false;
