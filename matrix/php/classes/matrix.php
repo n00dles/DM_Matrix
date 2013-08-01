@@ -1228,43 +1228,43 @@ EOF;
       // text
       if ($schema['type']=='text') {
         ?>
-        <input type="text" name="post-<?php echo $field; ?>" class="text" value="<?php echo $value; ?>" placeholder="<?php echo $schema['desc']; ?>" <?php echo $maxlength;?> <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/>
+        <input type="text" name="post-<?php echo $field; ?>" class="text" value="<?php echo $value; ?>" placeholder="<?php echo $schema['desc']; ?>" <?php echo $maxlength; ?>  <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/>
         <?php
       }
       // password
       elseif ($schema['type']=='password') {
         ?>
-        <input type="password" name="post-<?php echo $field; ?>" class="text" value="<?php echo $value; ?>" pattern=".{6,}" placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/>
+        <input type="password" name="post-<?php echo $field; ?>" class="text" value="<?php echo $value; ?>" pattern=".{6,}" placeholder="<?php echo $schema['desc']; ?>" <?php echo $maxlength; ?>  <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/>
         <?php
       }
       // int
       elseif ($schema['type']=='int') {
         ?>
-        <input type="number" name="post-<?php echo $field; ?>" class="text int" value="<?php echo $value; ?>" placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/>
+        <input type="number" name="post-<?php echo $field; ?>" class="text int" value="<?php echo $value; ?>" placeholder="<?php echo $schema['desc']; ?>" <?php echo $maxlength; ?>  <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/>
         <?php
       }
       // email
       elseif ($schema['type']=='email') {
         ?>
-        <input type="email" name="post-<?php echo $field; ?>" class="MatrixEmail text email" value="<?php echo $value; ?>" placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/>
+        <input type="email" name="post-<?php echo $field; ?>" class="MatrixEmail text email" value="<?php echo $value; ?>" placeholder="<?php echo $schema['desc']; ?>" <?php echo $maxlength; ?>  <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/>
         <?php
       }
       // url
       elseif ($schema['type']=='url') {
         ?>
-        <input type="url" name="post-<?php echo $field; ?>" class="MatrixURL text url" value="<?php echo $value; ?>" placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/>
+        <input type="url" name="post-<?php echo $field; ?>" class="MatrixURL text url" value="<?php echo $value; ?>" placeholder="<?php echo $schema['desc']; ?>" <?php echo $maxlength; ?>  <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/>
         <?php
       }
       // textlong
       elseif ($schema['type']=='textlong') {
         ?>
-        <input type="text" name="post-<?php echo $field; ?>" class="text textlong title" value="<?php echo $value; ?>" placeholder="<?php echo $schema['desc']; ?>"  <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/> 
+        <input type="text" name="post-<?php echo $field; ?>" class="text textlong title" value="<?php echo $value; ?>" placeholder="<?php echo $schema['desc']; ?>" <?php echo $maxlength; ?>   <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/> 
         <?php
       }
       // textarea
       elseif ($schema['type']=='textarea') {
         ?>
-        <textarea name="post-<?php echo $field; ?>" id="post-<?php echo $field; ?>" class="MatrixTextarea textarea text" placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>><?php echo $value; ?></textarea>
+        <textarea name="post-<?php echo $field; ?>" id="post-<?php echo $field; ?>" class="MatrixTextarea textarea text" placeholder="<?php echo $schema['desc']; ?>" <?php echo $maxlength; ?>  <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>><?php echo $value; ?></textarea>
         <?php
       }
       // textmulti
@@ -1318,18 +1318,18 @@ EOF;
             $options = array_map('trim', $options);
             foreach ($options as $option) {
           ?>
-            <span><input type="text" name="post-<?php echo $field; ?>[]" class="text textmulti" value="<?php echo $option; ?>" placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/> <a href="#" class="remove">-</a></span>
+            <span><input type="text" name="post-<?php echo $field; ?>[]" class="text textmulti" value="<?php echo $option; ?>" placeholder="<?php echo $schema['desc']; ?>" <?php echo $maxlength; ?>  <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/> <a href="#" class="remove">-</a></span>
           <?php
             }
             if (empty($options)) {
           ?>
-            <span><input type="text" name="post-<?php echo $field; ?>[]" class="text textmulti" placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/> <a href="#" class="remove">-</a></span>
+            <span><input type="text" name="post-<?php echo $field; ?>[]" class="text textmulti" placeholder="<?php echo $schema['desc']; ?>" <?php echo $maxlength; ?>  <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/> <a href="#" class="remove">-</a></span>
           <?php } ?>
         </span>
         <script>
           $(document).ready(function(){
             $('.textmultiSpan a').click(function(){
-              $(this).parent().append('<span><input type="text" name="post-<?php echo $field; ?>[]" class="text textmulti" value="<?php echo $option; ?>" placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/> <a href="#" class="remove">-</a></span>');
+              $(this).parent().append('<span><input type="text" name="post-<?php echo $field; ?>[]" class="text textmulti" value="<?php echo $option; ?>" placeholder="<?php echo $schema['desc']; ?>" <?php echo $maxlength; ?>  <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/> <a href="#" class="remove">-</a></span>');
               return false;
             }); // click
           }); // ready
@@ -1339,14 +1339,14 @@ EOF;
       // tags
       elseif ($schema['type']=='tags') {
         ?>
-        <textarea name="post-<?php echo $field; ?>" id="post-<?php echo $field; ?>" class="MatrixTags tags" placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>><?php echo $value; ?></textarea>
+        <textarea name="post-<?php echo $field; ?>" id="post-<?php echo $field; ?>" class="MatrixTags tags" placeholder="<?php echo $schema['desc']; ?>" <?php echo $maxlength; ?>  <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>><?php echo $value; ?></textarea>
         <?php
         $this->initialiseTagsInput($id='.MatrixTags');
       }
       // slug
       elseif ($schema['type']=='slug') {
         ?>
-        <input type="text" name="post-<?php echo $field; ?>" class="MatrixSlug text slug" value="<?php echo $value; ?>" placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/>
+        <input type="text" name="post-<?php echo $field; ?>" class="MatrixSlug text slug" value="<?php echo $value; ?>" placeholder="<?php echo $schema['desc']; ?>" <?php echo $maxlength; ?>  <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/>
         <?php
       }
       // dropdown
@@ -1495,13 +1495,13 @@ EOF;
       ) {
         if (!is_numeric($value)) $value = time();
         ?>
-        <input type="datetime-local" class="text datetimelocal" name="post-<?php echo $field; ?>" value="<?php echo date('Y-m-d\TH:i', $value); ?>" placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/>
+        <input type="datetime-local" class="text datetimelocal" name="post-<?php echo $field; ?>" value="<?php echo date('Y-m-d\TH:i', $value); ?>" placeholder="<?php echo $schema['desc']; ?>" <?php echo $maxlength; ?>  <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/>
         <?php
       }
       // imagepicker
       elseif ($schema['type']=='imagepicker') {
         ?>
-        <input class="text imagepicker DM_filepicker " type="text" id="post-<?php echo $field; ?>" name="post-<?php echo $field; ?>" style="width:98%;" placeholder="<?php echo $schema['desc']; ?>" value="<?php echo $value; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/>
+        <input class="text imagepicker DM_filepicker " type="text" id="post-<?php echo $field; ?>" name="post-<?php echo $field; ?>" style="width:98%;" placeholder="<?php echo $schema['desc']; ?>" <?php echo $maxlength; ?>  value="<?php echo $value; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/>
         <span class="edit-nav"><a id="browse-<?php echo $field; ?>" href="javascript:void(0);">Browse</a></span>
         <script type="text/javascript">
           $(function() { 
@@ -1547,7 +1547,7 @@ EOF;
       // filepicker
       elseif ($schema['type']=='filepicker') {
         ?>
-        <input class="MatrixFilepicker text filepicker" name="post-<?php echo $field; ?>" type="text" id="post-<?php echo $field; ?>" name="post-<?php echo $field; ?>" style="width:98%;" placeholder="<?php echo $schema['desc']; ?>" value="<?php echo $value; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/>
+        <input class="MatrixFilepicker text filepicker" name="post-<?php echo $field; ?>" type="text" id="post-<?php echo $field; ?>" name="post-<?php echo $field; ?>" style="width:98%;" placeholder="<?php echo $schema['desc']; ?>" <?php echo $maxlength; ?>  value="<?php echo $value; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/>
         <span class="edit-nav"><a id="browse-<?php echo $field; ?>" href="javascript:void(0);">Browse</a></span>
         <script type="text/javascript">
           $(function() { 
@@ -1561,7 +1561,7 @@ EOF;
       // bbcodeeditor
       elseif ($schema['type']=='bbcodeeditor') {
         ?>
-        <textarea id="post-<?php echo $field; ?>" name="post-<?php echo $field; ?>" class="MatrixBBCode bbcodeeditor" placeholder="<?php echo $schema['desc']; ?>" <?php echo $maxlength;?> <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>><?php echo $value; ?></textarea>
+        <textarea id="post-<?php echo $field; ?>" name="post-<?php echo $field; ?>" class="MatrixBBCode bbcodeeditor" placeholder="<?php echo $schema['desc']; ?>" <?php echo $maxlength; ?>  <?php echo $maxlength;?> <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>><?php echo $value; ?></textarea>
         <script language="javascript">
           $(document).ready(function()  {
             $('.MatrixBBCode').markItUp(GSBBCodeSettings);
@@ -1572,7 +1572,7 @@ EOF;
       // wikieditor
       elseif ($schema['type']=='wikieditor') {
         ?>
-        <textarea id="post-<?php echo $field; ?>" name="post-<?php echo $field; ?>" class="MatrixWiki wikieditor" placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>><?php echo $value; ?></textarea>
+        <textarea id="post-<?php echo $field; ?>" name="post-<?php echo $field; ?>" class="MatrixWiki wikieditor" placeholder="<?php echo $schema['desc']; ?>" <?php echo $maxlength; ?>  <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>><?php echo $value; ?></textarea>
         <script language="javascript">
           $(document).ready(function()  {
             $('.MatrixWiki').markItUp(GSWikiSettings);
@@ -1583,7 +1583,7 @@ EOF;
       // markdowneditor
       elseif ($schema['type']=='markdowneditor') {
         ?>
-        <textarea id="post-<?php echo $field; ?>" name="post-<?php echo $field; ?>" class="MatrixMarkDown markdown" placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>><?php echo $value; ?></textarea>
+        <textarea id="post-<?php echo $field; ?>" name="post-<?php echo $field; ?>" class="MatrixMarkDown markdown" placeholder="<?php echo $schema['desc']; ?>" <?php echo $maxlength; ?>  <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>><?php echo $value; ?></textarea>
         <script language="javascript">
           $(document).ready(function()  {
             $('.MatrixMarkDown').markItUp(GSMarkDownSettings);
@@ -1594,14 +1594,14 @@ EOF;
       // wysiwyg
       elseif ($schema['type']=='wysiwyg') {
         ?>
-        <textarea id="post-<?php echo $field; ?>" name="post-<?php echo $field; ?>" class="DMckeditor text wysiwyg" style="width:513px; height:200px; border: 1px solid #AAAAAA;" placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>><?php echo $value; ?></textarea>
+        <textarea id="post-<?php echo $field; ?>" name="post-<?php echo $field; ?>" class="DMckeditor text wysiwyg" style="width:513px; height:200px; border: 1px solid #AAAAAA;" placeholder="<?php echo $schema['desc']; ?>" <?php echo $maxlength; ?>  <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>><?php echo $value; ?></textarea>
         <?php
         if ($ckeditor) $this->initialiseCKEditor();
       }
       // codeeditor
       elseif ($schema['type']=='codeeditor') {
         ?>
-        <textarea id="post-<?php echo $field; ?>" name="post-<?php echo $field; ?>" class="codeeditor DM_codeeditor text" placeholder="<?php echo $schema['desc']; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>><?php echo $value; ?></textarea>
+        <textarea id="post-<?php echo $field; ?>" name="post-<?php echo $field; ?>" class="codeeditor DM_codeeditor text" placeholder="<?php echo $schema['desc']; ?>" <?php echo $maxlength; ?>  <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>><?php echo $value; ?></textarea>
         <?php
         $this->initialiseCodeMirror();
         $this->instantiateCodeMirror($field);
