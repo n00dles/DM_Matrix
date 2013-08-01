@@ -251,7 +251,7 @@ EOF;
   }
   
   public function getFieldTypes() {
-    return $this->fieldTypes;
+    return $this->fields['type'];
   }
 
   /* TheMatrix:getOptions($string, $delimiter)
