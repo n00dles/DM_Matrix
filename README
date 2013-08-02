@@ -1,86 +1,26 @@
-What is The Matrix?
+#What Is The Matrix?
 
-TheMatrix is an XML datastore plugin for GetSimple 3.1
-It allows you to define tables, which user defined fields which you can then query using SQL 
-type queries to retrive the date for you theme/plugin
+The Matrix is a plugin designed to allow for easy plugin development. It allows users to implement data structures similar to simple SQL matrices and tables in order to store the data required for their plugins, and to easily generate, manage and manipulate said tables.
 
-The plugin can be used standalone or you can build your plugin around it using it to store your data. 
+There are other additional features intended for easier plugin development that are included but not yet complete, such as dynamic access to the main .htaccess, quick deployment of your CSS and JS and more.
 
-As of now we support the following field types:
+NOTE: If you are updating from a previous version of The Marix, PLEASE BACKUP YOUR DATA/OTHER/MATRIX FOLDER. If any plugin-breaking problems arise, you can revert to that backup and use the previous iteration of The Matrix. 
 
-o - int, integer, used for ID field
-o - text, normal text box
-o - textlong, full width Text Box
-o - Checkbox, Checkbox.
-o - slug, add a slug & title to the table
-o - pages, a dropdown of the current Pages. 
-o - templates, a dropdown of the current templates
-o - dropdown, a dropdown that populates its values from another table. 
-o - datepicker, a date picker field. 
-o - datetimepicker, a date and time picker. 
-o - image, an image selector field
-o - filepicker, a file selector field
-o - textarea, a plain textarea
-o - codeeditor, a codemirror textarea
-o - wysiwyg, a CKEditor enabled textarea. 
-
-Each field has the following options: 
-
-o - label, short label displayed on the field entry screen
-o - description, a full description for the end user as to what the field does. 
-o - tableview, whether to display the field on the record view screen. 
-o - cachindex, (not currently implemented) whether to return the field using sql queries of return it by accessing the file directly, 
-	this will be used primarily for large type fields (textareas etc..) which may hold large amount of data 
-	which should not be loaded into memory. 
-
-So you setup your Tables, add some fields and input data into those fields. 
-
-The front end allows you to run SQL type queries on the data to build your webpages. 
-
-So what can you use it for ?
-
-Anything !!
-Blogs, comment systems, banners, galleries,Lists, Price lists... you name it you can do it... 
-
-Example
-
-To setup a simple Blog, set up a new table "blog" 
-add the following fields, 
-
-o - title, textlong 
-o - author, text
-o - publisheddate, datepicker 
-o - content, texteditor
-
-Enter some date. 
-
-On your template use getSchemaTable to return the records from a table to an array ; 
-
-	$myquery = "SELECT * FROM blog ORDER BY publishdate ASC";  
-	$result=DM_query($myquery);
+##Changelog (1.0)
+- Complete overhaul moving the plugin from procedural code to Object Oriented code. The majority of the useful front-end functions still have a global equivalence for backwards compatibility (e.g. you can still use DM_query to perform queries).
+- Removed field types: datepicker
+- Added field types: password (encodes in sha1), tags (used xoxco's jquery plugin like shawn_a's tags plugin, bbcodeeditor (markitup), wikieditor (markitup), markdown (markitup), dropdowncustom (custom dropdown menus), users (user list), components (component list), datetimelocal (html5 as opposed to javascript) and more
+- Checkbox now lets you have multiple defined options
+- Multiple field properties added, including 'class' (for layout in admin panel) and default (default value)
+- XML files are accessed and parsed using Array2XML and XML2Array PHP class
+- Schema array has been modified (fields array is structured to show the fields then their properties, rather than being an array of the existing properties and their field names)
+- Query pagination is possible
+- and more...
 
 
-Now just iterate through the $result array and echo/style as you wish. 
+Need to add comprehensive documentation to the lineup, but for now manipulating the tables from within The Matrix plugin's interface should be fun to tinker with. 
 
-
-
-AVAILABLE FUNCTIONS
-* See wiki for more details
-* https://github.com/n00dles/DM_Matrix/wiki/Usage
-
-DM_query(query) - perform a simple query, results returned in an array
-DM_getSchema - get the main Schema 
-DM_saveSchema - Save the schema out to an XML file schema.xml
-createSchemaFolder - create the base folder for the record files
-createRecord - Add a record/file to a table
-getNextRecord - returns the next record number in the table
-createSchemaTable - Create a new table
-dropSchemaTable - Delete a table
-addSchemaField - add a field to a table
-deleteSchemaField - Delete a field from a table
-getSchemaTable - return an array of a tables records. 
-DM_getRecord - get a single record from a table,  supplying tabel and id of record
-tableexists - check if a table exists 
-updateRecord - update a record 
-DM_createForm - create an input form from a table 
-DM_editForm - create a form for editing providing a record number. 
+##Use
+- Unzip to the plugins folder and enable the plugin.
+- Go to 'The Matrix' tab and start creating your tables.
+- To output information from your plugin, do the following:
