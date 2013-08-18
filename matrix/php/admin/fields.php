@@ -1,10 +1,10 @@
 <?php
   if ($_SERVER['REQUEST_METHOD']=='POST') {
+    #echo '<pre><code>'; var_dump($_POST); echo '</code></pre>';
     $update    = $this->buildFields($_GET['table'], $_POST);
     if ($update) $this->getAdminError('Fields updated successfully', true);
     else         $this->getAdminError('Fields not updated successfully', false);
   } 
-    
   $fields = $this->schema[$_GET['table']]['fields'];
   unset($fields['id']); 
 ?>
@@ -22,7 +22,13 @@
 
 <!--css-->
   <style>
-    .advanced, .dropdown, .dropdowncustom, .imageupload { display: none; }
+    .advanced, #menu-items, .masks select:not(.input) { display: none; }
+    #menu-items {
+      height: auto !important;
+      margin: 0 0 5px 0 !important;
+      padding: 10px !important;
+    }
+    label h3 { display: inline; font-size: 15px; }
   </style>
   
 <!--javascript-->
@@ -68,21 +74,81 @@
       $(this).closest('td').find('.advanced').slideToggle();
       return false;
     }); // on
-
-    // extra options dependent on field type
+    
+    
+    // fix type
+    function fixType(selector) {
+      var type = selector.val();
+      selector.closest('#metadata_window').find('.masks .mask').attr('name', '').hide();
+      var s = selector.closest('#metadata_window').find('.mask.' + selector.val());
+      var mask = s.val();
+      
+      s.attr('name', 'mask[]').stop().slideDown('fast');
+      if (s.length == 0) {
+        selector.closest('#metadata_window').find('.masks .blank').attr('name', 'mask[]');
+        selector.closest('#metadata_window').find('.masks p').hide();
+      }
+      else {
+        selector.closest('#metadata_window').find('.masks p').show();
+      }
+      fixMask(s);
+    }
+    
+    
+    // fix mask
+    function fixMask(selector) {
+      var type = selector.closest('#metadata_window').find('.type').val();
+      var mask = selector.val();
+      
+      if (typeof(mask) === 'undefined') {
+        var _class = type;
+      }
+      else {
+        var _class = type + '_' + mask;
+      }
+      
+      selector.closest('#metadata_window').find('#menu-items > div:not(.' + _class + ')').stop().hide();
+      var s = selector.closest('#metadata_window').find('.' + _class);
+      s.slideDown('fast');
+      
+      //$('.plugin_sb').text(_class);
+      
+      if (s.length == 0) {
+        selector.closest('#metadata_window').find('#menu-items').hide();
+      }
+      else {
+        selector.closest('#metadata_window').find('#menu-items').show();
+      }
+    }
+    
+    
+  
     $(document).ready(function() {
       $('.type').each(function() {
-        $this = $(this);
-        $this.closest('#metadata_window').find('.showOptions').hide();
-        $this.closest('#metadata_window').find('div.' + $this.val()).stop().show();
-      });
+        fixType($(this));
+      }); // each
+      
+      $('.name').keyup(function() {
+        var Text = $(this).val();
+        Text =  Text.toLowerCase().replace(/ /g,'-').replace(/[^\w-]+/g,'').replace(/(-)+/g, '-');
+        $(this).val(Text);	
+      }); // keyup
     }); // ready
     
     $('body').on('change', '.type', function() {
-      $this = $(this);
-      $this.closest('#metadata_window').find('.showOptions').not('.' + $this.val()).stop().slideUp('fast');
-      $this.closest('#metadata_window').find('div.' + $this.val()).slideDown('fast');
-    });
+      fixType($(this));
+    }); // on
+    
+    $('body').on('change', '.mask', function() {
+      fixMask($(this));
+    }); // on
+    
+    $('body').on('keyup', '.name', function() {
+      var Text = $(this).val();
+      Text =  Text.toLowerCase().replace(/ /g,'-').replace(/[^\w-]+/g,'').replace(/(-)+/g, '-');
+      $(this).val(Text);	
+    }); // on
+    
   </script>
   
 <!--fields-->
@@ -102,6 +168,11 @@
         </tr>
         <?php } ?>
       </tbody>
+      <thead>
+        <tr>
+          <th colspan="100%"><a class="addField" href="">+</a></th>
+        </tr>
+      </thead>
   </table>
   <input type="submit" name="submit" class="submit" value="Edit fields">
   </form>

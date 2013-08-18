@@ -132,8 +132,23 @@
     <tr class="record">
     <?php   foreach ($fields as $field=>$properties) {
             // fields only shown if they have their visibility enabled
-            if ($properties['tableview']==1) { ?>
-      <td style="word-wrap: break-word;"><?php echo $record[$field]; ?></td>
+            if ($properties['tableview'] == 1) { ?>
+      <td style="word-wrap: break-word;">
+        <?php
+          // display regular field
+          if (!is_array($record[$field])) echo $record[$field];
+          // display array field
+          else {
+            foreach ($record[$field] as $f => $v) { ?>
+          <div>
+            <label><?php echo $f; ?></label>
+            <span><?php echo $v; ?></span>
+          </div>
+          <?php
+            }
+          }
+        ?>
+      </td>
     <?php   }
           }
     ?>

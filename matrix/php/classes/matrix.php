@@ -6,30 +6,26 @@ class TheMatrix {
     const SINGLE  = 0;
     const MULTI   = 1;
     const COUNT   = 2;
-    const VERSION = '1.02';
+    const VERSION = '1.03';
     const AUTHOR  = 'Mike Swan';
     const URL     = 'http://digimute.com/';
     const WIKI    = 'https://github.com/n00dles/DM_Matrix/wiki/';
   
   # properties
-    private $salt;
     private $directories;
     private $fields;
     private $plugin;
     private $debug;
-    private $defaultDebug = true;
     private $schema = array();
     private $itemTitle;
     private $editing; 
     private $uri;
-    private $formColumns;
     private $sql;
-    private $mytable;
     private $tablesCache; // hold cached schema loads
     private $globals;
   
   # initialization
-  public function __construct($salt='') {
+  public function __construct() {
     // initialize plugin properties
     $this->plugin = array();
     $this->plugin['id']          = self::FILE;
@@ -44,20 +40,13 @@ class TheMatrix {
     
     // if the core dependencies exist, continue
     if ($this->checkDependencies()) {
-      $this->salt = $salt;          // used for salting passwords
-      $this->debug = true;          // turn debugging on
-      $this->defaultDebug = true;
-      $this->schema = array();
-      $this->itemTitle = 'Matrix';
-      $this->editing = false; 
-      $this->uri = '';
-      $this->formColumns = 0;
-      $this->sql = new sql4array();
-      $this->myTable = array();
+      $this->schema      = array();
+      $this->uri         = '';
+      $this->sql         = new sql4array();
       $this->tablesCache = array();
       $this->directories = $this->getDirs();
-      $this->fields = $this->fields();
-      $this->globals = $this->globals();
+      $this->fields      = $this->fields();
+      $this->globals     = $this->globals();
       
       // loads schema
       $this->getSchema();
@@ -83,6 +72,8 @@ class TheMatrix {
     // plugin folder
     $dirs['plugin']['core']   = array('dir' => GSPLUGINPATH.self::FILE.'/');
     $dirs['plugin']['php']    = array('dir' => $dirs['plugin']['core']['dir'].'/php/');
+    $dirs['plugin']['js']     = array('dir' => $dirs['plugin']['core']['dir'].'/js/');
+    $dirs['plugin']['css']    = array('dir' => $dirs['plugin']['core']['dir'].'/css/');
     $dirs['plugin']['var']    = array('dir' => $dirs['plugin']['php']['dir'].'/var/');
     $dirs['plugin']['admin']  = array('dir' => $dirs['plugin']['php']['dir'].'/admin/');
     $dirs['plugin']['forms']  = array('dir' => $dirs['plugin']['php']['dir'].'/forms/');
@@ -219,8 +210,8 @@ EOF;
     foreach ($array['channel']['item'] as $component) {
       $components[$component['slug']] = array(
         'title'   => $component['title']['@cdata'],
-        'slug'    => $component['slug']['@cdata'],
-        'value'   => $component['value'],
+        'slug'    => $component['slug'],
+        'value'   => $component['value']['@cdata'],
       );
     }
     return $components;
@@ -233,7 +224,8 @@ EOF;
     $themes = array();
     foreach ($dir as $theme) {
       $theme = substr($theme, 0, strlen($theme)-1);
-      $themes[] = end(explode('/', $theme));
+      $tmp = explode('/', $theme);
+      $themes[] = end($tmp);
     }
     return $themes;
   }
@@ -253,18 +245,49 @@ EOF;
   public function getFieldTypes() {
     return $this->fields['type'];
   }
+  
+  public function getFieldProperties() {
+    return $this->fields['properties'];
+  }
 
   /* TheMatrix:getOptions($string, $delimiter)
    * @param $string:    string to explode into options array
    * @param $delimiter: delimiter to explode on (defaults to line break)
    */
   public function getOptions($string, $delimiter="\n") {
+    $return = array();
     if (is_string($string)) {
-      $string = explode($delimiter, $string);
-      $string = array_map('trim', $string);
-      return $string;
+      $array = explode($delimiter, $string);
+      $array = array_map('trim', $array);
+      
+      $return = array();
+      
+      $i = 0;
+      foreach ($array as $key => $val) {
+        $val = filter_var($val, FILTER_SANITIZE_STRING);
+        // check to see if custom keys have been set
+        $match = preg_match_all('#\[(.*?)\]#', $val, $matches);
+        
+        // if key syntax is found, custom keys will be set
+        if (isset($matches[1][0]) || isset($matches[1][1])) {
+          if (isset($matches[1][0])) {
+            // if key is just [], index will be set
+            if (strlen($matches[1][0]) == 0) {
+              $key = $i;
+              $i++;
+            }
+            else $key = $matches[1][0];
+          }
+          if (isset($matches[1][1])) {
+            $val = $matches[1][1];
+          }
+        }
+        else $key = $val;
+        
+        $return[$key] = $val;
+      }
     }
-    else return false;
+    return $return;
   }
   
   public function explodeTrim($delim="\n", $string) {
@@ -281,11 +304,6 @@ EOF;
       $array = implode("\n", $array);
     }
     return $array;
-  }
-  
-  public function salt($salt) {
-    $this->salt = $salt;
-    return true;
   }
 
   public function getHierarcalOptions($string, $delimiter=">") {
@@ -456,8 +474,18 @@ EOF;
             if (is_array($field['@attributes'])) $array = array_merge($array, $field['@attributes']);
             $table['fields'][$field['@value']] = $array;
             
+            // properties
             foreach ($this->fields['properties'] as $key => $properties) {
               if (!isset($table['fields'][$field['@value']][$key])) $table['fields'][$field['@value']][$properties['key']] = $properties['default'];
+            }
+            
+            // mask compatibility
+            if (empty($field['@attributes']['mask']) || $field['@attributes']['mask'] == 'plain') {
+              if (isset($this->fields['compatibility']['types'][$field['@attributes']['type']])) {
+                $tmp = $this->fields['compatibility']['types'][$field['@attributes']['type']];
+                $table['fields'][$field['@value']]['type'] = $tmp[0];
+                $table['fields'][$field['@value']]['mask'] = $tmp[1];
+              }
             }
           }
           elseif(!is_array($field)) {
@@ -561,6 +589,15 @@ EOF;
       $path = $this->directories['data']['core']['dir'].'/'.$name."/";
       $dir_handle = @opendir($path) or die('Unable to open '.$path);
       $filenames = array();
+      
+      foreach (glob($path.'*.xml') as $file) {
+        $id = explode('/', $file);
+        $id = (int)str_replace('.xml', '', end($id));
+        $table[$id] = $this->recordExists($name, $id);
+      }
+      
+      
+      /*
       while ($filename = readdir($dir_handle)) {
         $ext = substr($filename, strrpos($filename, '.') + 1);
         $fname=substr($filename,0, strrpos($filename, '.'));
@@ -570,10 +607,11 @@ EOF;
           $id=$data->item;
           $idNum=$id->id;
           foreach ($id->children() as $opt=>$val) {
-            $table[(int)$idNum][(string)$opt]=(string)$val;
+            //$table[(int)$idNum][(string)$opt]=(string)$val;
+            $table[(int)$idNum][(string)$opt] = $val;
           }         
         }
-      }
+      }*/
       if ($query!='') {
         $returnArray = $table;
         $table = $this->sql->query($query);
@@ -608,6 +646,9 @@ EOF;
     $this->schema[(string)$name] = array();
     $this->schema[(string)$name]['id']= $id;
     $this->schema[(string)$name]['maxrecords'] = $maxrecords;
+    
+    // force $fields to be an array
+    if (empty($fields)) $fields = array();
 
     // ensure ID field exists
     if (!array_key_exists('id', $fields)) {
@@ -616,20 +657,34 @@ EOF;
         'type'  => 'int',
         'label' => 'ID Field',
         'size'  => 1,
+        'tableview' => 1,
       );
       $fields = array_merge(array($idField), $fields);
     }
     
+    
+    $dummyfield = array();
+    
     // formats the array key for the field schema to be created and fills in defaults
-    foreach ($fields as $key=>$field) {
-      foreach ($this->fields['properties'] as $fieldKey=>$fieldProperty) {
-        if (!isset($fields[$key][$fieldKey])) {
-          $field[$fieldKey] = $fieldProperty['default'];
+    foreach ($fields as $key => $field) {
+      if (is_array($field) && isset($field['name'])) {
+        // fill in property defaults
+        foreach ($this->fields['properties'] as $fieldKey => $fieldProperty) {
+          $dummyfield[$fieldKey] = $fieldProperty['default'];
+          if (!isset($fields[$key][$fieldKey])) {
+            $field[$fieldKey] = $fieldProperty['default'];
+          }
         }
+        $fields[$field['name']] = $field;
       }
-      $fields[$field['name']] = $field;
       unset($fields[$key]);
     }
+    
+    if (count($fields) == 1) {
+      $dummyfield['name'] = 'dummy';
+      $fields = array_merge($fields, array($dummyfield));
+    }
+    
     
     $this->schema[(string)$name]['fields'] = $fields;
     
@@ -891,22 +946,48 @@ EOF;
 
   # ======= RECORD/QUERY FUNCTIONS ======= #
 
+  private function unCdata($array) {
+    //$return = array();
+    foreach ($array as $key => $value) {
+      if (is_array($value) && isset($value['@cdata'])) {
+        $array[$key] = $value['@cdata'];
+      }
+      elseif(is_array($value)) {
+        $array[$key] = $this->unCdata($value);
+      }
+    }
+    return $array;
+  }
+  
   /* TheMatrix::recordExists($table, $id)
    * @param $table: table name (e.g. 'foo')
    * @param $id:    record id
    */
-  public function recordExists($table, $id) {
+  public function recordExists($table, $id, $uncdata = true) {
     $file = $this->directories['data']['core']['dir'].'/'.$table.'/'.$id.'.xml';
     if ($this->tableExists($table) && file_exists($file)) {
       $record = XML2Array::createArray(file_get_contents($file));
       if (isset ($record['channel']['item'])) {
         $record = $record['channel']['item'];
-        foreach ($record as $field => $value) {
-          if (is_array($value)) {
-            sort($value);
-            $record[$field] = $value[0];
+        if ($uncdata) {
+          $record = $this->unCdata($record);
+          foreach ($record as $field => $value) {
+            if (is_array($value) && isset($value['value'])) {
+              $record[$field] = $value['value'];
+            }
           }
         }
+        /*
+        foreach ($record as $field => $value) {
+          if (is_array($value)) {
+            foreach ($value as $value) {
+            }
+            //sort($value);
+
+            //else $record[$field] = $value[0];
+          }
+        }
+        */
         return $record;
       }
       else return false;
@@ -1006,27 +1087,32 @@ EOF;
    * @param $plugin: id of your plugin (e.g. 'matrix')
    * @param $prefix: prefix if you only want to show certain on a particular end (e.g. 'front_' to load all front-end scripts, 'back_' to load all back-end scripts)
    */
-  public function themeHeader($plugin, $prefix='') {
-    echo "\n".'<!--'.$plugin.' files-->'."\n";
+  public function themeHeader($end) {
+    $domain = $this->getSiteURL();
+    
+    // front-end only
+    if ($end == 'front')  {
+      // url base
+      echo "\n".'<base href="'.$this->getSiteURL().'">';
+    }
+    echo "\n".'<!-- The Matrix '.self::VERSION.'-->'."\n";
     // css
     echo '  <!--css-->'."\n";
-    foreach (glob(GSPLUGINPATH.$plugin.'/css/*.css') as $css) {
-      $tmp = explode('/', $css);
-      echo '    <link rel="stylesheet" href="'.$this->globals['siteurl'].'plugins/'.$plugin.'/css/'.$prefix.end($tmp).'"/>'."\n";
+    foreach (glob(GSPLUGINPATH.self::FILE.'/css/*.css') as $css) {
+      echo '    <link rel="stylesheet" href="'.str_replace(GSROOTPATH, $domain, $css).'"/>'."\n";
     }
     echo '  <!--/css-->'."\n";
     
     // js
     echo '  <!--js-->'."\n";
-    $javascript = glob(GSPLUGINPATH.$plugin.'/js/*.js');
-    sort($javascript);
-    $javascript = array_reverse($javascript);
+    $javascript = glob(GSPLUGINPATH.self::FILE.'/js/*.js');
+    natsort($javascript);
+    
     foreach ($javascript as $js) {
-      $tmp = explode('/', $js);
-      echo '    <script src="'.$this->globals['siteurl'].'plugins/'.$plugin.'/js/'.$prefix.end($tmp).'"></script>'."\n";
+      echo '    <script src="'.str_replace(GSROOTPATH, $domain, $js).'" type="text/javascript"></script>'."\n";
     }
     echo '  <!--/js-->'."\n";
-    echo '<!--/'.$plugin.' files-->'."\n";
+    echo '<!--/The Matrix '.self::VERSION.'-->'."\n";
   }
 
   /* TheMatrix::addRoute($url, $route)
@@ -1034,7 +1120,7 @@ EOF;
    * @param $route: redirection url
    */
   public function addRoute($url, $route) {
-    $this->createRecord('_routes', array('route'=>$url,'rewrite'=>$route));  
+    return $this->createRecord('_routes', array('route'=>$url,'rewrite'=>$route));  
   }
   
   /* ===== TABLE FUNCTIONS ===== */
@@ -1068,7 +1154,7 @@ EOF;
    */
   
   // create field
-  public function createField($table, $field) {
+  public function createField($table, $field, $save=true) {
     if ($this->tableExists($table) && isset($field['name'])) {
       // fill in defaults
       foreach ($this->fields['properties'] as $fieldKey=>$fieldProperty) {
@@ -1079,7 +1165,7 @@ EOF;
 
       // save schema
       $this->schema[$table]['fields'][$field['name']] = $field;
-      $this->saveSchema();
+      if ($save) $this->saveSchema();
       
       // uncomment for debugging
       #$schema = $this->schema;
@@ -1144,7 +1230,7 @@ EOF;
   }
   
   // reorder fields
-  public function reorderFields($table, $fields) {
+  public function reorderFields($table, $fields, $save=true) {
     if ($this->tableExists($table)) {
       // check that the fields array provided covers all of the existing fields
       $i = 1; // 1 because the id field is part of the total
@@ -1158,7 +1244,7 @@ EOF;
           unset($this->schema[$table]['fields'][$field]);
           $this->schema[$table]['fields'][$field] = $array;
         }
-        $this->saveSchema();
+        if ($save) $this->saveSchema();
         return true;
       }
       else return false;
@@ -1185,12 +1271,12 @@ EOF;
       // create/delete fields
       foreach ($array['fields'] as $key => $field) {
         
-        if ($field['oldname']!=$field['name']) {
+        if (isset($field['oldname']) && $field['oldname'] != $field['name']) {
           $this->renameField($table, $field['oldname'], $field['name']);
         }
-        $this->createField($table, $field);
-        
+        $this->createField($table, $field, $save=false);
       }
+      
       foreach ($this->schema[$table]['fields'] as $field => $details) {
         if ($field!='id' && !in_array($field, $array['name'])) {
           $this->deleteField($table, $field);
@@ -1198,7 +1284,10 @@ EOF;
       }
       
       // reorder fields
-      $this->reorderFields($table, $array['name']);
+      $this->reorderFields($table, $array['name'], $save=false);
+      
+      // save
+      $this->saveSchema();
       
       // final return
       return true;
@@ -1206,409 +1295,22 @@ EOF;
     else return false; 
   }
 
+  // display a field
   public function displayField($table, $field, $value='', $ckeditor=false) {
     if ($this->fieldExists($table, $field)) {
       $schema = $this->schema[$table]['fields'][$field];
-      // quick formatting
-      if (empty($value) && strlen($schema['default']) == 0) {
-        if ($schema['type'] == 'datetimelocal') $value = time();
-        elseif ($schema['type'] == 'int') $value = 0;
-        else $value = $schema['default'];
-      }
-      if ($schema['type']=='password') $value = '';
       
-      // maxlength
-      if (empty($schema['maxlength'])) {
-        $maxlength = '';
-      }
-      else {
-        $maxlength = 'maxlength="'.$schema['maxlength'].'"';
-      }
+      $paths = array();
+      $paths['home'] = $this->getSiteURL();
+      $paths['js']   = $paths['home'].'plugins/'.self::FILE.'/js/';
+      $paths['css']  = $paths['home'].'plugins/'.self::FILE.'/css/';
+      $paths['img']  = $paths['home'].'plugins/'.self::FILE.'/img/';
+      $paths['template']  = $this->globals['template'];
+      $display = new MatrixDisplayField($this, $schema, $value, $paths);
       
-      // text
-      if ($schema['type']=='text') {
-        ?>
-        <input type="text" name="post-<?php echo $field; ?>" class="text" value="<?php echo $value; ?>" placeholder="<?php echo $schema['desc']; ?>" <?php echo $maxlength; ?>  <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/>
-        <?php
-      }
-      // password
-      elseif ($schema['type']=='password') {
-        ?>
-        <input type="password" name="post-<?php echo $field; ?>" class="text" value="<?php echo $value; ?>" pattern=".{6,}" placeholder="<?php echo $schema['desc']; ?>" <?php echo $maxlength; ?>  <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/>
-        <?php
-      }
-      // int
-      elseif ($schema['type']=='int') {
-        ?>
-        <input type="number" name="post-<?php echo $field; ?>" class="text int" value="<?php echo $value; ?>" placeholder="<?php echo $schema['desc']; ?>" <?php echo $maxlength; ?>  <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/>
-        <?php
-      }
-      // email
-      elseif ($schema['type']=='email') {
-        ?>
-        <input type="email" name="post-<?php echo $field; ?>" class="MatrixEmail text email" value="<?php echo $value; ?>" placeholder="<?php echo $schema['desc']; ?>" <?php echo $maxlength; ?>  <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/>
-        <?php
-      }
-      // url
-      elseif ($schema['type']=='url') {
-        ?>
-        <input type="url" name="post-<?php echo $field; ?>" class="MatrixURL text url" value="<?php echo $value; ?>" placeholder="<?php echo $schema['desc']; ?>" <?php echo $maxlength; ?>  <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/>
-        <?php
-      }
-      // textlong
-      elseif ($schema['type']=='textlong') {
-        ?>
-        <input type="text" name="post-<?php echo $field; ?>" class="text textlong title" value="<?php echo $value; ?>" placeholder="<?php echo $schema['desc']; ?>" <?php echo $maxlength; ?>   <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/> 
-        <?php
-      }
-      // textarea
-      elseif ($schema['type']=='textarea') {
-        ?>
-        <textarea name="post-<?php echo $field; ?>" id="post-<?php echo $field; ?>" class="MatrixTextarea textarea text" placeholder="<?php echo $schema['desc']; ?>" <?php echo $maxlength; ?>  <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>><?php echo $value; ?></textarea>
-        <?php
-      }
-      // textmulti
-      elseif ($schema['type']=='textmulti') {
-        ?>
-        <span class="textmultiSpan">
-          <?php
-            $schema['desc'] = explode("\n", $schema['desc']);
-            $schema['desc'] = array_map('trim', $schema['desc']);
-            $options = explode("\n", $value);
-            $options = array_map('trim', $options);
-            for ($i=0; $i<$schema['rows']; $i++) {
-          ?>
-            <input type="text" style="margin-bottom: 4px;" name="post-<?php echo $field; ?>[]" class="text textmulti" value="<?php if (isset($options[$i])) echo $options[$i]; ?>" placeholder="<?php if (isset($schema['desc'][$i])) echo $schema['desc'][$i]; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/>
-          <?php
-            }?>
-        </span>
-        <?php
-      }
-      // intmulti
-      elseif ($schema['type']=='intmulti') {
-        ?>
-        <span class="intmultiSpan">
-          <?php
-            // label
-            $schema['other'] = explode("\n", $schema['other']);
-            $schema['other'] = array_map('trim', $schema['other']);
-            
-            // description
-            $schema['desc'] = explode("\n", $schema['desc']);
-            $schema['desc'] = array_map('trim', $schema['desc']);
-            
-            // value
-            $options = explode("\n", $value);
-            $options = array_map('trim', $options);
-            for ($i=0; $i<$schema['rows']; $i++) {
-          ?>
-            <?php if (isset($schema['other'][$i])) echo '<span style="display: block; overflow: hidden;"><label style="display: block; padding: 5px 0 5px 0; float: left; width: 40%;">'.$schema['other'][$i].' : </label>'; ?><input type="number" style="margin-bottom: 4px; <?php if (isset($schema['other'][$i])) echo 'width: 50%; float: right;'; ?>" name="post-<?php echo $field; ?>[]" class="text intmulti" value="<?php if (isset($options[$i])) echo $options[$i]; ?>" placeholder="<?php if (isset($schema['desc'][$i])) echo $schema['desc'][$i]; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/><?php if (isset($schema['other'][$i])) echo '</span>'; ?>
-          <?php
-            }?>
-        </span>
-        <?php
-      }
-      // textmulticustom
-      elseif ($schema['type']=='textmulticustom') {
-        ?>
-        <span class="textmultiSpan">
-          <a href="#" class="add">+</a><br>
-          <?php
-            $options = explode("\n", $value);
-            $options = array_map('trim', $options);
-            foreach ($options as $option) {
-          ?>
-            <span><input type="text" name="post-<?php echo $field; ?>[]" class="text textmulti" value="<?php echo $option; ?>" placeholder="<?php echo $schema['desc']; ?>" <?php echo $maxlength; ?>  <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/> <a href="#" class="remove">-</a></span>
-          <?php
-            }
-            if (empty($options)) {
-          ?>
-            <span><input type="text" name="post-<?php echo $field; ?>[]" class="text textmulti" placeholder="<?php echo $schema['desc']; ?>" <?php echo $maxlength; ?>  <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/> <a href="#" class="remove">-</a></span>
-          <?php } ?>
-        </span>
-        <script>
-          $(document).ready(function(){
-            $('.textmultiSpan a').click(function(){
-              $(this).parent().append('<span><input type="text" name="post-<?php echo $field; ?>[]" class="text textmulti" value="<?php echo $option; ?>" placeholder="<?php echo $schema['desc']; ?>" <?php echo $maxlength; ?>  <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/> <a href="#" class="remove">-</a></span>');
-              return false;
-            }); // click
-          }); // ready
-        </script>
-        <?php
-      }
-      // tags
-      elseif ($schema['type']=='tags') {
-        ?>
-        <textarea name="post-<?php echo $field; ?>" id="post-<?php echo $field; ?>" class="MatrixTags tags" placeholder="<?php echo $schema['desc']; ?>" <?php echo $maxlength; ?>  <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>><?php echo $value; ?></textarea>
-        <?php
-        $this->initialiseTagsInput($id='.MatrixTags');
-      }
-      // slug
-      elseif ($schema['type']=='slug') {
-        ?>
-        <input type="text" name="post-<?php echo $field; ?>" class="MatrixSlug text slug" value="<?php echo $value; ?>" placeholder="<?php echo $schema['desc']; ?>" <?php echo $maxlength; ?>  <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/>
-        <?php
-      }
-      // dropdown
-      elseif ($schema['type']=='dropdown') { 
-        if ($this->fieldExists($schema['row'], $schema['table'])) {
-          $query = $this->query('SELECT '.$schema['row'].' FROM '.$schema['table'].' ORDER BY id ASC');
-        }
-        else $query = array();
-        ?>
-          <select name="post-<?php echo $field; ?>" class="text dropdown" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>>
-            <?php foreach ($query as $record) { ?>
-              <option value="<?php echo $record[$schema['row']]; ?>" <?php if ($record[$schema['row']]==$value) echo 'selected="selected"'; ?> ><?php echo $record[$schema['row']]; ?></option>
-            <?php } ?>
-          </select>
-        <?php
-      }
-      // pages
-      elseif ($schema['type']=='pages') {
-        // load current existing pages
-        getPagesXmlValues();
-        global $pagesArray;
-        $pages = $pagesArray;
-        ?>
-          <select name="post-<?php echo $field; ?>" class="text dropdown" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>>
-            <?php foreach ($pages as $slug => $properties) { ?>
-              <option value="<?php echo $slug; ?>" <?php if ($slug==$value) echo 'selected="selected"'; ?> ><?php echo $properties['title']; ?></option>
-            <?php } ?>
-          </select>
-        <?php
-      }
-      // users
-      elseif ($schema['type']=='users') {
-        $users = $this->getUsers();
-        ?>
-          <select name="post-<?php echo $field; ?>" class="text dropdown" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>>
-            <?php foreach ($users as $user => $details) { ?>
-              <option value="<?php echo $user; ?>" <?php if ($user==$value || (empty($value) && $user==$_COOKIE['GS_ADMIN_USERNAME'])) echo 'selected="selected"'; ?> ><?php if (empty($details['NAME'])) echo $user; else echo $details['NAME']; ?></option>
-            <?php } ?>
-          </select>
-        <?php
-      }
-      // components
-      elseif ($schema['type']=='components') {
-        $components = $this->getComponents();
-        ?>
-          <select name="post-<?php echo $field; ?>" class="text dropdown" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>>
-            <?php foreach ($components as $slug => $component) { ?>
-              <option value="<?php echo $slug; ?>" <?php if ($slug==$value) echo 'selected="selected"'; ?> ><?php echo $component['title']; ?></option>
-            <?php } ?>
-          </select>
-        <?php
-      }
-      // themes
-      elseif ($schema['type']=='themes') {
-        $themes = $this->getThemes();
-        ?>
-          <select name="post-<?php echo $field; ?>" class="text dropdown" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>>
-            <?php foreach ($themes as $theme) { ?>
-              <option value="<?php echo $theme; ?>" <?php if ($theme==$value || (empty($value)) && $theme == $this->globals['template']) echo 'selected="selected"'; ?> ><?php echo $theme; ?></option>
-            <?php } ?>
-          </select>
-        <?php
-      }
-      // template
-      elseif ($schema['type']=='template') {
-        // load templates for current theme
-        $templates = glob(GSTHEMESPATH.$this->globals['template'].'/*.php');
-        
-        // unset 'functions.php' and '*.inc.php'
-        foreach ($templates as $key => $template) {
-          $tmp = explode('/', $template);
-          $templates[$key] = $template = end($tmp);
-          if (
-            strtolower($template) == 'functions.php' ||
-            substr($template, -7, 7) == 'inc.php'
-          ) {
-            unset($templates[$key]);
-          }
-        }
-        sort($templates);
-        ?>
-          <select name="post-<?php echo $field; ?>" class="text dropdown" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>>
-            <?php foreach ($templates as $template) { ?>
-              <option value="<?php echo $template; ?>" <?php if ($template == $value) echo 'selected="selected"'; ?> ><?php echo $template; ?></option>
-            <?php } ?>
-          </select>
-        <?php
-      }
-      // dropdowncustom
-      elseif ($schema['type']=='dropdowncustom') {
-        $options = explode("\n", $schema['options']);
-        $options = array_map('trim', $options);
-        ?>
-          <select name="post-<?php echo $field; ?>" class="text dropdown" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>>
-            <?php foreach ($options as $option) { ?>
-              <option value="<?php echo $option; ?>" <?php if ($option==$value) echo 'selected="selected"'; ?> ><?php echo $option; ?></option>
-            <?php } ?>
-          </select>
-        <?php
-      }
-      // dropdowncustomkey
-      elseif ($schema['type']=='dropdowncustomkey') {
-        $options = explode("\n", $schema['options']);
-        $options = array_map('trim', $options);
-        ?>
-          <select name="post-<?php echo $field; ?>" class="text dropdown" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>>
-            <?php foreach ($options as $key => $option) { ?>
-              <option value="<?php echo $key; ?>" <?php if ($key==$value) echo 'selected="selected"'; ?> ><?php echo $option; ?></option>
-            <?php } ?>
-          </select>
-        <?php
-      }
-      // dropdownhierarchy
-      elseif ($schema['type']=='dropdownhierarchy') {
-        $options = $this->getHierarcalOptions($schema['options']);
-        ?>
-          <select name="post-<?php echo $field; ?>" class="text dropdown" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>>
-            <?php foreach ($options as $option) { ?>
-              <option value="<?php echo $option['value']; ?>" <?php if ($option['value']==$value) echo 'selected="selected"'; ?> ><?php echo $option['option']; ?></option>
-            <?php } ?>
-          </select>
-        <?php
-      }
-      // checkbox
-      elseif ($schema['type']=='checkbox') {
-        $selected = $this->getOptions($value);
-        $options = $this->getOptions($schema['options']);
-      ?>
-      <div class="MatrixCheckbox">
-      <?php
-        foreach ($options as $key => $option) {
-          $option = filter_var($option, FILTER_SANITIZE_STRING);
-        ?>
-          <input type="checkbox" name="post-<?php echo $field; ?>[<?php echo $key; ?>]" <?php if (in_array($option, $selected)) echo 'checked="checked"'; ?> class="input"  <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/> <span class="option"><?php echo $option; ?></span><br />
-        <?php
-        }
-      ?>
-      </div>
-      <?php
-      }
-      // datetimelocal
-      elseif (
-        $schema['type']=='datetimelocal' ||
-        $schema['type']=='datetime' ||
-        $schema['type']=='datepicker'
-      ) {
-        if (!is_numeric($value)) $value = time();
-        ?>
-        <input type="datetime-local" class="text datetimelocal" name="post-<?php echo $field; ?>" value="<?php echo date('Y-m-d\TH:i', $value); ?>" placeholder="<?php echo $schema['desc']; ?>" <?php echo $maxlength; ?>  <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/>
-        <?php
-      }
-      // imagepicker
-      elseif ($schema['type']=='imagepicker') {
-        ?>
-        <input class="text imagepicker DM_filepicker " type="text" id="post-<?php echo $field; ?>" name="post-<?php echo $field; ?>" style="width:98%;" placeholder="<?php echo $schema['desc']; ?>" <?php echo $maxlength; ?>  value="<?php echo $value; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/>
-        <span class="edit-nav"><a id="browse-<?php echo $field; ?>" href="javascript:void(0);">Browse</a></span>
-        <script type="text/javascript">
-          $(function() { 
-            $('#browse-<?php echo $field; ?>').click(function(e) {
-              window.open('<?php echo $this->globals['siteurl']; ?>admin/filebrowser.php?CKEditorFuncNum=1&func=addImageThumbNail&returnid=post-<?php echo $field; ?>&type=images', 'browser', 'width=800,height=500,left=100,top=100,scrollbars=yes');
-            });
-          });
-        </script>
-        <?php
-      }
-      // imageuploadadmin
-      elseif ($schema['type']=='imageuploadadmin') {
-        ?>
-        <input type="file" class="text imageuploadadmin DM_imageuploadadmin" style="margin: 0 0 10px 0 !important;" name="post-<?php echo $field; ?>" disabled/>
-        <select class="text imageuploadadmin DM_imageuploadadmin " name="post-<?php echo $field; ?>">
-          <option value="">--no file--</option>
-          <option value="upload">--upload--</option>
-          <?php
-            $images = glob(GSDATAUPLOADPATH.$schema['path'].'*.*');
-            $thumbs = glob(GSTHUMBNAILPATH.$schema['path'].'*.*');
-            foreach ($images as $image) {
-              $tmp = explode('/', $image);
-              $file = end($tmp);
-          ?>
-          <option value="<?php echo $file; ?>" <?php if ($file==$value) echo 'selected="selected"'; ?>><?php echo $file; ?></option>
-          <?php } ?>
-        </select>
-        <script>
-          $(document).ready(function(){
-            $('input.imageuploadadmin').hide();
-            $('select.imageuploadadmin').change(function(){
-              if ($(this).val() == 'upload') {
-                $(this).prev('input.imageuploadadmin').slideDown().prop('disabled', false);
-              }
-              else {
-                $(this).prev('input.imageuploadadmin').slideUp().prop('disabled', true);
-              }
-            }); // change
-          }); // ready
-        </script>
-        <?php
-      }
-      // filepicker
-      elseif ($schema['type']=='filepicker') {
-        ?>
-        <input class="MatrixFilepicker text filepicker" name="post-<?php echo $field; ?>" type="text" id="post-<?php echo $field; ?>" name="post-<?php echo $field; ?>" style="width:98%;" placeholder="<?php echo $schema['desc']; ?>" <?php echo $maxlength; ?>  value="<?php echo $value; ?>" <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>/>
-        <span class="edit-nav"><a id="browse-<?php echo $field; ?>" href="javascript:void(0);">Browse</a></span>
-        <script type="text/javascript">
-          $(function() { 
-            $('#browse-<?php echo $field; ?>').click(function(e) {
-              window.open('<?php echo $this->globals['siteurl']; ?>admin/filebrowser.php?CKEditorFuncNum=1&returnid=post-<?php echo $field; ?>&type=all', 'browser', 'width=800,height=500,left=100,top=100,scrollbars=yes');
-            });
-          });
-        </script>
-        <?php
-      }
-      // bbcodeeditor
-      elseif ($schema['type']=='bbcodeeditor') {
-        ?>
-        <textarea id="post-<?php echo $field; ?>" name="post-<?php echo $field; ?>" class="MatrixBBCode bbcodeeditor" placeholder="<?php echo $schema['desc']; ?>" <?php echo $maxlength; ?>  <?php echo $maxlength;?> <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>><?php echo $value; ?></textarea>
-        <script language="javascript">
-          $(document).ready(function()  {
-            $('.MatrixBBCode').markItUp(GSBBCodeSettings);
-          });
-        </script>
-        <?php
-      }
-      // wikieditor
-      elseif ($schema['type']=='wikieditor') {
-        ?>
-        <textarea id="post-<?php echo $field; ?>" name="post-<?php echo $field; ?>" class="MatrixWiki wikieditor" placeholder="<?php echo $schema['desc']; ?>" <?php echo $maxlength; ?>  <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>><?php echo $value; ?></textarea>
-        <script language="javascript">
-          $(document).ready(function()  {
-            $('.MatrixWiki').markItUp(GSWikiSettings);
-          });
-        </script>
-        <?php
-      }
-      // markdowneditor
-      elseif ($schema['type']=='markdowneditor') {
-        ?>
-        <textarea id="post-<?php echo $field; ?>" name="post-<?php echo $field; ?>" class="MatrixMarkDown markdown" placeholder="<?php echo $schema['desc']; ?>" <?php echo $maxlength; ?>  <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>><?php echo $value; ?></textarea>
-        <script language="javascript">
-          $(document).ready(function()  {
-            $('.MatrixMarkDown').markItUp(GSMarkDownSettings);
-          });
-        </script>
-        <?php
-      }
-      // wysiwyg
-      elseif ($schema['type']=='wysiwyg') {
-        ?>
-        <textarea id="post-<?php echo $field; ?>" name="post-<?php echo $field; ?>" class="DMckeditor text wysiwyg" style="width:513px; height:200px; border: 1px solid #AAAAAA;" placeholder="<?php echo $schema['desc']; ?>" <?php echo $maxlength; ?>  <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>><?php echo $value; ?></textarea>
-        <?php
-        if ($ckeditor) $this->initialiseCKEditor();
-      }
-      // codeeditor
-      elseif ($schema['type']=='codeeditor') {
-        ?>
-        <textarea id="post-<?php echo $field; ?>" name="post-<?php echo $field; ?>" class="codeeditor DM_codeeditor text" placeholder="<?php echo $schema['desc']; ?>" <?php echo $maxlength; ?>  <?php echo $schema['readonly']; ?> <?php echo $schema['required']; ?> <?php if (strlen(trim($schema['validation']))>0) echo 'pattern="'.$schema['validation'].'"'; ?>><?php echo $value; ?></textarea>
-        <?php
-        $this->initialiseCodeMirror();
-        $this->instantiateCodeMirror($field);
-      }
-      else {
-        echo 'Unknown';
-      }
+      $display->display();
+      
+      return true;
     }
     else return false;
   }
@@ -1622,7 +1324,7 @@ EOF;
         $record = $this->recordExists($table, $id);
         if ($record) {
           foreach ($record as $field => $value) {
-            $fields[$field]['default'] = $value;
+            if (isset($fields[$field])) $fields[$field]['default'] = $value;
           }
         }
       }
@@ -1633,80 +1335,98 @@ EOF;
       
       foreach ($fields as $field) {
         if ($field['class']=='leftopt') {
+          if (!isset($array['metadata_window']['window']['leftopt'])) $array['metadata_window']['window']['leftopt'] = array();
           $array['metadata_window']['window']['leftopt'][] = $field;
         }
         elseif ($field['class']=='rightopt') {
+          if (!isset($array['metadata_window']['window']['rightopt'])) $array['metadata_window']['window']['rightopt'] = array();
           $array['metadata_window']['window']['rightopt'][] = $field;
         }
         elseif ($field['class']=='leftsec') {
+          if (!isset($array['section']['window']['leftsec'])) $array['metadata_window']['window']['leftsec'] = array();
           $array['section']['window']['leftsec'][] = $field;
         }
         elseif ($field['class']=='rightsec') {
+          if (!isset($array['section']['window']['rightsec'])) $array['sections']['window']['rightsec'] = array();
           $array['section']['window']['rightsec'][] = $field;
         }
         else {
+          if (!isset($array['normal'])) $array['normal']= array();
           $array[] = $field;
         }
       }
       
       // invisible fields
       foreach ($array as $key => $value) {
-
-          if ($key == 'metadata_window' && isset($value['window'])) {
+        if ($key == 'metadata_window') {
+          if (!(empty($value['window']['leftopt']) && empty($value['window']['rightopt']))) {
           ?>
             <div id="metadata_window">
               <div class="leftopt">
-              <?php foreach ($value['window']['leftopt'] as $field) { ?>
-                <p>
-                  <label><?php if (!empty($field['label'])) { ?> <?php echo $field['label']; ?> : <?php } ?></label>
-                  <?php $this->displayField($table, $field['name'], $field['default']); ?>
-                </p>
+              <?php if (!empty($value['window']['leftopt'])) { ?>
+                <?php foreach ($value['window']['leftopt'] as $field) { ?>
+                  <p>
+                    <label><?php if (!empty($field['label'])) { ?> <?php echo $field['label']; ?> : <?php } ?></label>
+                    <?php $this->displayField($table, $field['name'], $field['default']); ?>
+                  </p>
+                <?php } ?>
               <?php } ?>
               </div>
               <div class="rightopt">
-              <?php foreach ($value['window']['rightopt'] as $field) { ?>
-                <p>
-                  <label><?php if (!empty($field['label'])) { ?> <?php echo $field['label']; ?> : <?php } ?></label>
-                  <?php $this->displayField($table, $field['name'], $field['default']); ?>
-                </p>
+              <?php if (!empty($value['window']['rightopt'])) { ?>
+                <?php foreach ($value['window']['rightopt'] as $field) { ?>
+                  <p>
+                    <label><?php if (!empty($field['label'])) { ?> <?php echo $field['label']; ?> : <?php } ?></label>
+                    <?php $this->displayField($table, $field['name'], $field['default']); ?>
+                  </p>
+                <?php } ?>
               <?php } ?>
               </div>
               <div class="clear"></div>
             </div>
           <?php
           }
-          elseif ($key == 'section' && isset($value['window'])) {
+        }
+        if ($key == 'section') {
+          if (!(empty($value['window']['leftsec']) && empty($value['window']['rightsec']))) {
           ?>
             <div class="leftsec">
-            <?php foreach ($value['window']['leftsec'] as $field) { ?>
+            <?php if (!empty($value['window']['leftsec'])) { ?>
+              <?php foreach ($value['window']['leftsec'] as $field) { ?>
+                  <p>
+                    <label><?php if (!empty($field['label'])) { ?> <?php echo $field['label']; ?> : <?php } ?></label>
+                    <?php $this->displayField($table, $field['name'], $field['default']); ?>
+                  </p>
+              <?php } ?>
+            <?php } ?>
+            </div>
+            <div class="rightsec">
+            <?php if (!empty($value['window']['rightsec'])) { ?>
+              <?php foreach ($value['window']['rightsec'] as $field) { ?>
                 <p>
                   <label><?php if (!empty($field['label'])) { ?> <?php echo $field['label']; ?> : <?php } ?></label>
                   <?php $this->displayField($table, $field['name'], $field['default']); ?>
                 </p>
-            <?php } ?>
-            </div>
-            <div class="rightsec">
-            <?php foreach ($value['window']['rightsec'] as $field) { ?>
-              <p>
-                <label><?php if (!empty($field['label'])) { ?> <?php echo $field['label']; ?> : <?php } ?></label>
-                <?php $this->displayField($table, $field['name'], $field['default']); ?>
-              </p>
+              <?php } ?>
             <?php } ?>
             </div>
             <div class="clear"></div>
           <?php
           }
-          elseif($value['visibility']==1) {
-          ?>
-          <p>
-            <label><?php if (!empty($value['label'])) { ?> <?php echo $value['label']; ?> : <?php } ?></label>
-            <?php $this->displayField($table, $value['name'], $value['default']); ?>
-          </p>
-          <?php
+        }
+        if (is_numeric($key)) {
+          $field = $value;
+
+          if ($field['visibility'] == 1) {
+            ?>
+            <p>
+              <label><?php if (!empty($field['label'])) { ?> <?php echo $field['label']; ?> : <?php } ?></label>
+              <?php $this->displayField($table, $field['name'], $field['default']); ?>
+            </p>
+            <?php
           }
-        
+        }
       }
-      $this->initialiseCKEditor();
       return true;
     }
     else return false;
@@ -1739,78 +1459,18 @@ EOF;
         if (!array_key_exists($field, $fields)) unset($query[$field]);
       }
       
-      foreach ($query as $field=>$value) {
-        if ($field!='id') {
-          if ($fields[$field]['type']=='checkbox') {
-            $options = explode("\n", $fields[$field]['options']);
-            $end = '';
-            if (is_array($value)) {
-              foreach ($value as $key => $selected) {
-                if (array_key_exists($key, $options)) $end .= $options[$key]."\n";
-              }
-            }
-            $query[$field] = $end;
-          }
-          // password (sha1 encoding)
-          if ($fields[$field]['type']=='password') {
-            $removeSalt = trim(str_replace($this->salt, '', $value));
-            // only encode it if it hasn't already been sha1ed
-            if (!(ctype_xdigit($removeSalt) && strlen($removeSalt) == 40)) {
-              $query[$field] = $this->salt.sha1($value);
-            }
-          }
-          // dropdown (for trimming)
-          if ($fields[$field]['type']=='dropdowncustom') {
-            $query[$field] = trim($value);
-          }
-          // slug
-          if ($fields[$field]['type']=='slug') {
-            $query[$field] = $this->str2slug($value);
-          }
-          // datetimelocal
-          if ($fields[$field]['type']=='datetimelocal' && !is_numeric($value)) {
-            $query[$field] = strtotime($value);
-          }
-          // imageuploadadmin
-          if ($fields[$field]['type']=='imageuploadadmin') {
-            // get settings
-            $op = explode("\n", $fields[$field]['options']);
-            $op = array_map('trim', $op);
-            
-            // defaults
-            if (!isset($op[0])) $op[0] = 5*10*10*10*1024; // default max size set to 5mb
-            if (!isset($op[1])) $op[1] = 900; // max width
-            if (!isset($op[2])) $op[2] = 900; // max height
-            if (!isset($op[3])) $op[3] = 100; // thumb width
-            if (!isset($op[4])) $op[4] = 100; // thumb height
-            if (!isset($op[5])) $op[5] = 'auto'; // thumb resize method
-            
-            if ($op[1]==0 && $op[2]==0) {
-              $resize = false;
-            }
-            else {
-              $resize = array('width' => $op[1], 'height' => $op[2]);
-            }
-            if (!empty($_FILES)) {
-              $upload = new SimpleImageUpload('post-'.$field);
-              $success = $upload->upload($maxSize=(int)$op[0], $path=GSDATAUPLOADPATH.$fields[$field]['path'], $thumb=GSTHUMBNAILPATH.$fields[$field]['path'], $filename=false, $enableThumbnail=array('maxwidth'=>$op[3], 'maxheight'=>$op[4], 'method'=>$op[5]), $resize);
-              if ($success['status']==true) {
-                $query[$field] = $success['file'];
-              }
-              else {
-                $query[$field] = '';
-              }
-            }
-          }
-          // textmulti
-          if (($fields[$field]['type']=='textmulti' || $fields[$field]['type']=='intmulti') && is_array($value)) {
-            $value = array_map('trim', $value);
-            $query[$field] = implode("\n", ($value));
-          }
-          // corrects cdata tags
-          if (isset($this->fieldTypes[$fields[$field]['type']]['cdata'])) {
-            $query[$field] = array('@cdata'=>$query[$field]);
-          }
+      // 
+      $paths = array();
+      $paths['home'] = $this->getSiteURL();
+      $paths['js']   = $paths['home'].'plugins/'.self::FILE.'/js/';
+      $paths['css']  = $paths['home'].'plugins/'.self::FILE.'/css/';
+      $paths['img']  = $paths['home'].'plugins/'.self::FILE.'/img/';
+      $paths['template']  = $this->globals['template'];
+      
+      foreach ($query as $field => $value) {
+        if ($field != 'id') {
+          $manipulate = new MatrixManipulateField($this, $fields[$field], $value, $paths);
+          $query[$field] = $manipulate->manipulate();
         }
       }
       
@@ -1838,25 +1498,6 @@ EOF;
       
       // final return
       return $query;
-    }
-    else return false;
-  }
-  
-  /* TheMatrix::validateData($table, $query)
-   * @param $table: name of table (e.g. 'foo')
-   * @param $query: array of data to be validated
-   */
-  public function validateData($table, $query) {
-    if ($this->tableExists($table)) {
-      $fields = $this->schema[$table]['fields'];
-      foreach ($fields as $field => $properties) {
-        if (isset($this->fieldTypes[$properties['type']]['validate'])) {
-          
-          $validation = $this->fieldTypes[$properties['type']]['validate'];
-          echo $validation;
-          $query[$field] = filter_var($query[$field], $validation);
-        }
-      }
     }
     else return false;
   }
@@ -1954,6 +1595,14 @@ EOF;
       $xml->save($file);
       $_SESSION['matrix'][$table]['records'][$id] = $oldXML;
       
+      // fix values
+      $array['channel']['item'] = $this->unCdata($array['channel']['item']);
+      foreach ($array['channel']['item'] as $field => $value) {
+        if (is_array($value) && isset($value['value'])) {
+          $array['channel']['item'][$field] = $value['value'];
+        }
+      }
+      
       // return
       return array(
         'status' => true,
@@ -2031,7 +1680,7 @@ EOF;
             if (!isset($record[$fieldname['name']])) $this->tablesCache[$table][$key][$fieldname['name']] = $fieldname['default'];
           }
           // fix field padding for int
-          if (isset($fieldSchema[$field]['type']) && $fieldSchema[$field]['type']=='int') {
+          if (isset($fieldSchema[$field]['type']) && $fieldSchema[$field]['mask'] == 'number' && $fieldSchema[$field]['type'] != 'multi') {
             $this->tablesCache[$table][$key][$field] = str_pad($value, 8, 0, STR_PAD_LEFT);
           }
         }
@@ -2043,10 +1692,14 @@ EOF;
     // removes leading zeroes on formatted array
     $newresults = array();
     foreach ($results as $key => $record) {
-      foreach ($record as $field=>$value) {
-        if (is_numeric($value) || is_numeric(ltrim($value, '0'))) {
-          if (ltrim($value, '0') == '') $results[$key][$field] = 0;
-          else $results[$key][$field] = (int)ltrim($value, '0');
+      foreach ($record as $field => $value) {
+        if (!is_array($value)) {
+          if (is_numeric($value) || is_numeric(ltrim($value, '0'))) {
+            if (ltrim($value, '0') == '') $results[$key][$field] = 0;
+            //else $results[$key][$field] = (int)ltrim($value, '0');
+            //elseif(is_int(ltrim($value, '0'))) $results[$key][$field] = (int)ltrim($value, '0');
+            elseif (ceil($value) == (int)$value) $results[$key][$field] = (int)ltrim($value, '0');
+          }
         }
       }
       
@@ -2145,169 +1798,37 @@ EOF;
     return $query;
   }
   
-   
-  /* TheMatrix::initialiseCKEditor()
-   */
-  public function initialiseCKEditor() {
-    echo '<script src="'.$this->globals['siteurl'].'admin/template/js/ckeditor/ckeditor.js?v=0.2.0"></script>';
-    $dateformat=i18n('DATE_FORMAT',false);
-    $dateformat = str_replace('Y', 'yy', $dateformat);
-    $dateformat = str_replace('j', 'd', $dateformat);
-  
-  if (defined('GSEDITORHEIGHT')) { $EDHEIGHT = GSEDITORHEIGHT .'px'; } else {  $EDHEIGHT = '500px'; }
-    if (defined('GSEDITORLANG')) { $EDLANG = GSEDITORLANG; } else {  $EDLANG = i18n_r('CKEDITOR_LANG'); }
-    if (defined('GSEDITORTOOL')) { $EDTOOL = GSEDITORTOOL; } else {  $EDTOOL = 'basic'; }
-    if (defined('GSEDITOROPTIONS') && trim(GSEDITOROPTIONS)!="") { $EDOPTIONS = ", ".GSEDITOROPTIONS; } else {  $EDOPTIONS = ''; }
-      
-    if ($EDTOOL == 'advanced') {
-      $toolbar = "
-          ['Bold', 'Italic', 'Underline', 'NumberedList', 'BulletedList', 'JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock', 'Table', 'TextColor', 'BGColor', 'Link', 'Unlink', 'Image', 'RemoveFormat', 'Source'],
-       '/',
-       ['Styles','Format','Font','FontSize']
-     ";
-      } elseif ($EDTOOL == 'basic') {
-      $toolbar = "['Bold', 'Italic', 'Underline', 'NumberedList', 'BulletedList', 'JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock', 'Link', 'Unlink', 'Image', 'RemoveFormat', 'Source']";
-    } else {
-      $toolbar = GSEDITORTOOL;
-    }
+  // editor
+  public function getEditor($params=array()) {
+    if (!is_array($params)) $params = array('value' => $params);
+    if (!isset($params['value'])) $params['value'] = '';
+    if (!isset($params['id'])) $params['id'] = '';
+    if (!isset($params['properties'])) $params['properties'] = '';
+    if (!isset($params['path'])) $params['path'] = $this->directories['plugin']['js']['dir'].'edit_area/style.css';
     ?>
-    
-      <script type="text/javascript">
-      
-      CKEDITOR.replaceAll(function(textarea,config){
-        
-        // converts all textareas with class of 'DMckeditor' to ckeditor instances.
-        if (textarea.className.search("DMckeditor")) return false; //for only assign a class
-        jQuery.extend(config,
-        {
-          forcePasteAsPlainText : true,
-          language : '<?php echo $EDLANG; ?>',
-          defaultLanguage : 'en',
-          <?php if (file_exists(GSTHEMESPATH .$this->globals['template']."/editor.css")) { 
-            $fullpath = suggest_site_path();
-          ?>
-          contentsCss : '<?php echo $fullpath; ?>theme/<?php echo $this->globals['template']; ?>/editor.css',
-          <?php } ?>
-          entities : false,
-          uiColor : '#FFFFFF',
-          height : '<?php echo $EDHEIGHT; ?>',
-          baseHref : '<?php echo $this->globals['siteurl']; ?>',
-          toolbar : 
-          [
-          <?php echo $toolbar; ?>
-          ]
-          <?php echo $EDOPTIONS; ?>,
-          tabSpaces : 10,
-          filebrowserBrowseUrl : 'filebrowser.php?type=all',
-          filebrowserImageBrowseUrl : 'filebrowser.php?type=images',
-          filebrowserWindowWidth : '730',
-          filebrowserWindowHeight : '500',
-          skin : 'getsimple'
-        });        
+    <style>
+      #frame_<?php echo $params['id']; ?> {
+        border:#c8c8c8 1px solid !important;
+        border-radius:5px; -webkit-border-radius:5px; -moz-border-radius:5px;
+      }
+    </style>
+    <script type="text/javascript">
+      editAreaLoader.init({
+        id: '<?php echo $params['id']; ?>',
+        start_highlight: true,
+        allow_resize: "both",
+        allow_toggle: true,
+        word_wrap: true,
+        language: "en",
+        syntax: "php",
+        replace_tab_by_spaces: 2,
       });
-      
-      $('.datepicker').each(function(){
-          $(this).datepicker({ dateFormat: '<?php echo $dateformat; ?>' });
-      });
-      
-      $('.datetimepicker').each(function(){
-        $(this).datetimepicker({ 
-          dateFormat: '<?php echo $dateformat; ?>',
-          timeFormat: 'hh:mm'
-        })
-      })
-      </script>
-  <?php  
-      return true;
+      editAreaLoader.iframe_css = "<style><?php echo str_replace(array("\r\n", "\r", "\n"), '', file_get_contents($params['path'])); ?></style>";
+    </script>
+    <textarea class="text" <?php echo $params['properties']; ?>><?php echo $params['value']; ?></textarea>
+    <?php
   }
   
-  // just fixing the method name
-  public function initializeCKEditor() {
-    return initialiseCKEditor();
-  }
-    
-  // initialises codemirror (gets CSS and JS)
-  public function initialiseCodeMirror() {
-    $codemirrorCSS = file_get_contents(GSADMINPATH.'template/js/codemirror/lib/codemirror.css');
-    $codemirrorTheme = file_get_contents(GSADMINPATH.'template/js/codemirror/theme/default.css');
-    echo '<style>'.$codemirrorCSS."\n\n".$codemirrorTheme.'</style>';
-    echo '<script src="'.$this->globals['siteurl'].'admin/template/js/codemirror/lib/codemirror-compressed.js?v=0.2.0"></script>';
-    return true;
-  }
-  public function initializeCodeMirror() {
-    return initialiseCodeMirror();
-  }
-    
-  // instantiates codemirror onto a textarea
-  public function instantiateCodeMirror($name) {
-  ?>
-    <script type="text/javascript">
-    jQuery(document).ready(function() { 
-        var foldFunc = CodeMirror.newFoldFunction(CodeMirror.braceRangeFinder);
-        function keyEvent(cm, e) {
-        if (e.keyCode == 81 && e.ctrlKey) {
-          if (e.type == "keydown") {
-          e.stop();
-          setTimeout(function() {foldFunc(cm, cm.getCursor().line);}, 50);
-          }
-          return true;
-        }
-        }
-        function toggleFullscreenEditing()
-        {
-          var editorDiv = $('.CodeMirror-scroll');
-          if (!editorDiv.hasClass('fullscreen')) {
-            toggleFullscreenEditing.beforeFullscreen = { height: editorDiv.height(), width: editorDiv.width() }
-            editorDiv.addClass('fullscreen');
-            editorDiv.height('100%');
-            editorDiv.width('100%');
-            editor.refresh();
-          }
-          else {
-            editorDiv.removeClass('fullscreen');
-            editorDiv.height(toggleFullscreenEditing.beforeFullscreen.height);
-            editorDiv.width(toggleFullscreenEditing.beforeFullscreen.width);
-            editor.refresh();
-          }
-        }
-        var editor = CodeMirror.fromTextArea(document.getElementById("post-<?php echo $name; ?>"), {
-        lineNumbers: true,
-        matchBrackets: true,
-        indentUnit: 4,
-        indentWithTabs: true,
-        enterMode: "keep",
-        tabMode: "shift",
-        theme:'default',
-        mode: "text/html",
-        onGutterClick: foldFunc,
-        extraKeys: {"Ctrl-Q": function(cm){foldFunc(cm, cm.getCursor().line);},
-              "F11": toggleFullscreenEditing, "Esc": toggleFullscreenEditing},
-        onCursorActivity: function() {
-          editor.setLineClass(hlLine, null);
-          hlLine = editor.setLineClass(editor.getCursor().line, "activeline");
-        }
-        });
-        var hlLine = editor.setLineClass(0, "activeline");
-        
-      })
-         
-    </script>
-  <?php
-  }
-    
-  public function initialiseTagsInput($id='.DM_tags') { ?>
-    <script type="text/javascript">
-      $(document).ready(function() {
-        $("<?php echo $id?>").tagsInput();
-      });
-    </script>
-  <?php
-  }
-  
-  public function initializeTagsInput($id='.DM_tags') {
-    initialiseTagsInput($id);
-  }
-
   /* TheMatrix::doRoute($key)
    * @param $key: key in the uri to look for (e.g. for uri 'blog/slug', 0 refers to 'blog'
    */
@@ -2324,25 +1845,6 @@ EOF;
         $id = pathinfo($routes['rewrite'],PATHINFO_FILENAME);
       }
     }
-  }
-   
-  public function getAdminHeader($header, $nav=array()) {
-    if (!empty($nav)) {
-      // header
-      echo '<h3 class="floated">'.$header.'</h3>';
-      
-      // navigation
-      $nav = array_reverse($nav); // ensures array is in the right order
-      $navigation = '<div class="edit-nav">';
-      foreach ($nav as $label=>$properties) {
-        $navigation .= '<a href="'.$this->globals['siteurl'].'admin/load.php?id='.$properties['link'].'" class="'.$properties['key'];
-        if (isset($_GET[$properties['key']]) || $_GET['id']==$properties['key']) $navigation .= ' current '; // applies 'current' class to active page;
-        $navigation .= '">'.$label.'</a>';
-      }
-      echo $navigation.'<div class="clear"></div>'."\n".'</div>';
-    }
-    // only header
-    else echo '<h3>'.$header.'</h3>';
   }
   
   // admin success/error message(s) (taken from the GetSimple wiki)
@@ -2404,6 +1906,11 @@ EOF;
       return true;
     }
     else return false;
+  }
+  
+  // pretty var dump
+  public function varDump($var) {
+    echo '<pre><code>'; var_dump($var); echo '</code></pre>';
   }
 }
  

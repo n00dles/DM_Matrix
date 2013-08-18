@@ -3,23 +3,23 @@
   if (!empty($_POST['submit'])) {
     unset($_POST['field']);
     unset($_POST['submit']);
+    
+    if (isset($_POST['name'])) {
+      $_POST['fields'] = $_POST['name'];
 
-    $_POST['fields'] = $_POST['name'];
-    
-    // reorder the array to fit the createTable format
-    foreach ($_POST['name'] as $key=>$field) {
-      $_POST['fields'][$key] = array('name'=>$field);
-    }
-    
-    foreach ($_POST as $key => $value) {
-      if ($key!='tableName' && $key!='fields' && $key!='maxrecords') {
-        foreach ($value as $fieldKey => $fieldValue) {
-          $_POST['fields'][$fieldKey][$key] = $fieldValue;
+      // reorder the array to fit the createTable format
+      foreach ($_POST['name'] as $key=>$field) {
+        $_POST['fields'][$key] = array('name'=>$field);
+      }
+      
+      foreach ($_POST as $key => $value) {
+        if ($key!='tableName' && $key!='fields' && $key!='maxrecords') {
+          foreach ($value as $fieldKey => $fieldValue) {
+            $_POST['fields'][$fieldKey][$key] = $fieldValue;
+          }
         }
       }
     }
-
-    if (empty($_POST['fields'])) $_POST['fields'] = array();
     
     $create =     $this->createTable($_POST['tableName'], $_POST['fields'], $_POST['maxrecords']);
     if($create)   $this->getAdminError(i18n_r(self::FILE.'/TABLE_CREATESUCCESS'), true);  // record successfully editted
@@ -49,7 +49,7 @@
   // return the content
 ?>
   <style>
-    #createTable .advanced, .dropdown, .dropdowncustom, .imageupload { display: none; }
+    #createTable { display: none; }
     .page_navigation a:link, 
     .page_navigation a:visited {	 
       font-weight: 100;
@@ -106,7 +106,7 @@
       }); // change
       
       // table sorting
-      $('.schema thead .sort').toggle(
+      $('.schema .sortColumn').toggle(
         function() {
           $('.schema').pajinate({'items_per_page': 9999});
           $('.schema tbody tr').tsort({attr:'data-' + $(this).data('sort'), order:'asc'});
@@ -135,6 +135,11 @@
         return false;
       });
       
+      $(document).on('click', '.removeField', function(e){
+        $(this).closest('tr').remove();
+        return false;
+      });
+      
       function openAdvanced() {
         $('#createTable .openAdvanced').hide();
         return false;
@@ -160,38 +165,64 @@
       
     }); // ready
     
-    $('.advanced').hide();
-    
-    $(document).on('ready', '.advanced', function(e){
-      $(this).hide();
-    });
-    
     
     $(document).on('click', '.openAdvanced', function(e){
       $(this).closest('td').find('.advanced').slideToggle();
       return false;
-    });
-    
-    $(document).on('click', '.removeField', function(e){
-      $(this).closest('tr').remove();
-      return false;
-    });
-    
-    
-    // extra options dependent on field type
+    }); // on
+
+
+    // fix type
+    function fixType(selector) {
+      var type = selector.val();
+      selector.closest('#metadata_window').find('.masks .mask').attr('name', '').hide();
+      var s = selector.closest('#metadata_window').find('.mask.' + selector.val());
+      var mask = s.val();
+      
+      s.attr('name', 'mask[]').stop().slideDown('fast');
+      if (s.length == 0) {
+        selector.closest('#metadata_window').find('.masks .blank').attr('name', 'mask[]');
+        selector.closest('#metadata_window').find('.masks p').hide();
+      }
+      else {
+        selector.closest('#metadata_window').find('.masks p').show();
+      }
+      fixMask(s);
+    }
+
+
+    // fix mask
+    function fixMask(selector) {
+      var type = selector.closest('#metadata_window').find('.type').val();
+      var mask = selector.val();
+
+      selector.closest('#metadata_window').find('#menu-items > div:not(.' + type + '_' + mask + ')').stop().hide();
+      var s = selector.closest('#metadata_window').find('.' + type + '_' + mask);
+      s.slideDown('fast');
+      
+      if (s.length == 0) {
+        selector.closest('#metadata_window').find('#menu-items').hide();
+      }
+      else {
+        selector.closest('#metadata_window').find('#menu-items').show();
+      }
+    }
+
+
+
     $(document).ready(function() {
       $('.type').each(function() {
-        $this = $(this);
-        $this.closest('#metadata_window').find('.showOptions').hide();
-        $this.closest('#metadata_window').find('div.' + $this.val()).stop().show();
+        fixType($(this));
       });
     }); // ready
-    
+
     $('body').on('change', '.type', function() {
-      $this = $(this);
-      $this.closest('#metadata_window').find('.showOptions').not('.' + $this.val()).stop().slideUp('fast');
-      $this.closest('#metadata_window').find('div.' + $this.val()).slideDown('fast');
-    });
+      fixType($(this));
+    }); // on
+
+    $('body').on('change', '.mask', function() {
+      fixMask($(this));
+    }); // on
   </script>
 
 <!--header-->
@@ -228,13 +259,13 @@
   <table id="editpages" class="schema pajinate edittable highlight">
     <thead>
       <tr>
-        <th class="sort" data-sort="tablename">
+        <th class="sortColumn" data-sort="tablename">
           <form><input class=" autowidth clearfix" style="display: inline; width: 125px;" type="text" id="search_input" placeholder="<?php echo i18n_r(self::FILE.'/FILTER'); ?>"/></form>
         </th>
-        <th class="sort" data-sort="records">
+        <th class="sortColumn" data-sort="records">
           # <?php echo i18n_r(self::FILE.'/RECORDS'); ?> / <?php echo i18n_r(self::FILE.'/MAXIMUM'); ?>
         </th>
-        <th class="sort" data-sort="fieldcount">
+        <th class="sortColumn" data-sort="fieldcount">
           # <?php echo i18n_r(self::FILE.'/FIELDS'); ?>
         </th>
         <th style="width:75px;">
@@ -248,10 +279,10 @@
         foreach ($this->schema as $schema=>$key) {
         $fieldcnt    = isset($key['fields']) ? count($key['fields']) : '0';
         $numRecords  = $this->getNumRecords($schema);
-        $maxRecords  = $key['maxrecords'];
+        $maxRecords  = $key['maxrecords'] == 0 ? '&infin;' : $key['maxrecords'];
         $schemaName  = $schema;
       ?>
-        <tr data-name="<?php echo $schema; ?>" data-records="<?php echo $numRecords; ?>" data-fieldcount="<?php echo $fieldcnt; ?>">
+        <tr data-tablename="<?php echo $schema; ?>" data-records="<?php echo $numRecords; ?>" data-fieldcount="<?php echo $fieldcnt; ?>">
           <td class="tableName">
             <a href="<?php echo $url; ?>&table=<?php echo $schema; ?>&view" ><?php echo $schema; ?></a>
           </td>

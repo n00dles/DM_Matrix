@@ -10,7 +10,10 @@ $i18n = array (
   // general terms
     'NAME' => 'Name',
     'LABEL' => 'Label',
+    'LABELS' => 'Labels',
+    'TYPE' => 'Type',
     'DESCRIPTION' => 'Description',
+    'PLACEHOLDER' => 'Placeholder',
     'DEFAULT' => 'Default',
     'OTHER' => 'Other',
     'TABLE' => 'Table',
@@ -36,8 +39,31 @@ $i18n = array (
     'NO' => 'No',
     'VALIDATION' => 'Validation',
     'BACK' => 'Back',
-    
+  
+  // field types
+    'INPUT_FIELD' => 'Input field',
+    'DATE_FIELD' => 'Date field',
+    'MULTI_FIELD' => 'Multiple fields',
+    'DROPDOWN_FIELD' => 'Dropdown box',
+    'CHECKBOX_FIELD' => 'Check box',
+    'UPLOAD_FIELD' => 'Upload field',
+    'PICKER_FIELD' => 'Picker',
+    'RADIO_FIELD' => 'Radio box',
+    'OPTIONS_FIELD' => 'Options field',
+  
+  // field masks
+  
+  // field properties
+    'HEIGHT' => 'Height',
+    'WIDTH' => 'Width',
+    'STYLE' => 'Style',
+    'MIN' => 'Min',
+    'MAX' => 'Max',
+    'STEP' => 'Step',
+  
   // field options
+    'MASK' => 'Mask',
+    'SALT' => 'Salt',
     'TEXT_FIELD' => 'Text field',
     'PASSWORD_FIELD' => 'Password field (SHA-1 encrypted)',
     'INT_FIELD' => 'Integer',
@@ -55,11 +81,9 @@ $i18n = array (
     'THEMES_FIELD' => 'Theme selection',
     'COMPONENTS_FIELD' => 'Components list',
     'DATETIMELOCAL_FIELD' => 'Date and time field',
-    'DROPDOWN_FIELD' => 'Dropdown box (from another table)',
     'DROPDOWNCUSTOM_FIELD' => 'Dropdown box (custom content)',
     'DROPDOWNCUSTOMKEY_FIELD' => 'Dropdown box (custom key)',
     'DROPDOWNHIERARCHY_FIELD' => 'Dropdown box (hierarchical)',
-    'CHECKBOX_FIELD' => 'Check box',
     'BBCODEEDITOR_FIELD' => 'BBCode editor',
     'WIKIEDITOR_FIELD' => 'Wiki editor',
     'MARKDOWNEDITOR_FIELD' => 'Markdown editor',
@@ -72,6 +96,7 @@ $i18n = array (
     'CACHE_NO' => 'No Cache',
     'INDEX' => 'Index',
     'INDEX_NO' => 'No Index',
+    'CLASS' => 'Class',
     'NORMAL' => 'Normal',
     'METADATA_LEFT' => 'Metadata Window (Left)',
     'METADATA_RIGHT' => 'Metadata Window (Right)',
@@ -80,11 +105,11 @@ $i18n = array (
     'READONLY' => 'Read only',
     'WRITEABLE' => 'Writeable',
     'REQUIRED' => 'Required',
-    'REQUIRED_NO' => 'Not required',
-    'VISIBLE_TABLEYES' => 'Visible in table',
-    'VISIBLE_TABLENO' => 'Not visible in table',
-    'VISIBLE_FORMYES' => 'Visible in form',
-    'VISIBLE_FORMNO' => 'Not visible in form',
+    'VISIBLE_FORM' => 'Visible in form',
+    'VISIBLE_TABLE' => 'Visible in table',
+    'ROWS' => 'Rows',
+    'FIELD_SIZE' => 'Field Size',
+    'UPLOAD_PATH' => 'Upload Path',
     
   // admin
     'VIEW' => 'View',

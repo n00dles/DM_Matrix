@@ -15,6 +15,7 @@
   i18n_merge($thisfile) || i18n_merge($thisfile, 'en_US'); 
  
 # requires
+  require_once(GSPLUGINPATH.$thisfile.'/php/functions.php');
   require_once(GSPLUGINPATH.$thisfile.'/php/classes/sql4array.php');
   require_once(GSPLUGINPATH.$thisfile.'/php/classes/array2xml.php');
   require_once(GSPLUGINPATH.$thisfile.'/php/classes/xml2array.php');
@@ -22,13 +23,15 @@
   require_once(GSPLUGINPATH.$thisfile.'/php/classes/options.php');
   require_once(GSPLUGINPATH.$thisfile.'/php/classes/imageresize.php');
   require_once(GSPLUGINPATH.$thisfile.'/php/classes/imageupload.php');
+  require_once(GSPLUGINPATH.$thisfile.'/php/classes/fields.display.php');
+  require_once(GSPLUGINPATH.$thisfile.'/php/classes/fields.manipulate.php');
   require_once(GSPLUGINPATH.$thisfile.'/php/classes/matrix.php');
   require_once(GSPLUGINPATH.$thisfile.'/php/classes/search.php');
   require_once(GSPLUGINPATH.$thisfile.'/php/classes/extended.php');
   
 # initialize matrix
   $matrix = new TheMatrix;
-
+  
 # register plugin
   register_plugin(
     $matrix->pluginInfo('id'),           // id
@@ -59,8 +62,8 @@
 
   # both
     # javascript
-    add_action('theme-header', array($matrix, 'themeHeader'), array($thisfile));
-    add_action('header',       array($matrix, 'themeHeader'), array($thisfile));
+    add_action('theme-header', array($matrix, 'themeHeader'), array('front'));
+    add_action('header',       array($matrix, 'themeHeader'), array('back'));
     # session (required for undo queries)
     add_action('index-pretemplate', array($matrix, 'sessionStart'), array($thisfile));
     add_action('admin-pre-header',  array($matrix, 'sessionStart'), array($thisfile));
