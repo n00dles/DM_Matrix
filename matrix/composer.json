@@ -1,0 +1,15 @@
+{
+    "name": "lokothodida/dm-matrix",
+    "authors": [
+        {
+            "name": "Lawrence Okoth-Odida",
+            "email": "lawrence.okothodida@gmail.com"
+        }
+    ],
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "TheMatrix\\" : "php/"
+        }
+    }
+}

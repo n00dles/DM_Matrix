@@ -15,6 +15,7 @@
   i18n_merge($thisfile) || i18n_merge($thisfile, 'en_US'); 
  
 # requires
+  require_once(GSPLUGINPATH . $thisfile . '/vendor/autoload.php');
   require_once(GSPLUGINPATH.$thisfile.'/php/functions.php');
   require_once(GSPLUGINPATH.$thisfile.'/php/classes/sql4array.php');
   require_once(GSPLUGINPATH.$thisfile.'/php/classes/array2xml.php');

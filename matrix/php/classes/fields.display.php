@@ -1,6 +1,9 @@
 <?php
 /* class for handling field inputs
  */
+
+use TheMatrix\View;
+
 class MatrixDisplayField {
   /* constants */
   /* properties */
@@ -12,7 +15,7 @@ class MatrixDisplayField {
   private $paths = array();
   private $properties;
   private $value;
-  
+
   /* methods */
   # constructor
   public function __construct($matrix, $schema=array(), $value=null, $paths=array()) {
@@ -27,13 +30,13 @@ class MatrixDisplayField {
     }
     else $this->value = $value;
     $this->paths  = $paths;
-    
+
     // backwards compatibility
     if (!isset($schema['mask'])) $schema['mask'] = null;
-    
+
     // get the correct method name
     $this->method = $schema['type'] . (!empty($schema['mask']) ? '_'.$schema['mask'] : '') ;
-    
+
     // fill in properties
     $this->properties .= 'style="';
     $this->properties .= !empty($schema['width'])? 'width: '.$schema['width'].'; ' : '';
@@ -51,7 +54,7 @@ class MatrixDisplayField {
     $this->properties .= !empty($schema['required']) ? 'required="required" ' : '';
     $this->properties .= !empty($schema['validation']) ? 'pattern="'.$schema['validation'].'" ' : '';
   }
-  
+
   /* functions needed for parsing */
   # get keys for multi-based fields
   private function get_multi_keys($rows) {
@@ -64,126 +67,148 @@ class MatrixDisplayField {
     }
     return $keys;
   }
-  
+
   /* inputs */
   # input (text)
-  private function input() {
-    ?><input type="text" class="text" value="<?php echo $this->value; ?>" <?php echo $this->properties; ?>/><?php
+  private function input()
+  {
+    $view = new View('fields/input');
+
+    echo $view->render(['value' => $this->value, 'properties' => $this->properties]);
   }
-  
+
   # input (textlong)
-  private function input_long() {
-    ?><input type="text" class="text title" value="<?php echo $this->value; ?>" <?php echo $this->properties; ?>/><?php
+  private function input_long()
+  {
+    $view = new View('fields/input_long');
+
+    echo $view->render(['value' => $this->value, 'properties' => $this->properties]);
   }
-  
+
   # input (slug)
-  private function input_slug() {
-    ?>
-    <script>
-      $(document).ready(function() {
-        $("#<?php echo $this->id; ?>").keyup(function(){
-          var Text = $(this).val();
-          Text =  Text.toLowerCase().replace(/ /g,'-').replace(/[^\w-]+/g,'').replace(/(-)+/g, '-');
-          $(this).val(Text);	
-        });
-      });
-    </script>
-    <input type="text" class="text slug" value="<?php echo $this->value; ?>" <?php echo $this->properties; ?>/>
-    <?php
+  private function input_slug()
+  {
+    $view = new View('fields/input_slug');
+
+    echo $view->render([
+      'value'      => $this->value,
+      'properties' => $this->properties,
+      'selector'   => '#' . $this->id
+    ]);
   }
-  
+
   # password
-  private function input_password() {
-    ?><input type="password" class="text" value="" <?php echo $this->properties; ?>/><?php   
+  private function input_password()
+  {
+    $view = new View('fields/input_password');
+
+    echo $view->render(['properties' => $this->properties]);
   }
-  
+
   # url
-  private function input_url() {
-    ?><input type="url" class="text" value="<?php echo $this->value; ?>" <?php echo $this->properties; ?>/><?php   
+  private function input_url()
+  {
+    $view = new View('fields/input_url');
+
+    echo $view->render(['value' => $this->value, 'properties' => $this->properties]);
   }
-  
+
   # email
-  private function input_email() {
-    ?><input type="email" class="text" value="<?php echo $this->value; ?>" <?php echo $this->properties; ?>/><?php   
+  private function input_email()
+  {
+    $view = new View('fields/input_email');
+
+    echo $view->render(['value' => $this->value, 'properties' => $this->properties]);
   }
-  
+
   # int
-  private function input_number() {
-    ?><input type="number" class="text" value="<?php echo $this->value; ?>" <?php echo $this->properties; ?>/><?php   
+  private function input_number()
+  {
+    $view = new View('fields/input_number');
+
+    echo $view->render(['value' => $this->value, 'properties' => $this->properties]);
   }
-  
+
   # range
-  private function input_range() {
-    ?><input type="range" class="text" value="<?php echo $this->value; ?>" <?php echo $this->properties; ?>/><?php   
+  private function input_range()
+  {
+    $view = new View('fields/input_range');
+
+    echo $view->render(['value' => $this->value, 'properties' => $this->properties]);
   }
-  
+
   # color
-  private function input_color() {
-    ?><input type="text" class="text color" value="<?php echo $this->value; ?>" <?php echo $this->properties; ?>/><?php   
+  private function input_color()
+  {
+    $view = new View('fields/input_color');
+
+    echo $view->render(['value' => $this->value, 'properties' => $this->properties]);
   }
-  
+
   # multi (text)
-  private function multi_text() {
-    ?>
-    <span class="multi_text">
-      <?php
-        $this->schema['desc'] = $this->matrix->explodeTrim("\n", $this->schema['desc']);
-        $options = $this->matrix->explodeTrim("\n", $this->schema['options']);
-        $keys    = $this->get_multi_keys($this->schema['rows']);
-        $labels  = !empty($this->schema['labels']) ? $this->matrix->explodeTrim("\n", $this->schema['labels']) : array();
-        $values = explode_trim("\n", $this->value);
-        
-        $s = 0;
-        foreach ($keys as $i => $val) {
-          // value
-          $value = 0;
-          if (isset($values[$i])) {
-            $value = $values[$i];
-          }
-          elseif (isset($values[$s])) {
-            $value = $values[$s];
-          }
-      ?>
-        <?php if (!empty($labels) && isset($labels[$s])) { ?><label><?php echo $labels[$s]; ?> : </label><?php } ?>
-        <input type="text" value="<?php echo $value; ?>" style="margin-bottom: 4px;" name="post-<?php echo $this->name; ?>[]" <?php echo $this->properties; ?> class="text textmulti" value="<?php if (isset($options[$i])) echo $options[$i]; ?>" placeholder="<?php if (isset($this->schema['desc'][$i])) echo $this->schema['desc'][$i]; ?>" <?php echo $this->schema['readonly']; ?> <?php echo $this->schema['required']; ?> <?php if (strlen(trim($this->schema['validation']))>0) echo 'pattern="'.$this->schema['validation'].'"'; ?> <?php if (strlen(trim($this->schema['validation']))>0) echo 'pattern="'.$this->schema['validation'].'"'; ?>/>
-      <?php
-          $s++;
-        } ?>
-    </span>
-    <?php
+  private function multi_text()
+  {
+    $inputs = $this->extractDataForMultipleFields();
+    $view   = new View('fields/multi_text');
+
+    echo $view->render(['inputs' => $inputs]);
   }
-  
+
+  private function extractDataForMultipleFields()
+  {
+    $this->schema['desc'] = $this->matrix->explodeTrim("\n", $this->schema['desc']);
+    $options    = $this->matrix->explodeTrim("\n", $this->schema['options']);
+    $keys       = $this->get_multi_keys($this->schema['rows']);
+    $labels     = !empty($this->schema['labels']) ? $this->matrix->explodeTrim("\n", $this->schema['labels']) : array();
+    $values     = explode_trim("\n", $this->value);
+    $data       = [];
+    $fieldIndex = 0;
+
+    foreach ($keys as $i => $val) {
+      $value = 0;
+
+      if (isset($values[$i])) {
+        $value = $values[$i];
+      } elseif (isset($values[$fieldIndex])) {
+        $value = $values[$fieldIndex];
+      } elseif (isset($options[$i])) {
+        $value = $options[$i];
+      }
+
+      $label       = !empty($labels) && isset($labels[$fieldIndex]) ? $labels[$fieldIndex] : null;
+      $name        = $this->name;
+      $properties  = $this->properties;
+      $placeholder = isset($this->schema['desc'][$i]) ? $this->schema['desc'][$i] : null;
+      $readonly    = $this->schema['readonly'];
+      $required    = $this->schema['required'];
+      $validation  = strlen(trim($this->schema['validation'])) > 0 ? $this->schema['validation'] : null;
+
+      $data[] = (object) [
+        'label'       => $label,
+        'name'        => $name,
+        'value'       => $value,
+        'properties'  => $properties,
+        'placeholder' => $placeholder,
+        'readonly'    => $readonly,
+        'required'    => $required,
+        'validation'  => $validation
+      ];
+
+      $fieldIndex++;
+    }
+
+    return $data;
+  }
+
   # multiple colors
-  private function multi_color() {
-    ?>
-    <span class="multi_color">
-      <?php
-        $this->schema['desc'] = $this->matrix->explodeTrim("\n", $this->schema['desc']);
-        $options = $this->matrix->explodeTrim("\n", $this->schema['options']);
-        $keys = $this->get_multi_keys($this->schema['rows']);
-        $labels = !empty($this->schema['labels']) ? $this->matrix->explodeTrim("\n", $this->schema['labels']) : array();
-        $values = explode_trim("\n", $this->value);
-        
-        $s = 0;
-        foreach ($keys as $i => $val) {
-          // value
-          $value = 0;
-          if (isset($values[$i])) {
-            $value = $values[$i];
-          }
-          elseif (isset($values[$s])) {
-            $value = $values[$s];
-          }
-      ?>
-        <?php if (!empty($labels) && isset($labels[$s])) { ?><label><?php echo $labels[$s]; ?> : </label><?php } ?>
-        <input type="text" class="text color" value="<?php echo $value; ?>" style="margin-bottom: 4px;" name="post-<?php echo $this->name; ?>[]" <?php echo $this->properties; ?> class="text textmulti" value="<?php if (isset($options[$i])) echo $options[$i]; ?>" placeholder="<?php if (isset($this->schema['desc'][$i])) echo $this->schema['desc'][$i]; ?>" <?php echo $this->schema['readonly']; ?> <?php echo $this->schema['required']; ?> <?php if (strlen(trim($this->schema['validation']))>0) echo 'pattern="'.$this->schema['validation'].'"'; ?> <?php if (strlen(trim($this->schema['validation']))>0) echo 'pattern="'.$this->schema['validation'].'"'; ?>/>
-      <?php
-        $s++;
-        } ?>
-    </span>
-    <?php
+  private function multi_color()
+  {
+    $inputs = $this->extractDataForMultipleFields();
+    $view   = new View('fields/multi_color');
+
+    echo $view->render(['inputs' => $inputs]);
   }
-  
+
   # multi (numeric)
   private function multi_number() {
     ?>
@@ -194,7 +219,7 @@ class MatrixDisplayField {
         $keys = $this->get_multi_keys($this->schema['rows']);
         $labels = !empty($this->schema['labels']) ? $this->matrix->explodeTrim("\n", $this->schema['labels']) : array();
         $values = explode_trim("\n", $this->value);
-        
+
         $s = 0;
         foreach ($keys as $i => $val) {
           // value
@@ -214,7 +239,7 @@ class MatrixDisplayField {
     </span>
     <?php
   }
-  
+
   # multi (textarea)
   private function multi_textarea() {
     ?>
@@ -225,7 +250,7 @@ class MatrixDisplayField {
         $keys    = $this->get_multi_keys($this->schema['rows']);
         $labels  = !empty($this->schema['labels']) ? $this->matrix->explodeTrim("\n", $this->schema['labels']) : array();
         $values = explode_trim("\n", $this->value);
-        
+
         $s = 0;
         foreach ($keys as $i => $val) {
           // value
@@ -245,7 +270,7 @@ class MatrixDisplayField {
     </span>
     <?php
   }
-  
+
   # multi (rte)
   private function multi_rte() {
     ?>
@@ -261,7 +286,7 @@ class MatrixDisplayField {
         $keys    = $this->get_multi_keys($this->schema['rows']);
         $labels  = !empty($this->schema['labels']) ? $this->matrix->explodeTrim("\n", $this->schema['labels']) : array();
         $values = explode_trim("\n", $this->value);
-        
+
         $s = 0;
         foreach ($keys as $i => $val) {
           // value
@@ -281,7 +306,7 @@ class MatrixDisplayField {
     </span>
     <?php
   }
-  
+
   # multi (code)
   private function multi_code() {
     $this->schema['desc'] = $this->matrix->explodeTrim("\n", $this->schema['desc']);
@@ -299,7 +324,7 @@ class MatrixDisplayField {
         allow_toggle: true,
         word_wrap: true,
         language: "en",
-        syntax: "php"	
+        syntax: "php"
       });
       <?php } ?>
     </script>
@@ -324,34 +349,34 @@ class MatrixDisplayField {
     </span>
     <?php
   }
-  
+
   # date
   private function date() {
-    ?><input type="date" class="text" value="<?php echo $this->value; ?>" <?php echo $this->properties; ?>/><?php   
+    ?><input type="date" class="text" value="<?php echo $this->value; ?>" <?php echo $this->properties; ?>/><?php
   }
-  
+
   # time
   private function date_time() {
     if (empty($this->value)) $this->value = time();
     $timestamp = (is_numeric($this->value)) ? $this->value : strtotime($this->value);
     $value = date('H:i:s', $timestamp);
-    ?><input type="time" class="text" value="<?php echo $value; ?>" <?php echo $this->properties; ?>/><?php   
+    ?><input type="time" class="text" value="<?php echo $value; ?>" <?php echo $this->properties; ?>/><?php
   }
-  
+
   # datetimelocal
   private function date_timelocal() {
     if (empty($this->value)) $this->value = time();
     $timestamp = (is_numeric($this->value)) ? $this->value : strtotime($this->value);
     $value = date('Y-m-d\TH:i', $timestamp);
-    ?><input type="datetime-local" class="text" value="<?php echo $value; ?>" <?php echo $this->properties; ?>/><?php   
+    ?><input type="datetime-local" class="text" value="<?php echo $value; ?>" <?php echo $this->properties; ?>/><?php
   }
-  
+
   # week
   private function date_week() {
     if (empty($this->value)) $this->value = time();
     $timestamp = (is_numeric($this->value)) ? $this->value : strtotime($this->value);
     $value = date('Y-\WW', $timestamp);
-    ?><input type="week" class="text" value="<?php echo $value; ?>" <?php echo $this->properties; ?>/><?php   
+    ?><input type="week" class="text" value="<?php echo $value; ?>" <?php echo $this->properties; ?>/><?php
   }
 
   # month
@@ -360,15 +385,15 @@ class MatrixDisplayField {
     $timestamp = (is_numeric($this->value)) ? $this->value : strtotime($this->value);
     $value = date('Y-m-d\TH:i', $timestamp);
     $value = date('Y-m', $timestamp);
-    ?><input type="month" class="text" value="<?php echo $value; ?>" <?php echo $this->properties; ?>/><?php   
+    ?><input type="month" class="text" value="<?php echo $value; ?>" <?php echo $this->properties; ?>/><?php
   }
-  
+
   /* textareas */
   # textarea
   private function textarea() {
     ?><textarea class="text" <?php echo $this->properties; ?>><?php echo $this->value; ?></textarea><?php
   }
-  
+
   # tags
   private function textarea_tags() {
     ?>
@@ -380,7 +405,7 @@ class MatrixDisplayField {
     <textarea <?php echo $this->properties; ?>><?php echo $this->value; ?></textarea>
     <?php
   }
-  
+
   # bbcode
   private function textarea_bbcode() {
     ?>
@@ -392,7 +417,7 @@ class MatrixDisplayField {
     <textarea <?php echo $this->properties; ?>><?php echo $this->value; ?></textarea>
     <?php
   }
-  
+
   # wiki
   private function textarea_wiki() {
     ?>
@@ -404,7 +429,7 @@ class MatrixDisplayField {
     <textarea <?php echo $this->properties; ?>><?php echo $this->value; ?></textarea>
     <?php
   }
-  
+
   # markdown
   private function textarea_markdown() {
     ?>
@@ -416,7 +441,7 @@ class MatrixDisplayField {
     <textarea <?php echo $this->properties; ?>><?php echo $this->value; ?></textarea>
     <?php
   }
-  
+
   # wysiwyg
   private function textarea_wysiwyg() {
     ?>
@@ -437,7 +462,7 @@ class MatrixDisplayField {
     </div>
     <?php
   }
-  
+
   # code editor
   private function textarea_code() {
     // set up parameters
@@ -445,11 +470,11 @@ class MatrixDisplayField {
     $params['value'] = $this->value;
     $params['properties'] = $this->properties;
     $params['id'] = $this->id;
-    
+
     // output editor
     $this->matrix->getEditor($params);
   }
-  
+
   # dropdown
   private function dropdown() {
     $options = $this->matrix->getOptions($this->schema['options']);
@@ -461,7 +486,7 @@ class MatrixDisplayField {
       </select>
     <?php
   }
-  
+
   # dropdown for tables
   private function dropdown_table() {
     if ($this->matrix->fieldExists($this->schema['table'], $this->schema['row'])) {
@@ -477,7 +502,7 @@ class MatrixDisplayField {
     </select>
     <?php
   }
-  
+
   # dropdown with hierarchy
   private function dropdown_hierarchy() {
     $options = $this->matrix->getHierarcalOptions($this->schema['options']);
@@ -489,7 +514,7 @@ class MatrixDisplayField {
       </select>
     <?php
   }
-  
+
   # pages
   private function dropdown_pages() {
     getPagesXmlValues();
@@ -503,7 +528,7 @@ class MatrixDisplayField {
     </select>
     <?php
   }
-  
+
   # users
   private function dropdown_users() {
     $users = $this->matrix->getUsers();
@@ -515,7 +540,7 @@ class MatrixDisplayField {
     </select>
     <?php
   }
-  
+
   # components
   private function dropdown_components() {
     $components = $this->matrix->getComponents();
@@ -527,12 +552,12 @@ class MatrixDisplayField {
     </select>
     <?php
   }
-  
+
   # template
   private function dropdown_template() {
     // load templates for current theme
     $templates = glob(GSTHEMESPATH.$this->paths['template'].'/*.php');
-    
+
     // unset 'functions.php' and '*.inc.php'
     foreach ($templates as $key => $template) {
       $tmp = explode('/', $template);
@@ -553,7 +578,7 @@ class MatrixDisplayField {
     </select>
     <?php
   }
-  
+
   # themes
   private function dropdown_themes() {
     $themes = $this->matrix->getThemes();
@@ -565,14 +590,14 @@ class MatrixDisplayField {
     </select>
     <?php
   }
-  
+
   # picker
   private function picker() {
   }
   # upload
   private function upload() {
   }
-  
+
   # radio
   private function radio() {
     $selected = $this->matrix->getOptions($this->value);
@@ -590,7 +615,7 @@ class MatrixDisplayField {
   private function options_checkbox() {
     // force value to be an array
     if (!is_array($this->value)) $this->value = array($this->value);
-    
+
     // load options and values
     $selected = array_map('trim', $this->value);
     $options = $this->matrix->getOptions($this->schema['options']);
@@ -602,7 +627,7 @@ class MatrixDisplayField {
     </span>
     <?php
   }
-  
+
   # radio
   private function options_radio() {
     $selected = $this->matrix->getOptions($this->value);
@@ -615,12 +640,12 @@ class MatrixDisplayField {
     </span>
     <?php
   }
-  
+
   # multiple select
   private function options_selectmulti() {
     // force value to be an array
     if (!is_array($this->value)) $this->value = array($this->value);
-    
+
     // load options and values
     $selected = array_map('trim', $this->value);
     $options = $this->matrix->getOptions($this->schema['options']);
@@ -632,7 +657,7 @@ class MatrixDisplayField {
     </select>
     <?php
   }
-  
+
   # upload image (for admins)
   private function upload_imageadmin() {
     ?>
@@ -665,29 +690,29 @@ class MatrixDisplayField {
     </script>
     <?php
   }
-  
+
   # image picker
-  private function picker_image() {
-    ?>
-    <input class="text imagepicker" type="text" <?php echo $this->properties; ?>/>
-    <span class="edit-nav"><a id="browse-<?php echo $this->name; ?>" href="javascript:void(0);">Browse</a></span>
-    <script type="text/javascript">
-      $(function() { 
-        $('#browse-<?php echo $this->name; ?>').click(function(e) {
-          window.open('<?php echo $this->matrix->getSiteURL().'admin/filebrowser.php?CKEditorFuncNum=1&func=addImageThumbNail&returnid=post-'.$this->name.'type=images'; ?>', 'browser', 'width=800,height=500,left=100,top=100,scrollbars=yes');
-        });
-      });
-    </script>
-    <?php
+  private function picker_image()
+  {
+    $properties = $this->properties;
+    $name       = $this->name;
+    $url        = $this->matrix->getSiteURL() . 'admin/filebrowser.php?CKEditorFuncNum=1&func=addImageThumbNail&returnid=post-' . $this->name . 'type=images';
+    $view       = new View('fields/picker_image');
+
+    echo $view->render([
+      'properties' => $properties,
+      'name'       => $name,
+      'url'        => $url,
+    ]);
   }
-  
+
   # file picker
   private function picker_file() {
     ?>
     <input class="text filepicker" type="text" <?php echo $this->properties; ?>/>
     <span class="edit-nav"><a id="browse-<?php echo $this->name; ?>" href="javascript:void(0);">Browse</a></span>
     <script type="text/javascript">
-      $(function() { 
+      $(function() {
         $('#browse-<?php echo $this->name; ?>').click(function(e) {
           window.open('<?php echo $this->matrix->getSiteURL().'admin/filebrowser.php?CKEditorFuncNum=1&returnid=post-'.$this->name.'type=all'; ?>', 'browser', 'width=800,height=500,left=100,top=100,scrollbars=yes');
         });
@@ -695,7 +720,7 @@ class MatrixDisplayField {
     </script>
     <?php
   }
-  
+
   # display
   public function display($params=array()) {
     // description
