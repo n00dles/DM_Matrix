@@ -1,6 +1,9 @@
 <?php
 /* class for handling field inputs
  */
+
+use TheMatrix\View; 
+
 class MatrixDisplayField {
   /* constants */
   /* properties */
@@ -67,29 +70,31 @@ class MatrixDisplayField {
   
   /* inputs */
   # input (text)
-  private function input() {
-    ?><input type="text" class="text" value="<?php echo $this->value; ?>" <?php echo $this->properties; ?>/><?php
+  private function input()
+  {
+    $view = new View('fields/input');
+    
+    echo $view->render(['value' => $this->value, 'properties' => $this->properties]);
   }
   
   # input (textlong)
-  private function input_long() {
-    ?><input type="text" class="text title" value="<?php echo $this->value; ?>" <?php echo $this->properties; ?>/><?php
+  private function input_long()
+  {
+    $view = new View('fields/input_long');
+    
+    echo $view->render(['value' => $this->value, 'properties' => $this->properties]);
   }
   
   # input (slug)
-  private function input_slug() {
-    ?>
-    <script>
-      $(document).ready(function() {
-        $("#<?php echo $this->id; ?>").keyup(function(){
-          var Text = $(this).val();
-          Text =  Text.toLowerCase().replace(/ /g,'-').replace(/[^\w-]+/g,'').replace(/(-)+/g, '-');
-          $(this).val(Text);	
-        });
-      });
-    </script>
-    <input type="text" class="text slug" value="<?php echo $this->value; ?>" <?php echo $this->properties; ?>/>
-    <?php
+  private function input_slug()
+  {
+    $view = new View('fields/input_slug');
+    
+    echo $view->render([
+      'value'      => $this->value,
+      'properties' => $this->properties,
+      'selector'   => '#' . $this->id
+    ]);
   }
   
   # password

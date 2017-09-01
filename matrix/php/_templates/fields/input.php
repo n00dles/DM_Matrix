@@ -1,0 +1,1 @@
+<input type="text" class="text" value="<?php echo $value; ?>" <?php echo $properties; ?>/>
