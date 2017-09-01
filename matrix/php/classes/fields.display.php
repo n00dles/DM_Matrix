@@ -146,65 +146,67 @@ class MatrixDisplayField {
   }
 
   # multi (text)
-  private function multi_text() {
-    ?>
-    <span class="multi_text">
-      <?php
-        $this->schema['desc'] = $this->matrix->explodeTrim("\n", $this->schema['desc']);
-        $options = $this->matrix->explodeTrim("\n", $this->schema['options']);
-        $keys    = $this->get_multi_keys($this->schema['rows']);
-        $labels  = !empty($this->schema['labels']) ? $this->matrix->explodeTrim("\n", $this->schema['labels']) : array();
-        $values = explode_trim("\n", $this->value);
+  private function multi_text()
+  {
+    $inputs = $this->extractDataForMultipleFields();
+    $view   = new View('fields/multi_text');
 
-        $s = 0;
-        foreach ($keys as $i => $val) {
-          // value
-          $value = 0;
-          if (isset($values[$i])) {
-            $value = $values[$i];
-          }
-          elseif (isset($values[$s])) {
-            $value = $values[$s];
-          }
-      ?>
-        <?php if (!empty($labels) && isset($labels[$s])) { ?><label><?php echo $labels[$s]; ?> : </label><?php } ?>
-        <input type="text" value="<?php echo $value; ?>" style="margin-bottom: 4px;" name="post-<?php echo $this->name; ?>[]" <?php echo $this->properties; ?> class="text textmulti" value="<?php if (isset($options[$i])) echo $options[$i]; ?>" placeholder="<?php if (isset($this->schema['desc'][$i])) echo $this->schema['desc'][$i]; ?>" <?php echo $this->schema['readonly']; ?> <?php echo $this->schema['required']; ?> <?php if (strlen(trim($this->schema['validation']))>0) echo 'pattern="'.$this->schema['validation'].'"'; ?> <?php if (strlen(trim($this->schema['validation']))>0) echo 'pattern="'.$this->schema['validation'].'"'; ?>/>
-      <?php
-          $s++;
-        } ?>
-    </span>
-    <?php
+    echo $view->render(['inputs' => $inputs]);
+  }
+
+  private function extractDataForMultipleFields()
+  {
+    $this->schema['desc'] = $this->matrix->explodeTrim("\n", $this->schema['desc']);
+    $options    = $this->matrix->explodeTrim("\n", $this->schema['options']);
+    $keys       = $this->get_multi_keys($this->schema['rows']);
+    $labels     = !empty($this->schema['labels']) ? $this->matrix->explodeTrim("\n", $this->schema['labels']) : array();
+    $values     = explode_trim("\n", $this->value);
+    $data       = [];
+    $fieldIndex = 0;
+
+    foreach ($keys as $i => $val) {
+      $value = 0;
+
+      if (isset($values[$i])) {
+        $value = $values[$i];
+      } elseif (isset($values[$fieldIndex])) {
+        $value = $values[$fieldIndex];
+      } elseif (isset($options[$i])) {
+        $value = $options[$i];
+      }
+
+      $label       = !empty($labels) && isset($labels[$fieldIndex]) ? $labels[$fieldIndex] : null;
+      $name        = $this->name;
+      $properties  = $this->properties;
+      $placeholder = isset($this->schema['desc'][$i]) ? $this->schema['desc'][$i] : null;
+      $readonly    = $this->schema['readonly'];
+      $required    = $this->schema['required'];
+      $validation  = strlen(trim($this->schema['validation'])) > 0 ? $this->schema['validation'] : null;
+
+      $data[] = (object) [
+        'label'       => $label,
+        'name'        => $name,
+        'value'       => $value,
+        'properties'  => $properties,
+        'placeholder' => $placeholder,
+        'readonly'    => $readonly,
+        'required'    => $required,
+        'validation'  => $validation
+      ];
+
+      $fieldIndex++;
+    }
+
+    return $data;
   }
 
   # multiple colors
-  private function multi_color() {
-    ?>
-    <span class="multi_color">
-      <?php
-        $this->schema['desc'] = $this->matrix->explodeTrim("\n", $this->schema['desc']);
-        $options = $this->matrix->explodeTrim("\n", $this->schema['options']);
-        $keys = $this->get_multi_keys($this->schema['rows']);
-        $labels = !empty($this->schema['labels']) ? $this->matrix->explodeTrim("\n", $this->schema['labels']) : array();
-        $values = explode_trim("\n", $this->value);
+  private function multi_color()
+  {
+    $inputs = $this->extractDataForMultipleFields();
+    $view   = new View('fields/multi_color');
 
-        $s = 0;
-        foreach ($keys as $i => $val) {
-          // value
-          $value = 0;
-          if (isset($values[$i])) {
-            $value = $values[$i];
-          }
-          elseif (isset($values[$s])) {
-            $value = $values[$s];
-          }
-      ?>
-        <?php if (!empty($labels) && isset($labels[$s])) { ?><label><?php echo $labels[$s]; ?> : </label><?php } ?>
-        <input type="text" class="text color" value="<?php echo $value; ?>" style="margin-bottom: 4px;" name="post-<?php echo $this->name; ?>[]" <?php echo $this->properties; ?> class="text textmulti" value="<?php if (isset($options[$i])) echo $options[$i]; ?>" placeholder="<?php if (isset($this->schema['desc'][$i])) echo $this->schema['desc'][$i]; ?>" <?php echo $this->schema['readonly']; ?> <?php echo $this->schema['required']; ?> <?php if (strlen(trim($this->schema['validation']))>0) echo 'pattern="'.$this->schema['validation'].'"'; ?> <?php if (strlen(trim($this->schema['validation']))>0) echo 'pattern="'.$this->schema['validation'].'"'; ?>/>
-      <?php
-        $s++;
-        } ?>
-    </span>
-    <?php
+    echo $view->render(['inputs' => $inputs]);
   }
 
   # multi (numeric)
