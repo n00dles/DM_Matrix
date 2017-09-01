@@ -106,28 +106,43 @@ class MatrixDisplayField {
   }
 
   # url
-  private function input_url() {
-    ?><input type="url" class="text" value="<?php echo $this->value; ?>" <?php echo $this->properties; ?>/><?php
+  private function input_url()
+  {
+    $view = new View('fields/input_url');
+
+    echo $view->render(['value' => $this->value, 'properties' => $this->properties]);
   }
 
   # email
-  private function input_email() {
-    ?><input type="email" class="text" value="<?php echo $this->value; ?>" <?php echo $this->properties; ?>/><?php
+  private function input_email()
+  {
+    $view = new View('fields/input_email');
+
+    echo $view->render(['value' => $this->value, 'properties' => $this->properties]);
   }
 
   # int
-  private function input_number() {
-    ?><input type="number" class="text" value="<?php echo $this->value; ?>" <?php echo $this->properties; ?>/><?php
+  private function input_number()
+  {
+    $view = new View('fields/input_number');
+
+    echo $view->render(['value' => $this->value, 'properties' => $this->properties]);
   }
 
   # range
-  private function input_range() {
-    ?><input type="range" class="text" value="<?php echo $this->value; ?>" <?php echo $this->properties; ?>/><?php
+  private function input_range()
+  {
+    $view = new View('fields/input_range');
+
+    echo $view->render(['value' => $this->value, 'properties' => $this->properties]);
   }
 
   # color
-  private function input_color() {
-    ?><input type="text" class="text color" value="<?php echo $this->value; ?>" <?php echo $this->properties; ?>/><?php
+  private function input_color()
+  {
+    $view = new View('fields/input_color');
+
+    echo $view->render(['value' => $this->value, 'properties' => $this->properties]);
   }
 
   # multi (text)
